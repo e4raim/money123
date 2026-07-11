@@ -1,0 +1,1080 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Актуалка — объекты с другими агентами</title>
+<style>
+:root{
+  --paper:#F3F1EC;--card:#FFFFFF;--ink:#23211E;--ink-soft:#6E6A62;--line:#E6E2D9;
+  --brass:#9A7B34;--brass-tint:#F2EAD6;
+  --ok:#2F8F5B;--think:#C79218;--no:#C24A3E;--base:#8A867E;
+  --serif:Georgia,"Times New Roman",serif;
+  --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  --shadow:0 1px 2px rgba(30,28,24,.05),0 6px 18px rgba(30,28,24,.06);
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--paper);color:var(--ink);font-family:var(--sans);-webkit-font-smoothing:antialiased;padding-bottom:90px}
+a{color:inherit}
+
+header{position:sticky;top:0;z-index:40;background:rgba(243,241,236,.86);backdrop-filter:saturate(1.4) blur(12px);border-bottom:1px solid var(--line);padding:14px 18px 12px}
+.bar-top{display:flex;align-items:center;gap:12px;max-width:1240px;margin:0 auto}
+.wordmark{white-space:nowrap;cursor:pointer}
+.wordmark .t{font-family:var(--serif);font-size:22px;font-weight:700;letter-spacing:.2px}
+.wordmark small{display:block;font-family:var(--sans);font-weight:600;font-size:11px;color:var(--brass);letter-spacing:.3px;margin-top:1px}
+.wordmark small::after{content:" ✎";opacity:.5}
+.search{flex:1;position:relative;min-width:0}
+.search input{width:100%;border:1px solid var(--line);background:#fff;border-radius:12px;padding:11px 14px 11px 38px;font-size:15px;color:var(--ink);outline:none}
+.search input:focus{border-color:var(--brass);box-shadow:0 0 0 3px var(--brass-tint)}
+.search svg{position:absolute;left:12px;top:50%;transform:translateY(-50%);width:17px;height:17px;stroke:var(--ink-soft);fill:none;stroke-width:2}
+.btn-add{border:none;background:var(--brass);color:#fff;font-weight:600;font-size:15px;padding:11px 16px;border-radius:12px;cursor:pointer;white-space:nowrap;display:inline-flex;align-items:center;gap:7px;transition:filter .15s}
+.btn-add:hover{filter:brightness(1.07)}
+.btn-add .plus{font-size:19px;line-height:1;margin-top:-1px}
+
+.filters{max-width:1240px;margin:12px auto 0;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.chip{border:1px solid var(--line);background:#fff;color:var(--ink-soft);padding:7px 13px;border-radius:999px;font-size:13.5px;font-weight:500;cursor:pointer;display:inline-flex;align-items:center;gap:7px;transition:.12s}
+.chip .dot{width:8px;height:8px;border-radius:50%;background:var(--base)}
+.chip .cnt{font-variant-numeric:tabular-nums;color:var(--ink-soft);font-weight:600;font-size:12px}
+.chip[data-k="works"] .dot{background:var(--ok)}
+.chip[data-k="thinking"] .dot{background:var(--think)}
+.chip[data-k="refusal"] .dot{background:var(--no)}
+.chip[data-k="base"] .dot{background:var(--base)}
+.chip.active{border-color:var(--ink);color:var(--ink)}
+.chip.active .cnt{color:var(--ink)}
+.chip.warn{border-style:dashed;border-color:#D8B98F;color:#9a6d2b}
+.chip.warn.active{background:var(--brass-tint);border-color:var(--brass);color:#8a6120}
+.spacer{flex:1;min-width:12px}
+select.mini{border:1px solid var(--line);background:#fff;color:var(--ink);border-radius:10px;padding:8px 30px 8px 12px;font-size:13.5px;font-family:var(--sans);cursor:pointer;outline:none;appearance:none;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 10 10'><path d='M1 3l4 4 4-4' stroke='%236E6A62' stroke-width='1.6' fill='none'/></svg>");background-repeat:no-repeat;background-position:right 11px center}
+select.mini:focus{border-color:var(--brass)}
+
+.cloud-note{max-width:1240px;margin:12px auto 0;font-size:12.5px;color:var(--ink-soft);background:var(--brass-tint);border:1px solid #E7D9B4;border-radius:10px;padding:8px 12px;display:flex;gap:8px;align-items:center}
+.cloud-note b{color:#8a6d2b}
+.cloud-note.live{background:#E7F3EC;border-color:#CBE6D5}
+.cloud-note.live b{color:var(--ok)}
+
+main{max-width:1240px;margin:0 auto;padding:18px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(258px,1fr));gap:18px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;overflow:hidden;cursor:pointer;box-shadow:var(--shadow);transition:transform .16s ease,box-shadow .16s ease;display:flex;flex-direction:column}
+.card:hover{transform:translateY(-3px);box-shadow:0 2px 4px rgba(30,28,24,.06),0 14px 30px rgba(30,28,24,.11)}
+.card.incomplete{border-color:#E3CBA0}
+.thumb{position:relative;aspect-ratio:16/10;background:#EDEAE2;overflow:hidden}
+.thumb img{width:100%;height:100%;object-fit:cover;display:block}
+.thumb .placeholder{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#C3BFB4}
+.thumb .placeholder svg{width:44px;height:44px;stroke:currentColor;fill:none;stroke-width:1.4}
+.pill{position:absolute;top:10px;left:10px;font-size:11.5px;font-weight:600;color:#fff;padding:4px 9px;border-radius:999px;letter-spacing:.2px;box-shadow:0 1px 4px rgba(0,0,0,.2)}
+.pill.works{background:var(--ok)} .pill.thinking{background:var(--think)} .pill.refusal{background:var(--no)} .pill.base{background:var(--base)}
+.card.closed .thumb img,.card.closed .thumb .placeholder{filter:grayscale(1);opacity:.5}
+.card.closed .body{opacity:.55}
+.card.closed{border-color:#DAD6CC}
+.sold-overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;z-index:3}
+.sold-overlay span{background:rgba(192,74,62,.94);color:#fff;font-weight:800;font-size:19px;letter-spacing:3px;padding:6px 18px;border-radius:8px;transform:rotate(-8deg);box-shadow:0 4px 14px rgba(0,0,0,.3)}
+.deal-badge{position:absolute;bottom:10px;left:10px;background:rgba(35,33,30,.72);color:#fff;font-size:10.5px;font-weight:700;padding:3px 8px;border-radius:999px;letter-spacing:.3px}
+.deal-badge.rent{background:rgba(47,111,143,.85)}
+.pay-badge{position:absolute;top:10px;right:10px;background:rgba(35,33,30,.82);color:#F2EAD6;font-size:11px;font-weight:700;padding:4px 8px;border-radius:999px;letter-spacing:.3px}
+.todo-badge{position:absolute;bottom:10px;right:10px;background:rgba(154,109,43,.92);color:#fff;font-size:10.5px;font-weight:700;padding:3px 8px;border-radius:999px;letter-spacing:.3px}
+.body{padding:12px 14px 14px;display:flex;flex-direction:column;gap:5px;flex:1}
+.title{font-family:var(--serif);font-size:18px;font-weight:700;line-height:1.15}
+.metr{font-size:13px;color:var(--ink-soft);font-weight:600}
+.price{font-size:16px;font-weight:700;color:var(--ink);margin-top:1px}
+.ppm{font-size:12px;color:var(--brass);font-weight:600}
+.row{display:flex;align-items:center;gap:6px;font-size:12.5px;color:var(--ink-soft)}
+.row .k{color:#A8A296}
+.owner{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:6px;padding-top:9px;border-top:1px solid var(--line)}
+.owner .who{min-width:0}
+.owner .name{font-size:13.5px;font-weight:600;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.owner .ph{font-size:12px;color:var(--ink-soft)}
+.call{flex:none;width:34px;height:34px;border-radius:10px;background:var(--brass-tint);color:var(--brass);display:flex;align-items:center;justify-content:center;text-decoration:none}
+.call svg{width:16px;height:16px;fill:currentColor}
+.next{font-size:12px;color:var(--brass);font-weight:600;margin-top:4px;display:flex;gap:5px;align-items:baseline}
+.next .k{color:#B8AC8A}
+
+.empty{text-align:center;padding:70px 20px;color:var(--ink-soft)}
+.empty .big{font-family:var(--serif);font-size:22px;color:var(--ink);margin-bottom:8px}
+.empty button{margin-top:16px}
+
+.tools{max-width:1240px;margin:26px auto 0;display:flex;gap:10px;flex-wrap:wrap;justify-content:center;font-size:13px;color:var(--ink-soft)}
+.tools button{border:1px solid var(--line);background:#fff;color:var(--ink-soft);border-radius:10px;padding:8px 14px;font-size:13px;cursor:pointer;font-family:var(--sans)}
+.tools button:hover{border-color:var(--brass);color:var(--brass)}
+
+.overlay{position:fixed;inset:0;background:rgba(30,28,24,.42);backdrop-filter:blur(3px);display:none;align-items:flex-start;justify-content:center;z-index:60;padding:24px 16px;overflow-y:auto}
+.overlay.show{display:flex}
+.modal{background:var(--paper);width:100%;max-width:560px;border-radius:20px;box-shadow:0 20px 60px rgba(0,0,0,.28);overflow:hidden;animation:pop .18s ease}
+@keyframes pop{from{opacity:0;transform:translateY(10px) scale(.98)}to{opacity:1;transform:none}}
+.modal-head{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--paper);z-index:2}
+.modal-head h2{margin:0;font-family:var(--serif);font-size:19px}
+.x{border:none;background:none;font-size:24px;color:var(--ink-soft);cursor:pointer;line-height:1;padding:2px 6px}
+.modal-body{padding:18px 20px 4px}
+.photo-drop{aspect-ratio:16/10;border:1.5px dashed #CFC9BC;border-radius:14px;background:#fff;display:flex;align-items:center;justify-content:center;text-align:center;color:var(--ink-soft);cursor:pointer;overflow:hidden;position:relative;margin-bottom:16px;transition:.15s}
+.photo-drop:hover{border-color:var(--brass);color:var(--brass)}
+.photo-drop img{width:100%;height:100%;object-fit:cover}
+.photo-drop .hint{padding:16px;font-size:13.5px;line-height:1.5}
+.photo-drop .hint b{display:block;font-size:15px;color:var(--ink);margin-bottom:3px}
+.photo-clear{position:absolute;top:8px;right:8px;background:rgba(35,33,30,.75);color:#fff;border:none;width:28px;height:28px;border-radius:50%;font-size:16px;cursor:pointer;display:none}
+.photo-drop.has .photo-clear{display:block}
+label.f{display:block;margin-bottom:13px}
+label.f .lb{font-size:12.5px;font-weight:600;color:var(--ink-soft);margin-bottom:5px;display:block}
+.f input,.f select,.f textarea{width:100%;border:1px solid var(--line);background:#fff;border-radius:10px;padding:11px 12px;font-size:15px;color:var(--ink);font-family:var(--sans);outline:none}
+.f textarea{resize:vertical;min-height:64px;line-height:1.45}
+.f input:focus,.f select:focus,.f textarea:focus{border-color:var(--brass);box-shadow:0 0 0 3px var(--brass-tint)}
+.f select{appearance:none;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 10 10'><path d='M1 3l4 4 4-4' stroke='%236E6A62' stroke-width='1.6' fill='none'/></svg>");background-repeat:no-repeat;background-position:right 12px center}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.links-sec{margin-bottom:13px}
+.links-sec .lb{font-size:12.5px;font-weight:600;color:var(--ink-soft);margin-bottom:6px;display:block}
+.link-row{display:grid;grid-template-columns:1fr 1.5fr auto;gap:8px;margin-bottom:8px}
+.link-row input{border:1px solid var(--line);background:#fff;border-radius:10px;padding:10px 11px;font-size:14px;font-family:var(--sans);outline:none;min-width:0}
+.link-row input:focus{border-color:var(--brass);box-shadow:0 0 0 3px var(--brass-tint)}
+.link-row .rm{border:1px solid var(--line);background:#fff;color:var(--no);border-radius:10px;width:40px;cursor:pointer;font-size:17px}
+.add-link{border:1px dashed #CFC9BC;background:#fff;color:var(--brass);border-radius:10px;padding:10px;width:100%;cursor:pointer;font-size:14px;font-weight:600;font-family:var(--sans)}
+.add-link:hover{border-color:var(--brass)}
+@media (max-width:480px){.link-row{grid-template-columns:1fr auto}.link-row .ol-url{grid-column:1/-1}}
+.modal-foot{display:flex;gap:10px;padding:14px 20px 20px;position:sticky;bottom:0;background:var(--paper);border-top:1px solid var(--line)}
+.cadline{font-size:11px;color:#B0AB9F;font-family:ui-monospace,Menlo,monospace;margin-top:-1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#egrnStatus{font-size:12.5px;color:var(--ink-soft)}
+#egrnStatus.egrn-ok{color:var(--ok);font-weight:600}
+.egrn-result{margin-bottom:13px}
+.egrn-result:empty{margin:0}
+.egrn-hint{font-size:12.5px;color:var(--ink-soft);padding:9px 11px;background:#fff;border:1px dashed var(--line);border-radius:10px}
+.egrn-card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin-bottom:8px}
+.egrn-top{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
+.egrn-fio{font-size:14px;font-weight:700;color:var(--ink)}
+.egrn-meta{font-size:12px;color:var(--ink-soft);margin-top:2px}
+.egrn-fill{flex:none;border:none;background:var(--brass);color:#fff;border-radius:9px;padding:8px 12px;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--sans)}
+.egrn-fill:hover{filter:brightness(1.07)}
+.egrn-others{margin-top:8px;padding-top:8px;border-top:1px dashed var(--line);font-size:11.5px;color:var(--ink-soft);line-height:1.45}
+.modal-foot .save{flex:1;background:var(--brass);color:#fff;border:none;border-radius:12px;padding:13px;font-size:15.5px;font-weight:600;cursor:pointer}
+.modal-foot .save:hover{filter:brightness(1.07)}
+.modal-foot .del{border:1px solid #E7C9C4;background:#fff;color:var(--no);border-radius:12px;padding:13px 16px;font-size:14px;cursor:pointer}
+.modal-foot .del:hover{background:#FBEEEC}
+@media (max-width:480px){.two{grid-template-columns:1fr}.btn-add span.t{display:none}.btn-add{padding:11px 13px}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+.rep-check{display:flex;align-items:center;gap:10px;padding:11px 12px;border:1px solid var(--line);background:#fff;border-radius:10px;margin-bottom:8px;cursor:pointer;font-size:14.5px}
+.rep-check input{width:18px;height:18px;accent-color:var(--brass);flex:none}
+.rep-period{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:6px 0 4px}
+#reportOutput{background:#fff;border:1px solid var(--line);border-radius:12px;padding:20px 22px;color:var(--ink);line-height:1.5}
+#reportOutput h1{font-family:var(--serif);font-size:22px;margin:0 0 4px}
+#reportOutput .rsub{color:var(--ink-soft);font-size:13px;margin-bottom:16px}
+#reportOutput h2{font-family:var(--serif);font-size:16px;margin:18px 0 8px;padding-bottom:5px;border-bottom:1px solid var(--line)}
+#reportOutput table{width:100%;border-collapse:collapse;font-size:13px;margin-top:4px}
+#reportOutput th,#reportOutput td{text-align:left;padding:6px 8px;border-bottom:1px solid #F0EDE5;vertical-align:top}
+#reportOutput th{color:var(--ink-soft);font-weight:600;font-size:11.5px;text-transform:uppercase;letter-spacing:.3px}
+#reportOutput .stat{display:inline-block;margin:2px 14px 2px 0;font-size:14px}
+#reportOutput .stat b{font-size:18px;font-family:var(--serif)}
+@media print{
+  body>*{display:none!important}
+  #reportOverlay{display:block!important;position:static!important;background:#fff!important;padding:0!important}
+  #reportOverlay .modal-head,#reportOverlay .modal-foot,#reportOverlay .rep-controls{display:none!important}
+  #reportOverlay .modal{max-width:none!important;box-shadow:none!important;background:#fff!important}
+  #reportOutput{border:none!important;padding:0!important}
+}
+.tabs{max-width:1240px;margin:12px auto 0;display:flex;gap:6px}
+.tab{border:1px solid var(--line);background:#fff;color:var(--ink-soft);border-radius:12px;padding:9px 18px;font-size:14px;font-weight:600;cursor:pointer;font-family:var(--sans)}
+.tab.active{color:#fff;background:var(--brass);border-color:var(--brass)}
+.schema-head{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:14px}
+.twr{border:1px solid var(--line);background:#fff;color:var(--ink-soft);padding:8px 14px;border-radius:999px;font-size:13.5px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:8px}
+.twr .sw{width:13px;height:13px;border-radius:3px;border:1px solid rgba(0,0,0,.15)}
+.twr.w .sw{background:#EEECE6} .twr.b .sw{background:#2C2A28} .twr.g .sw{background:#C9A24B}
+.twr.active{border-color:var(--ink);color:var(--ink);box-shadow:0 0 0 1px var(--ink)}
+.legend{display:flex;gap:12px;flex-wrap:wrap;font-size:12px;color:var(--ink-soft);margin-left:auto}
+.legend span{display:inline-flex;align-items:center;gap:5px}
+.legend i{width:11px;height:11px;border-radius:3px;display:inline-block}
+/* --- дом тремя башнями --- */
+.schemaWrap{--cw:22px;--ch:13px;--gap:3px;display:flex;justify-content:center;align-items:flex-end;gap:14px;padding:6px 0 4px}
+.gutter{display:flex;flex-direction:column;gap:var(--gap);padding-bottom:36px}
+.gutter .g{height:var(--ch);display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--ink-soft);width:24px;font-variant-numeric:tabular-nums}
+.bld{display:flex;flex-direction:column;align-items:center}
+.bld-roof{position:relative;height:20px;width:70%;color:#B7B1A3}
+.bld.b .bld-roof{color:#5c5851}.bld.g .bld-roof{color:#B8912F}
+.bld-roof .cap{position:absolute;left:0;right:0;bottom:0;height:12px;border-radius:7px 7px 0 0;background:currentColor;opacity:.9}
+.bld-roof .spire{position:absolute;left:50%;bottom:11px;transform:translateX(-50%);width:2px;height:11px;background:currentColor}
+.bld.g .bld-roof .spire{height:18px;bottom:11px}
+.bld-body{position:relative;border:1px solid;border-bottom:none;border-radius:9px 9px 0 0;padding:7px 7px 0;overflow:hidden;box-shadow:0 10px 30px rgba(30,28,24,.14)}
+.bld.w .bld-body{background:linear-gradient(180deg,#F9F7F2,#E7E3DA);border-color:#D8D3C7}
+.bld.b .bld-body{background:linear-gradient(180deg,#35332F,#232120);border-color:#141312}
+.bld.g .bld-body{background:linear-gradient(180deg,#ECDBAE,#D6BB77);border-color:#C6A648}
+.floors{display:flex;flex-direction:column;gap:var(--gap)}
+.frow{display:flex;gap:var(--gap);height:var(--ch);justify-content:center}
+.frow.sect{box-shadow:inset 0 2px 0 -1px rgba(154,123,52,.45)}
+.brick{width:var(--cw);height:var(--ch);border-radius:2px;cursor:pointer;transition:transform .08s;position:relative}
+.bld.w .brick.e{background:rgba(120,110,90,.16)} .bld.b .brick.e{background:rgba(255,255,255,.09)} .bld.g .brick.e{background:rgba(90,60,10,.16)}
+.brick.void{background:transparent!important;pointer-events:none;box-shadow:none;cursor:default}
+.brick.noted{background:rgba(154,123,52,.32)!important;box-shadow:inset 0 0 0 1px rgba(154,123,52,.85)}
+.brick.works{background:var(--ok)} .brick.thinking{background:var(--think)} .brick.refusal{background:var(--no)} .brick.base{background:#8f9aa8} .brick.closed{background:#6f6b64}
+.brick:hover{transform:scale(1.55);z-index:6;outline:2px solid var(--brass);border-radius:2px}
+.brick.multi::after{content:"";position:absolute;top:1px;right:1px;width:4px;height:4px;border-radius:50%;background:#fff;box-shadow:0 0 0 1px rgba(0,0,0,.35)}
+.bld-base{border:1px solid;border-top-width:3px;border-radius:0 0 10px 10px;padding:7px 12px;text-align:center;font-size:11px;font-weight:700;letter-spacing:.3px;min-width:80%}
+.bld.w .bld-base{background:#EDEAE2;border-color:#D8D3C7;color:#4a463f}
+.bld.b .bld-base{background:#2B2A28;border-color:#141312;color:#EDE7D9}
+.bld.g .bld-base{background:#D6BB77;border-color:#C6A648;color:#3a2f12}
+.bld-base small{display:block;font-weight:500;font-size:9.5px;opacity:.8;margin-top:1px}
+#schemaTip{position:fixed;z-index:80;pointer-events:none;background:rgba(35,33,30,.96);color:#fff;font-size:12px;padding:7px 10px;border-radius:9px;box-shadow:0 6px 20px rgba(0,0,0,.3);display:none;max-width:220px;line-height:1.35}
+#schemaTip b{color:#F2EAD6}
+#schemaTip .st-st{display:inline-block;margin-top:3px;font-size:11px;opacity:.9}
+.zoombar{display:flex;gap:6px;align-items:center;justify-content:center;margin-top:10px;font-size:12.5px;color:var(--ink-soft)}
+.zoombar button{border:1px solid var(--line);background:#fff;border-radius:8px;padding:5px 12px;cursor:pointer;font-family:var(--sans);font-size:13px}
+.zoombar button.on{border-color:var(--brass);color:var(--brass);font-weight:700}
+.cell-info .ci-row{display:flex;justify-content:space-between;gap:10px;font-size:13.5px;padding:7px 0;border-bottom:1px solid var(--line)}
+.cell-info .ci-row span{color:var(--ink-soft)}
+.qedit{margin-top:14px}
+.qedit .lb{font-size:12px;font-weight:600;color:var(--ink-soft);margin:8px 0 4px;display:block}
+.qedit input,.qedit textarea{width:100%;border:1px solid var(--line);border-radius:9px;padding:10px 11px;font-size:14.5px;font-family:var(--sans);outline:none;background:#fff;color:var(--ink)}
+.qedit textarea{min-height:58px;resize:vertical;line-height:1.4}
+.qedit input:focus,.qedit textarea:focus{border-color:var(--brass);box-shadow:0 0 0 3px var(--brass-tint)}
+.qedit .egrn-meta{min-height:15px;margin-top:4px}
+.nb-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:6px}
+.nb{border:1px solid var(--line);border-radius:8px;padding:7px 4px;text-align:center;font-size:10.5px;color:var(--ink-soft);line-height:1.3}
+.nb b{display:block;font-size:13px;color:var(--ink);font-variant-numeric:tabular-nums}
+.nb.occ{background:var(--brass-tint);border-color:#E3D3A8}
+.nb.mid{background:#2B2A28;color:#F2EAD6;border-color:#2B2A28}
+.nb.mid b{color:#fff}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="bar-top">
+    <div class="wordmark" onclick="renameJK()" title="Нажми, чтобы сменить ЖК">
+      <div class="t">Актуалка</div><small id="jkLabel">ЖК Хайд</small>
+    </div>
+    <div class="search">
+      <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <input id="q" type="search" placeholder="Поиск: ФИО, телефон, квартира, агент…" autocomplete="off">
+    </div>
+    <button class="btn-add" onclick="openModal()"><span class="plus">+</span><span class="t">Добавить объект</span></button>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" id="tabActualka" onclick="switchView('actualka')">Актуалка</button>
+    <button class="tab" id="tabSchema" onclick="switchView('schema')">Схема дома</button>
+  </div>
+
+  <div class="filters" id="statusChips"></div>
+  <div class="filters" id="filtersRow2" style="margin-top:8px">
+    <select class="mini" id="fDeal" onchange="onDealFilter()">
+      <option value="all">Продажа + аренда</option>
+      <option value="sale">Только продажа</option>
+      <option value="rent">Только аренда</option>
+    </select>
+    <select class="mini" id="fState"></select>
+    <select class="mini" id="fPay">
+      <option value="all">Оплата — любая</option>
+      <option value="yes">Платит</option>
+      <option value="split">Делится с агентом</option>
+      <option value="low">Мало платит</option>
+      <option value="no">Не платит</option>
+    </select>
+    <span class="spacer"></span>
+    <select class="mini" id="fSort">
+      <option value="new">Сначала новые</option>
+      <option value="area_desc">Метраж: большие → меньшие</option>
+      <option value="area_asc">Метраж: меньшие → большие</option>
+      <option value="price_desc">Дороже → дешевле</option>
+      <option value="price_asc">Дешевле → дороже</option>
+      <option value="ppm_desc">Метр: дорогой → дешёвый</option>
+      <option value="ppm_asc">Метр: дешёвый → дорогой</option>
+      <option value="contact">По дате контакта</option>
+    </select>
+  </div>
+
+  <div id="cloudNote" class="cloud-note"></div>
+</header>
+
+<main>
+  <div id="viewActualka">
+  <div class="grid" id="grid"></div>
+  <div class="tools">
+    <button onclick="document.getElementById('egrnFile').click()">🗄 Загрузить базу ЕГРН</button>
+    <input type="file" id="egrnFile" accept=".xlsx,.xls,.csv" hidden onchange="loadEgrn(this)">
+    <span id="egrnStatus">база ЕГРН не загружена</span>
+    <span style="flex-basis:100%;height:0"></span>
+    <button onclick="openReport()">📄 Отчёт</button>
+    <button onclick="exportJSON()">⭳ Сохранить резервную копию</button>
+    <button onclick="document.getElementById('importFile').click()">⭱ Загрузить копию</button>
+    <input type="file" id="importFile" accept="application/json" hidden onchange="importJSON(this)">
+  </div>
+  </div>
+  <div id="viewSchema" style="display:none"></div>
+</main>
+<div id="schemaTip"></div>
+
+<div class="overlay" id="overlay">
+  <div class="modal" id="modal">
+    <div class="modal-head">
+      <h2 id="mTitle">Новый объект</h2>
+      <button class="x" onclick="closeModal()">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="photo-drop" id="photoDrop" onclick="pickPhoto()">
+        <input type="file" id="photoInput" accept="image/*" hidden onchange="onPhotoFile(this.files[0])">
+        <div class="hint" id="photoHint"><b>Фото квартиры</b>Нажми, чтобы выбрать · или вставь скриншот (Ctrl/⌘+V)</div>
+        <img id="photoPreview" style="display:none">
+        <button class="photo-clear" id="photoClear" onclick="clearPhoto(event)">×</button>
+      </div>
+
+      <div class="two">
+        <label class="f"><span class="lb">Квартира</span><input id="fld_apartment" placeholder="№ 214, кв. …"></label>
+        <label class="f"><span class="lb">Метраж, м²</span><input id="fld_area" inputmode="decimal" placeholder="72"></label>
+      </div>
+      <label class="f"><span class="lb">Кадастровый номер <span style="color:var(--brass);font-weight:700">— автопоиск в базе</span></span><input id="fld_cadastral" placeholder="77:07:0006003:____ · или № кв / ФИО" oninput="egrnLookupDebounced()"></label>
+      <div id="egrnResult" class="egrn-result"></div>
+      <div class="two">
+        <label class="f"><span class="lb">Цена</span><input id="fld_price" placeholder="120 000 000 ₽"></label>
+        <label class="f"><span class="lb">Доля</span><input id="fld_share" placeholder="1/1"></label>
+      </div>
+
+      <div class="two">
+        <label class="f"><span class="lb">Собственник (ФИО)</span><input id="fld_ownerName" placeholder="Иванов Иван"></label>
+        <label class="f"><span class="lb">Телефон</span><input id="fld_ownerPhone" placeholder="+7 ___ ___-__-__"></label>
+      </div>
+
+      <div class="two">
+        <label class="f"><span class="lb">Кто ведёт сейчас</span><input id="fld_currentAgent" placeholder="Агентство / агент"></label>
+        <label class="f"><span class="lb">Ссылка на объявление</span><input id="fld_listingUrl" placeholder="cian / avito / …"></label>
+      </div>
+
+      <div class="links-sec">
+        <span class="lb">Ссылки других агентов (дубли)</span>
+        <div id="otherLinks"></div>
+        <button type="button" class="add-link" onclick="addOtherRow()">+ Добавить ссылку</button>
+      </div>
+
+      <div class="two">
+        <label class="f"><span class="lb">Тип сделки</span>
+          <select id="fld_dealType">
+            <option value="sale">Продажа</option>
+            <option value="rent">Аренда</option>
+            <option value="both">Продажа + аренда</option>
+          </select>
+        </label>
+        <label class="f"><span class="lb">Состояние объекта</span>
+          <select id="fld_objState" onchange="onStateFieldChange()">
+            <option value="active">В работе</option>
+            <option value="sold">Продано</option>
+            <option value="rented">Сдано</option>
+            <option value="withdrawn">Снято с продажи</option>
+          </select>
+        </label>
+      </div>
+      <div class="two" id="closeDatesRow">
+        <label class="f"><span class="lb">Дата закрытия (прод./сдачи)</span><input id="fld_closedDate" type="date"></label>
+        <label class="f"><span class="lb">Договор аренды до</span><input id="fld_leaseEnd" type="date"></label>
+      </div>
+
+      <label class="f"><span class="lb">Статус</span>
+        <select id="fld_dealStatus">
+          <option value="base">Не общались</option>
+          <option value="thinking">Думает</option>
+          <option value="works">Работает</option>
+          <option value="refusal">Отказ</option>
+        </select>
+      </label>
+
+      <div class="two">
+        <label class="f"><span class="lb">Оплата нам</span>
+          <select id="fld_willPay">
+            <option value="unknown">— не выяснено</option>
+            <option value="yes">Платит</option>
+            <option value="split">Делится с агентом</option>
+            <option value="low">Мало платит</option>
+            <option value="no">Не платит</option>
+          </select>
+        </label>
+        <label class="f"><span class="lb">Эксклюзив у другого?</span>
+          <select id="fld_exclusive">
+            <option value="unknown">— не выяснено</option>
+            <option value="no">Нет</option>
+            <option value="yes">Да</option>
+          </select>
+        </label>
+      </div>
+
+      <div class="two">
+        <label class="f"><span class="lb">Последний контакт</span><input id="fld_lastContact" type="date"></label>
+        <label class="f"><span class="lb">Когда перезвонить</span><input id="fld_nextDate" type="date"></label>
+      </div>
+      <label class="f"><span class="lb">Следующий шаг</span><input id="fld_nextStep" placeholder="Скинуть покупателя, дожать по комиссии…"></label>
+      <label class="f"><span class="lb">Заметки</span><textarea id="fld_notes" placeholder="Возражения, характер, торг, детали…"></textarea></label>
+    </div>
+    <div class="modal-foot">
+      <button class="del" id="delBtn" onclick="delCurrent()" style="display:none">Удалить</button>
+      <button class="save" onclick="saveCard()">Сохранить</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="reportOverlay">
+  <div class="modal" style="max-width:700px">
+    <div class="modal-head">
+      <h2>Отчёт по актуалке</h2>
+      <button class="x" onclick="closeReport()">×</button>
+    </div>
+    <div class="modal-body rep-controls">
+      <label class="rep-check"><input type="checkbox" id="rc_stats" checked> Сводка по статусам и состояниям</label>
+      <label class="rep-check"><input type="checkbox" id="rc_sale" checked> Активные в продаже</label>
+      <label class="rep-check"><input type="checkbox" id="rc_rent" checked> Активные в аренде</label>
+      <label class="rep-check"><input type="checkbox" id="rc_sold" checked> Проданные</label>
+      <label class="rep-check"><input type="checkbox" id="rc_rented" checked> Сданные</label>
+      <label class="rep-check"><input type="checkbox" id="rc_call"> Кому перезвонить (по дате)</label>
+      <label class="rep-check"><input type="checkbox" id="rc_incomplete"> Недозаполненные</label>
+      <div style="font-size:12.5px;font-weight:600;color:var(--ink-soft);margin:12px 0 2px">Период для проданных/сданных (по дате закрытия, необязательно):</div>
+      <div class="rep-period">
+        <label class="f" style="margin:0"><span class="lb">С</span><input id="rc_from" type="date"></label>
+        <label class="f" style="margin:0"><span class="lb">По</span><input id="rc_to" type="date"></label>
+      </div>
+      <div id="reportOutput" style="margin-top:16px"></div>
+    </div>
+    <div class="modal-foot">
+      <button class="del" style="color:var(--ink-soft);border-color:var(--line)" onclick="closeReport()">Закрыть</button>
+      <button class="save" onclick="generateReport()">Сформировать</button>
+      <button class="save" style="background:#4a4a48;flex:none" onclick="window.print()">Печать / PDF</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="cellOverlay">
+  <div class="modal" style="max-width:460px">
+    <div class="modal-head">
+      <h2 id="cellTitle">Квартира</h2>
+      <button class="x" onclick="closeCell()">×</button>
+    </div>
+    <div class="modal-body" id="cellBody"></div>
+    <div class="modal-foot" id="cellFoot"></div>
+  </div>
+</div>
+
+<!-- Firebase SDK — работает только если вставлен конфиг; если не загрузится, приложение уходит в локальный режим -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+<script>
+/* ============================================================
+   FIREBASE — вставь свой конфиг сюда, чтобы включить облако.
+   Пока поля пустые — работает локально + резервные копии.
+   ============================================================ */
+const FIREBASE_CONFIG = { apiKey:"AIzaSyAe2prvX263zrbliZQzO5WEfytekEU0raM", authDomain:"diff-1822e.firebaseapp.com", databaseURL:"https://diff-1822e-default-rtdb.firebaseio.com", projectId:"diff-1822e" };
+/* ============================================================ */
+
+const STATUS = {
+  works:   {label:"Работает"},
+  thinking:{label:"Думает"},
+  refusal: {label:"Отказ"},
+  base:    {label:"Не общались"}
+};
+const PAY = {yes:"платит", split:"делится с агентом", low:"мало платит", no:"не платит", unknown:""};
+const CLOSED = ['sold','rented','withdrawn'];
+const STATE_LABEL = {active:"В работе", sold:"Продано", rented:"Сдано", withdrawn:"Снято"};
+function dealOf(o){return o.dealType||'sale'}
+function stateOf(o){return o.objState||'active'}
+
+let items = [];
+let cloud=false, dbRef=null, editingId=null, pendingPhoto=null;
+const state = {q:"", status:"all", pay:"all", sort:"new", dealType:"all", objState:"all", view:"actualka"};
+
+/* ---------- ЖК label ---------- */
+function jkName(){return localStorage.getItem('actualka_jk')||'Хайд'}
+function setJkLabel(){document.getElementById('jkLabel').textContent='ЖК '+jkName()}
+function renameJK(){
+  const v=prompt('Название ЖК для этой актуалки:', jkName());
+  if(v!==null && v.trim()){localStorage.setItem('actualka_jk',v.trim());setJkLabel();}
+}
+
+/* ---------- storage ---------- */
+function configured(){return FIREBASE_CONFIG.apiKey && FIREBASE_CONFIG.databaseURL}
+function initStore(){
+  const note=document.getElementById('cloudNote');
+  if(configured() && window.firebase){
+    try{
+      if(!firebase.apps.length) firebase.initializeApp(FIREBASE_CONFIG);
+      dbRef=firebase.database().ref('actualka');
+      cloud=true;
+      dbRef.on('value',s=>{const v=s.val()||{};items=Object.keys(v).map(k=>({...v[k],id:k}));render();if(state.view==='schema')renderSchema();});
+      note.className="cloud-note live";
+      note.innerHTML='<b>● Облако включено</b> — данные синхронизируются между телефоном и компьютером.';
+      return;
+    }catch(e){cloud=false}
+  }
+  note.className="cloud-note";
+  note.innerHTML='<b>Локальный режим.</b> Данные в этом браузере. Для синка между устройствами вставь Firebase-конфиг в код. Регулярно жми «Сохранить резервную копию».';
+  loadLocal(); render();
+}
+function loadLocal(){try{items=JSON.parse(localStorage.getItem('actualka')||'[]')}catch(e){items=[]}}
+function saveLocal(){localStorage.setItem('actualka',JSON.stringify(items))}
+function upsert(item){
+  if(cloud){dbRef.child(item.id).set(strip(item));}
+  else{const i=items.findIndex(x=>x.id===item.id);if(i>=0)items[i]=item;else items.push(item);saveLocal();render();}
+}
+function removeItem(id){if(cloud){dbRef.child(id).remove();}else{items=items.filter(x=>x.id!==id);saveLocal();render();}}
+function strip(o){const c={...o};delete c.id;return c;}
+function genId(){return 'o'+Date.now().toString(36)+Math.random().toString(36).slice(2,6)}
+
+/* ---------- helpers ---------- */
+function num(v){return parseFloat(String(v==null?'':v).replace(/[^\d.,]/g,'').replace(',','.'))||0}
+function ppm(o){const a=num(o.area),p=num(o.price);return a>0&&p>0?p/a:0}
+function esc(s){return (s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
+function fmtDate(d){if(!d)return'';const[y,m,day]=d.split('-');return`${day}.${m}`}
+function fmtDateY(d){if(!d)return'';const[y,m,day]=d.split('-');return`${day}.${m}.${y.slice(2)}`}
+function fmtMoney(v){const n=num(v);if(!n)return esc(v||'');return n.toLocaleString('ru-RU')+' ₽'}
+function isIncomplete(o){return !o.ownerPhone || !num(o.price) || !num(o.area) || !o.listingUrl}
+
+/* ---------- render ---------- */
+function filtered(){
+  let out=items.slice();
+  const q=state.q.trim().toLowerCase();
+  if(q) out=out.filter(o=>[o.apartment,o.cadastral,o.ownerName,o.ownerPhone,o.currentAgent,o.notes]
+      .filter(Boolean).join(' ').toLowerCase().includes(q));
+  if(state.status==='incomplete') out=out.filter(isIncomplete);
+  else if(state.status!=='all') out=out.filter(o=>(o.dealStatus||'base')===state.status);
+  if(state.pay!=='all') out=out.filter(o=>(o.willPay||'unknown')===state.pay);
+  if(state.dealType==='sale') out=out.filter(o=>dealOf(o)==='sale'||dealOf(o)==='both');
+  else if(state.dealType==='rent') out=out.filter(o=>dealOf(o)==='rent'||dealOf(o)==='both');
+  if(state.objState==='active') out=out.filter(o=>stateOf(o)==='active');
+  else if(state.objState==='closed') out=out.filter(o=>CLOSED.includes(stateOf(o)));
+  else if(state.objState!=='all') out=out.filter(o=>stateOf(o)===state.objState);
+
+  const s=state.sort, low=1e18;
+  out.sort((a,b)=>{
+    if(s==='area_desc') return num(b.area)-num(a.area);
+    if(s==='area_asc')  return (num(a.area)||low)-(num(b.area)||low);
+    if(s==='price_desc')return num(b.price)-num(a.price);
+    if(s==='price_asc') return (num(a.price)||low)-(num(b.price)||low);
+    if(s==='ppm_desc')  return ppm(b)-ppm(a);
+    if(s==='ppm_asc')   return (ppm(a)||low)-(ppm(b)||low);
+    if(s==='contact')   return (b.lastContact||'').localeCompare(a.lastContact||'');
+    return (b.createdAt||0)-(a.createdAt||0);
+  });
+  return out;
+}
+
+function render(){
+  setJkLabel(); buildChips();
+  const grid=document.getElementById('grid');
+  const list=filtered();
+  if(!items.length){
+    grid.innerHTML=`<div class="empty" style="grid-column:1/-1"><div class="big">Пока пусто</div>
+      Добавь первый объект — квартиру, которую ведёт другой агент и которую хочешь забрать.
+      <div><button class="btn-add" onclick="openModal()"><span class="plus">+</span> Добавить объект</button></div></div>`;
+    return;
+  }
+  if(!list.length){grid.innerHTML=`<div class="empty" style="grid-column:1/-1"><div class="big">Ничего не найдено</div>Сбрось фильтры или поиск.</div>`;return;}
+
+  grid.innerHTML=list.map(o=>{
+    const st=STATUS[o.dealStatus||'base'];
+    const pay=PAY[o.willPay||'unknown'];
+    const phoneClean=(o.ownerPhone||'').replace(/[^\d+]/g,'');
+    const perM=ppm(o);
+    const closed=CLOSED.includes(stateOf(o));
+    const overlayTxt=stateOf(o)==='sold'?'ПРОДАНО':stateOf(o)==='rented'?'СДАНО':stateOf(o)==='withdrawn'?'СНЯТО':'';
+    const dl=dealOf(o), dealTxt=dl==='rent'?'Аренда':dl==='both'?'Прод.+Аренда':'Продажа';
+    return `<div class="card ${isIncomplete(o)?'incomplete':''} ${closed?'closed':''}" onclick="openModal('${o.id}')">
+      <div class="thumb">
+        ${o.photo?`<img src="${o.photo}" alt="">`:`<div class="placeholder"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="8.5" cy="10" r="1.5"/><path d="M4 17l5-4 3 2 4-4 4 4"/></svg></div>`}
+        <span class="pill ${o.dealStatus||'base'}">${st.label}</span>
+        ${o.willPay==='yes'&&!closed?`<span class="pay-badge">₽ ПЛАТИТ</span>`:''}
+        ${isIncomplete(o)&&!closed?`<span class="todo-badge">не дозаполнено</span>`:''}
+        <span class="deal-badge ${dl==='rent'?'rent':''}">${dealTxt}</span>
+        ${overlayTxt?`<div class="sold-overlay"><span>${overlayTxt}</span></div>`:''}
+      </div>
+      <div class="body">
+        <div class="title">${esc(o.apartment)||'Без номера'}</div>
+        ${num(o.area)?`<div class="metr">${esc(o.area)} м²${o.share&&o.share!=='1/1'?` · доля ${esc(o.share)}`:''}</div>`:(o.share&&o.share!=='1/1'?`<div class="metr">доля ${esc(o.share)}</div>`:'')}
+        ${o.cadastral?`<div class="cadline">${esc(o.cadastral)}</div>`:''}
+        ${num(o.price)?`<div class="price">${fmtMoney(o.price)}</div>`:(o.price?`<div class="price">${esc(o.price)}</div>`:'')}
+        ${perM?`<div class="ppm">${Math.round(perM).toLocaleString('ru-RU')} ₽/м²</div>`:''}
+        ${(dl!=='sale')&&o.leaseEnd?`<div class="row"><span class="k">Договор до:</span> ${fmtDateY(o.leaseEnd)}</div>`:''}
+        ${o.currentAgent?`<div class="row"><span class="k">Ведёт:</span> ${esc(o.currentAgent)}</div>`:''}
+        ${(o.otherListings&&o.otherListings.filter(x=>x&&x.url).length)?`<div class="row"><span class="k">Ещё продают:</span> ${o.otherListings.filter(x=>x&&x.url).length} агент(ов)</div>`:''}
+        ${pay&&o.willPay!=='unknown'?`<div class="row"><span class="k">Оплата:</span> ${pay}</div>`:''}
+        <div class="owner">
+          <div class="who">
+            <div class="name">${esc(o.ownerName)||'—'}</div>
+            ${o.ownerPhone?`<div class="ph">${esc(o.ownerPhone)}</div>`:''}
+          </div>
+          ${phoneClean?`<a class="call" href="tel:${phoneClean}" onclick="event.stopPropagation()" aria-label="Позвонить"><svg viewBox="0 0 24 24"><path d="M6.6 10.8c1.4 2.8 3.8 5.2 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.1.4 2.3.6 3.6.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1C10.6 21 3 13.4 3 4c0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.2.2 2.4.6 3.6.1.4 0 .8-.3 1z"/></svg></a>`:''}
+        </div>
+        ${o.nextStep?`<div class="next"><span class="k">Дальше:</span> ${esc(o.nextStep)}${o.nextDate?` · ${fmtDate(o.nextDate)}`:''}</div>`:''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function buildChips(){
+  const counts={all:items.length,works:0,thinking:0,refusal:0,base:0,incomplete:0};
+  items.forEach(o=>{counts[o.dealStatus||'base']++;if(isIncomplete(o))counts.incomplete++;});
+  const defs=[['all','Все'],['works','Работает'],['thinking','Думает'],['refusal','Отказ'],['base','Не общались']];
+  let html=defs.map(([k,lab])=>`<button class="chip ${state.status===k?'active':''}" data-k="${k}" onclick="setStatus('${k}')">${k!=='all'?'<span class="dot"></span>':''}${lab}<span class="cnt">${counts[k]}</span></button>`).join('');
+  html+=`<button class="chip warn ${state.status==='incomplete'?'active':''}" onclick="setStatus('incomplete')">Не дозаполнено<span class="cnt">${counts.incomplete}</span></button>`;
+  document.getElementById('statusChips').innerHTML=html;
+}
+function setStatus(k){state.status=(state.status===k&&k==='incomplete')?'all':k;render()}
+
+/* ---------- фильтры сделка/состояние ---------- */
+function stateFilterOptions(){
+  const d=state.dealType;
+  if(d==='sale') return [['all','Все объекты'],['active','В продаже'],['sold','Продано']];
+  if(d==='rent') return [['all','Все объекты'],['active','В аренде'],['rented','Сдано']];
+  return [['all','Все состояния'],['active','Активные'],['closed','Закрытые']];
+}
+function buildStateFilter(){
+  const sel=document.getElementById('fState');if(!sel)return;
+  const opts=stateFilterOptions();
+  if(!opts.some(o=>o[0]===state.objState)) state.objState='all';
+  sel.innerHTML=opts.map(([v,l])=>`<option value="${v}" ${state.objState===v?'selected':''}>${l}</option>`).join('');
+}
+function onDealFilter(){state.dealType=document.getElementById('fDeal').value;state.objState='all';buildStateFilter();render();}
+function onStateFieldChange(){
+  const s=document.getElementById('fld_objState').value, cd=document.getElementById('fld_closedDate');
+  if((s==='sold'||s==='rented')&&!cd.value) cd.value=new Date().toISOString().slice(0,10);
+}
+
+/* ---------- отчёт ---------- */
+function openReport(){document.getElementById('reportOutput').innerHTML='';document.getElementById('reportOverlay').classList.add('show');}
+function closeReport(){document.getElementById('reportOverlay').classList.remove('show');}
+function inPeriod(o){
+  const from=document.getElementById('rc_from').value, to=document.getElementById('rc_to').value;
+  if(!from&&!to) return true;
+  const d=o.closedDate||''; if(!d) return false;
+  if(from&&d<from) return false; if(to&&d>to) return false; return true;
+}
+function rowTable(list,cols){
+  if(!list.length) return '<div style="color:var(--ink-soft);font-size:13px">— нет</div>';
+  const head=cols.map(c=>`<th>${c[0]}</th>`).join('');
+  const body=list.map(o=>'<tr>'+cols.map(c=>`<td>${esc(String(c[1](o)||'—'))}</td>`).join('')+'</tr>').join('');
+  return `<table><thead><tr>${head}</tr></thead><tbody>${body}</tbody></table>`;
+}
+function generateReport(){
+  const out=document.getElementById('reportOutput'), get=id=>document.getElementById(id).checked;
+  const now=new Date().toLocaleDateString('ru-RU');
+  let h=`<h1>Актуалка — ${esc(jkName())}</h1><div class="rsub">Сформировано ${now} · всего объектов: ${items.length}</div>`;
+  if(get('rc_stats')){
+    const cs={works:0,thinking:0,refusal:0,base:0};items.forEach(o=>cs[o.dealStatus||'base']++);
+    const active=items.filter(o=>stateOf(o)==='active').length,sold=items.filter(o=>stateOf(o)==='sold').length,rented=items.filter(o=>stateOf(o)==='rented').length;
+    h+=`<h2>Сводка</h2><div>
+      <span class="stat"><b>${cs.works}</b> работает</span><span class="stat"><b>${cs.thinking}</b> думает</span>
+      <span class="stat"><b>${cs.refusal}</b> отказ</span><span class="stat"><b>${cs.base}</b> не общались</span></div>
+      <div style="margin-top:8px"><span class="stat"><b>${active}</b> в работе</span><span class="stat"><b>${sold}</b> продано</span><span class="stat"><b>${rented}</b> сдано</span></div>`;
+  }
+  const cP=[['Кв.',o=>o.apartment],['Метраж',o=>o.area?o.area+' м²':''],['Цена',o=>o.price],['Собственник',o=>o.ownerName],['Телефон',o=>o.ownerPhone],['Статус',o=>(STATUS[o.dealStatus||'base']||{}).label]];
+  if(get('rc_sale')){const l=items.filter(o=>(dealOf(o)==='sale'||dealOf(o)==='both')&&stateOf(o)==='active');h+=`<h2>В продаже (${l.length})</h2>`+rowTable(l,cP);}
+  if(get('rc_rent')){const l=items.filter(o=>(dealOf(o)==='rent'||dealOf(o)==='both')&&stateOf(o)==='active');h+=`<h2>В аренде (${l.length})</h2>`+rowTable(l,cP.concat([['Договор до',o=>fmtDateY(o.leaseEnd)]]));}
+  if(get('rc_sold')){const l=items.filter(o=>stateOf(o)==='sold'&&inPeriod(o));h+=`<h2>Проданные (${l.length})</h2>`+rowTable(l,cP.concat([['Закрыто',o=>fmtDateY(o.closedDate)]]));}
+  if(get('rc_rented')){const l=items.filter(o=>stateOf(o)==='rented'&&inPeriod(o));h+=`<h2>Сданные (${l.length})</h2>`+rowTable(l,cP.concat([['Закрыто',o=>fmtDateY(o.closedDate)]]));}
+  if(get('rc_call')){const l=items.filter(o=>o.nextDate).sort((a,b)=>(a.nextDate||'').localeCompare(b.nextDate||''));h+=`<h2>Перезвонить (${l.length})</h2>`+rowTable(l,[['Дата',o=>fmtDateY(o.nextDate)],['Кв.',o=>o.apartment],['Собственник',o=>o.ownerName],['Телефон',o=>o.ownerPhone],['Шаг',o=>o.nextStep]]);}
+  if(get('rc_incomplete')){const l=items.filter(isIncomplete);h+=`<h2>Недозаполненные (${l.length})</h2>`+rowTable(l,cP);}
+  out.innerHTML=h;
+  out.scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+/* ---------- modal ---------- */
+function openModal(id){
+  editingId=id||null; pendingPhoto=null;
+  const o=id?items.find(x=>x.id===id):{};
+  document.getElementById('mTitle').textContent=id?'Редактировать объект':'Новый объект';
+  document.getElementById('delBtn').style.display=id?'block':'none';
+  const set=(f,v)=>document.getElementById('fld_'+f).value=v||'';
+  set('apartment',o.apartment);set('area',o.area);set('price',o.price);set('cadastral',o.cadastral);set('share',o.share);
+  set('ownerName',o.ownerName);set('ownerPhone',o.ownerPhone);
+  set('currentAgent',o.currentAgent);set('listingUrl',o.listingUrl);
+  set('dealStatus',o.dealStatus||'base');set('willPay',o.willPay||'unknown');set('exclusive',o.exclusive||'unknown');
+  set('dealType',o.dealType||'sale');set('objState',o.objState||'active');set('closedDate',o.closedDate);set('leaseEnd',o.leaseEnd);
+  set('lastContact',o.lastContact);set('nextDate',o.nextDate);set('nextStep',o.nextStep);set('notes',o.notes);
+  renderOtherLinks(o.otherListings||[]);
+  document.getElementById('egrnResult').innerHTML='';
+  if(o.cadastral) egrnLookup();
+  setPhotoPreview(o.photo||null);
+  document.getElementById('overlay').classList.add('show');
+}
+function closeModal(){document.getElementById('overlay').classList.remove('show')}
+function saveCard(){
+  const g=f=>document.getElementById('fld_'+f).value.trim();
+  const existing=editingId?items.find(x=>x.id===editingId):null;
+  const item={
+    id:editingId||genId(),
+    apartment:g('apartment'),area:g('area'),price:g('price'),cadastral:g('cadastral'),share:g('share'),
+    ownerName:g('ownerName'),ownerPhone:g('ownerPhone'),
+    currentAgent:g('currentAgent'),listingUrl:g('listingUrl'),
+    dealStatus:g('dealStatus'),willPay:g('willPay'),exclusive:g('exclusive'),
+    dealType:g('dealType'),objState:g('objState'),closedDate:g('closedDate'),leaseEnd:g('leaseEnd'),
+    lastContact:g('lastContact'),nextDate:g('nextDate'),nextStep:g('nextStep'),notes:g('notes'),
+    otherListings:collectOtherLinks(),
+    photo:pendingPhoto!==null?pendingPhoto:(existing?existing.photo:null),
+    createdAt:existing?existing.createdAt:Date.now()
+  };
+  if(!item.apartment && !item.ownerName && !item.listingUrl){alert('Заполни хотя бы квартиру, ФИО или ссылку на объявление');return;}
+  upsert(item); closeModal(); if(state.view==='schema')renderSchema();
+}
+function delCurrent(){if(editingId&&confirm('Удалить объект без возможности вернуть?')){removeItem(editingId);closeModal();if(state.view==='schema')renderSchema();}}
+
+/* ---------- ссылки других агентов ---------- */
+function renderOtherLinks(list){
+  const box=document.getElementById('otherLinks');box.innerHTML='';
+  (list||[]).forEach(l=>addOtherRow(l.label,l.url));
+}
+function addOtherRow(label='',url=''){
+  const box=document.getElementById('otherLinks');
+  const row=document.createElement('div');row.className='link-row';
+  const a=v=>String(v||'').replace(/"/g,'&quot;');
+  row.innerHTML=`<input class="ol-label" placeholder="Агентство" value="${a(label)}">
+    <input class="ol-url" placeholder="ссылка на объявление" value="${a(url)}">
+    <button type="button" class="rm" onclick="this.parentNode.remove()">×</button>`;
+  box.appendChild(row);
+}
+function collectOtherLinks(){
+  return [...document.querySelectorAll('#otherLinks .link-row')].map(r=>({
+    label:r.querySelector('.ol-label').value.trim(),
+    url:r.querySelector('.ol-url').value.trim()
+  })).filter(x=>x.url||x.label);
+}
+
+/* ---------- photo ---------- */
+function pickPhoto(){document.getElementById('photoInput').click()}
+function onPhotoFile(file){if(file)compress(file,d=>{pendingPhoto=d;setPhotoPreview(d)})}
+function clearPhoto(e){e.stopPropagation();pendingPhoto="";setPhotoPreview(null)}
+function setPhotoPreview(src){
+  const drop=document.getElementById('photoDrop'),img=document.getElementById('photoPreview'),hint=document.getElementById('photoHint');
+  if(src){img.src=src;img.style.display='block';hint.style.display='none';drop.classList.add('has');}
+  else{img.style.display='none';img.src='';hint.style.display='block';drop.classList.remove('has');}
+}
+function compress(file,cb){
+  const r=new FileReader();
+  r.onload=e=>{const img=new Image();img.onload=()=>{
+    const max=1000;let{width,height}=img;
+    if(width>max){height=Math.round(height*max/width);width=max;}
+    const c=document.createElement('canvas');c.width=width;c.height=height;
+    c.getContext('2d').drawImage(img,0,0,width,height);
+    cb(c.toDataURL('image/jpeg',0.72));
+  };img.src=e.target.result;};
+  r.readAsDataURL(file);
+}
+document.addEventListener('paste',e=>{
+  if(!document.getElementById('overlay').classList.contains('show'))return;
+  const it=[...(e.clipboardData||{}).items||[]].find(i=>i.type.startsWith('image/'));
+  if(it){const f=it.getAsFile();if(f)onPhotoFile(f);}
+});
+
+/* ---------- backup ---------- */
+function exportJSON(){
+  const blob=new Blob([JSON.stringify(items,null,2)],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);
+  a.download='aktualka-'+jkName()+'-'+new Date().toISOString().slice(0,10)+'.json';a.click();
+}
+function importJSON(input){
+  const f=input.files[0];if(!f)return;
+  const r=new FileReader();
+  r.onload=e=>{try{
+    const arr=JSON.parse(e.target.result);if(!Array.isArray(arr))throw 0;
+    if(!confirm(`В файле ${arr.length} объектов. Добавить их к текущему списку?`)){input.value='';return;}
+    arr.forEach(o=>{o.id=o.id||genId();o.createdAt=o.createdAt||Date.now();upsert(o);});
+    if(!cloud)render();
+  }catch(err){alert('Не получилось прочитать файл.')}
+  input.value='';};
+  r.readAsText(f);
+}
+
+/* ---------- база ЕГРН (только локально, в браузере) ---------- */
+let egrn={rows:[],byCad:{},byOwner:{}}, egrnMatches=[], egrnTimer=null;
+function normFio(s){return (s||'').toString().trim().toUpperCase().replace(/\s+/g,' ')}
+function shortType(t){t=(t||'').toString();if(/кварт/i.test(t))return '🏠 кв';if(/машином/i.test(t))return '🚗 мм';if(/кладов/i.test(t))return '📦 клад';if(/помещ/i.test(t))return 'помещ';return t.replace(/^\d+\s*-\s*/,'')||'объект';}
+function buildEgrnIndex(){
+  egrn.byCad={};egrn.byOwner={};
+  egrn.rows.forEach(r=>{
+    if(r.cad){(egrn.byCad[r.cad]=egrn.byCad[r.cad]||[]).push(r);}
+    const k=normFio(r.fio);if(k){(egrn.byOwner[k]=egrn.byOwner[k]||[]).push(r);}
+  });
+}
+function updateEgrnStatus(){
+  const el=document.getElementById('egrnStatus');if(!el)return;
+  if(egrn.rows.length){el.textContent='база ЕГРН: '+egrn.rows.length+' записей (локально)';el.className='egrn-ok';}
+  else{el.textContent='база ЕГРН не загружена';el.className='';}
+}
+function loadEgrnFromStorage(){
+  try{const raw=localStorage.getItem('actualka_egrn');if(raw){const o=JSON.parse(raw);egrn.rows=o.rows||[];buildEgrnIndex();}}catch(e){}
+  updateEgrnStatus();
+}
+function colFinder(headers){
+  const H=(headers||[]).map(h=>(h==null?'':h).toString().toLowerCase());
+  const find=(...keys)=>{for(let i=0;i<H.length;i++){if(keys.some(k=>H[i].includes(k)))return i;}return -1;};
+  return {cad:find('кадастровый № объекта','кадастровый номер','кадастр'),fio:find('фио правооблад','фио'),
+    phone:find('телефон'),area:find('площадь'),share:find('доли','доля'),type:find('вид он','тип объект','тип'),
+    addr:find('адрес объект','адрес'),email:find('email','почта'),birth:find('дата рожд')};
+}
+function rowsFromAoa(aoa){
+  let hi=aoa.findIndex(r=>r&&r.some(c=>/кадастров/i.test((c==null?'':c).toString())));
+  if(hi<0)hi=aoa.findIndex(r=>r&&r.some(c=>/фио правооблад/i.test((c==null?'':c).toString())));
+  if(hi<0)hi=0;
+  const cols=colFinder(aoa[hi]),out=[],g=(row,i)=>i>=0&&row[i]!=null?row[i].toString().trim():'';
+  for(let i=hi+1;i<aoa.length;i++){
+    const row=aoa[i];if(!row)continue;
+    const cad=g(row,cols.cad),fio=g(row,cols.fio);
+    if(!cad&&!fio)continue;
+    out.push({cad,fio,phone:g(row,cols.phone),area:g(row,cols.area),share:g(row,cols.share),type:g(row,cols.type),addr:g(row,cols.addr),email:g(row,cols.email),birth:g(row,cols.birth)});
+  }
+  return out;
+}
+function parseEgrnWb(wb){
+  const nm=wb.SheetNames.find(n=>/данн/i.test(n))||wb.SheetNames.find(n=>{const a=XLSX.utils.sheet_to_json(wb.Sheets[n],{header:1,defval:''}).slice(0,6);return a.some(r=>r.some(c=>/фио правооблад/i.test((c||'').toString())));})||wb.SheetNames[0];
+  return rowsFromAoa(XLSX.utils.sheet_to_json(wb.Sheets[nm],{header:1,defval:''}));
+}
+function parseEgrnCsv(text){
+  const lines=text.split(/\r?\n/).filter(l=>l.trim());if(!lines.length)return[];
+  const delim=(lines[0].match(/;/g)||[]).length>(lines[0].match(/,/g)||[]).length?';':',';
+  const split=l=>{const out=[];let cur='',q=false;for(const ch of l){if(ch==='"')q=!q;else if(ch===delim&&!q){out.push(cur);cur='';}else cur+=ch;}out.push(cur);return out.map(s=>s.trim());};
+  return rowsFromAoa(lines.map(split));
+}
+function loadEgrn(input){
+  const f=input.files[0];if(!f)return;
+  const name=f.name.toLowerCase(),reader=new FileReader();
+  reader.onload=e=>{
+    try{
+      let rows;
+      if(name.endsWith('.csv'))rows=parseEgrnCsv(e.target.result);
+      else{if(!window.XLSX){alert('Не загрузилась библиотека чтения Excel — проверь интернет и обнови страницу.');return;}rows=parseEgrnWb(XLSX.read(new Uint8Array(e.target.result),{type:'array'}));}
+      if(!rows.length){alert('Не нашёл данные. Нужен лист «Данные» с колонками: кадастровый №, ФИО, телефон, площадь.');input.value='';return;}
+      egrn.rows=rows;buildEgrnIndex();
+      try{localStorage.setItem('actualka_egrn',JSON.stringify({rows,loadedAt:Date.now(),count:rows.length}));}
+      catch(err){alert('База прочитана ('+rows.length+'), но не поместилась в память браузера. Работает в этой сессии.');}
+      updateEgrnStatus();
+      alert('База загружена: '+rows.length+' записей.\nХранится только в этом браузере, на GitHub не уходит.');
+    }catch(err){console.error(err);alert('Не смог прочитать файл: '+err.message);}
+    input.value='';
+  };
+  if(name.endsWith('.csv'))reader.readAsText(f,'utf-8');else reader.readAsArrayBuffer(f);
+}
+function ownerOtherObjects(fio,exceptCad){return (egrn.byOwner[normFio(fio)]||[]).filter(r=>r.cad!==exceptCad);}
+function egrnLookupDebounced(){clearTimeout(egrnTimer);egrnTimer=setTimeout(egrnLookup,250);}
+function egrnLookup(){
+  const box=document.getElementById('egrnResult');
+  const q=document.getElementById('fld_cadastral').value.trim();
+  if(!egrn.rows.length){box.innerHTML=q?'<div class="egrn-hint">База ЕГРН не загружена — кнопка «Загрузить базу ЕГРН» внизу страницы.</div>':'';return;}
+  if(q.length<3){box.innerHTML='';return;}
+  const ql=q.toLowerCase();
+  let matched=egrn.byCad[q];
+  if(!matched){matched=egrn.rows.filter(r=>r.cad.toLowerCase().includes(ql)||r.addr.toLowerCase().includes(ql)||normFio(r.fio).toLowerCase().includes(ql)).slice(0,12);}
+  egrnMatches=matched;
+  if(!matched.length){box.innerHTML='<div class="egrn-hint">Ничего не найдено в базе.</div>';return;}
+  box.innerHTML=matched.map((r,idx)=>{
+    const others=ownerOtherObjects(r.fio,r.cad);
+    return `<div class="egrn-card">
+      <div class="egrn-top">
+        <div>
+          <div class="egrn-fio">${esc(r.fio)}</div>
+          <div class="egrn-meta">${esc(r.cad)}${r.area?` · ${esc(r.area)} м²`:''}${r.share&&r.share!=='1/1'?` · доля ${esc(r.share)}`:''} · ${esc(shortType(r.type))}</div>
+          ${r.phone?`<div class="egrn-meta">☎ ${esc(r.phone)}</div>`:''}
+        </div>
+        <button type="button" class="egrn-fill" onclick="fillFromEgrn(${idx})">Заполнить</button>
+      </div>
+      ${others.length?`<div class="egrn-others"><b>Ещё у собственника в Хайде (${others.length}):</b> ${others.slice(0,14).map(o=>shortType(o.type)+' '+(o.area?o.area+'м² ':'')+o.cad).join('; ')}${others.length>14?' …':''}</div>`:''}
+    </div>`;
+  }).join('');
+}
+function fillFromEgrn(idx){
+  const r=egrnMatches[idx];if(!r)return;
+  const set=(f,v)=>{const el=document.getElementById('fld_'+f);if(el&&v)el.value=v;};
+  set('cadastral',r.cad);set('ownerName',r.fio);set('ownerPhone',r.phone);set('area',r.area);set('share',r.share);
+  const co=(egrn.byCad[r.cad]||[]).filter(x=>x.fio!==r.fio);
+  const others=ownerOtherObjects(r.fio,r.cad);
+  const info=[];
+  if(co.length)info.push('Сособственники: '+co.map(c=>c.fio+(c.share?` (${c.share})`:'')).join(', '));
+  if(others.length)info.push('Ещё в Хайде: '+others.slice(0,14).map(o=>shortType(o.type)+' '+(o.area?o.area+'м² ':'')+o.cad).join('; '));
+  const notesEl=document.getElementById('fld_notes'),marker='[ЕГРН] ';
+  if(info.length){
+    const cleaned=(notesEl.value||'').split('\n').filter(l=>!l.startsWith(marker)).join('\n').trim();
+    notesEl.value=(cleaned?cleaned+'\n':'')+info.map(l=>marker+l).join('\n');
+  }
+  egrnLookup();
+}
+
+/* ---------- схема дома (шахматка) ---------- */
+const TOWERS=[{k:1,name:'Westdale',ru:'Белая',cls:'w'},{k:2,name:'Parklane',ru:'Чёрная',cls:'b'},{k:3,name:'Riverside',ru:'Золотая',cls:'g'}];
+const FLOORS=41;
+let curTower=1;
+function maxPos(k){return k===1?7:8}
+function posCount(k,f){
+  if(f<2)return 0;
+  if(k===1){ if(f===41)return 3; if(f>=31&&f<=40)return 6; return 7; }
+  if(k===2){ if(f===41)return 3; if(f>=31&&f<=40)return 7; return 8; }
+  if(k===3){ if(f===41)return 2; if(f>=19&&f<=40)return 7; return 8; }
+  return 8;
+}
+function aptExists(k,f,p){return p>=1&&p<=posCount(k,f)}
+function decodeApt(a){const d=(a||'').toString().replace(/\D/g,'');if(d.length<3)return null;const k=+d[0],f=+d.slice(1,3),p=+d.slice(3)||1;if(k<1||k>3||f<1||f>FLOORS)return null;return{k,f,p};}
+function encodeApt(k,f,p){return `${k}${String(f).padStart(2,'0')}${p}`}
+let schemaInfo={};
+function loadSchemaInfo(){try{schemaInfo=JSON.parse(localStorage.getItem('actualka_schema')||'{}')||{}}catch(e){schemaInfo={}}}
+function saveSchemaInfo(){try{localStorage.setItem('actualka_schema',JSON.stringify(schemaInfo));}catch(e){}}
+function schemaIndex(){
+  const map={},owners={};
+  items.forEach(o=>{const d=decodeApt(o.apartment);if(d)map[`${d.k}-${d.f}-${d.p}`]=o;
+    const nm=(o.ownerName||'').trim().toUpperCase();if(nm)(owners[nm]=owners[nm]||[]).push(o);});
+  const multi={};Object.keys(owners).forEach(nm=>{if(owners[nm].length>1)owners[nm].forEach(o=>{const d=decodeApt(o.apartment);if(d)multi[`${d.k}-${d.f}-${d.p}`]=nm;});});
+  return {map,owners,multi};
+}
+function switchView(v){
+  state.view=v;
+  document.getElementById('tabActualka').classList.toggle('active',v==='actualka');
+  document.getElementById('tabSchema').classList.toggle('active',v==='schema');
+  const act=v==='actualka';
+  document.getElementById('viewActualka').style.display=act?'':'none';
+  document.getElementById('viewSchema').style.display=act?'none':'';
+  document.getElementById('statusChips').style.display=act?'':'none';
+  document.getElementById('filtersRow2').style.display=act?'':'none';
+  if(!act)renderSchema();
+}
+let _sidx=null, zoomMode='fit', _cell=null;
+function setZoom(m){zoomMode=m;renderSchema();}
+function fitSchema(){
+  const wrap=document.querySelector('.schemaWrap');if(!wrap)return;
+  let ch;
+  if(zoomMode==='fit'){
+    const top=wrap.getBoundingClientRect().top;
+    const avail=Math.max(320, window.innerHeight - top - 88);
+    ch=Math.max(13, Math.min(24, Math.floor(avail/(FLOORS-1))-1));
+  } else ch=zoomMode;
+  wrap.style.setProperty('--ch',ch+'px');
+  wrap.style.setProperty('--cw',(ch*1.7).toFixed(1)+'px');
+}
+function renderSchema(){
+  const box=document.getElementById('viewSchema'),idx=schemaIndex();
+  _sidx=idx;
+  const legend=`<div class="legend">
+    <span><i style="background:var(--ok)"></i>работает</span><span><i style="background:var(--think)"></i>думает</span>
+    <span><i style="background:var(--no)"></i>отказ</span><span><i style="background:#8f9aa8"></i>не общались</span>
+    <span><i style="background:#6f6b64"></i>продано/сдано</span><span><i style="background:#fff;box-shadow:0 0 0 1.5px rgba(0,0,0,.3)"></i>неск. квартир</span></div>`;
+  const gutter=()=>{let g='';for(let f=FLOORS;f>=2;f--)g+=`<div class="g">${f}</div>`;return `<div class="gutter">${g}</div>`;};
+  const tower=t=>{
+    const cols=maxPos(t.k);let floors='';let cnt=0;
+    for(let f=FLOORS;f>=2;f--){
+      let cells='';
+      for(let p=1;p<=cols;p++){
+        if(!aptExists(t.k,f,p)){cells+=`<div class="brick void"></div>`;continue;}
+        const key=`${t.k}-${f}-${p}`,o=idx.map[key];
+        if(o){const cls=CLOSED.includes(stateOf(o))?'closed':(o.dealStatus||'base');cnt++;
+          cells+=`<div class="brick ${cls} ${idx.multi[key]?'multi':''}" data-k="${t.k}" data-f="${f}" data-p="${p}" onclick="openCell(${t.k},${f},${p})"></div>`;}
+        else {const ni=schemaInfo[encodeApt(t.k,f,p)];const nc=ni&&(ni.note||ni.cad)?'noted':'e';
+          cells+=`<div class="brick ${nc}" data-k="${t.k}" data-f="${f}" data-p="${p}" onclick="openCell(${t.k},${f},${p})"></div>`;}
+      }
+      floors+=`<div class="frow ${f%10===0?'sect':''}">${cells}</div>`;
+    }
+    return `<div class="bld ${t.cls}">
+      <div class="bld-roof"><span class="spire"></span><span class="cap"></span></div>
+      <div class="bld-body"><div class="floors">${floors}</div></div>
+      <div class="bld-base">${t.ru} · лобби<small>${t.name} · ${cnt} в базе</small></div>
+    </div>`;
+  };
+  box.innerHTML=`<div class="schema-head">${legend}</div>
+    <div class="schemaWrap">${gutter()}${TOWERS.map(tower).join('')}${gutter()}</div>
+    <div class="zoombar">
+      <span>Масштаб:</span>
+      <button onclick="setZoom('fit')" class="${zoomMode==='fit'?'on':''}">по экрану</button>
+      <button onclick="setZoom(20)" class="${zoomMode===20?'on':''}">норма</button>
+      <button onclick="setZoom(28)" class="${zoomMode===28?'on':''}">крупнее</button>
+    </div>`;
+  fitSchema();
+}
+function schemaTip(e){
+  const b=e.target.closest('.brick');const tip=document.getElementById('schemaTip');
+  if(!b||!_sidx){tip.style.display='none';return;}
+  const k=+b.dataset.k,f=+b.dataset.f,p=+b.dataset.p,num=encodeApt(k,f,p),o=_sidx.map[`${k}-${f}-${p}`];
+  let html=`<b>${num}</b> · ${TOWERS[k-1].ru}, ${f} эт.`;
+  if(o){
+    html+=`<br>${esc(o.ownerName||'без ФИО')}`;
+    if(o.area)html+=` · ${esc(o.area)} м²`;
+    html+=`<span class="st-st"><br>${(STATUS[o.dealStatus||'base']||{}).label} · ${STATE_LABEL[stateOf(o)]}</span>`;
+    const oth=_sidx.owners[(o.ownerName||'').trim().toUpperCase()]||[];
+    if(oth.length>1)html+=`<br>◦ у собственника ${oth.length} кв.`;
+  } else {
+    const ni=schemaInfo[num];
+    if(ni&&(ni.note||ni.cad)){html+=`<br>📝 ${esc(ni.note||'есть заметка')}`;}
+    else html+='<br>свободно — клик, чтобы отметить';
+  }
+  tip.innerHTML=html;tip.style.display='block';
+  const x=Math.min(e.clientX+14,window.innerWidth-230),y=Math.min(e.clientY+14,window.innerHeight-90);
+  tip.style.left=x+'px';tip.style.top=y+'px';
+}
+function cardAt(k,f,p){return items.find(o=>{const d=decodeApt(o.apartment);return d&&d.k===k&&d.f===f&&d.p===p;});}
+function openCell(k,f,p){
+  k=+k;_cell={k,f,p};const idx=schemaIndex();_sidx=idx;const key=`${k}-${f}-${p}`,o=idx.map[key],num=encodeApt(k,f,p);
+  const nb=(nk,nf,np,label)=>{if(nf<1||nf>FLOORS||np<1||!aptExists(nk,nf,np))return `<div class="nb"><span>${label}</span><b>—</b><div>нет кв.</div></div>`;
+    const no=idx.map[`${nk}-${nf}-${np}`],nn=encodeApt(nk,nf,np);
+    return `<div class="nb ${no?'occ':''}"><span>${label}</span><b>${nn}</b><div>${no?esc((no.ownerName||'занята').split(' ')[0]):'свободно'}</div></div>`;};
+  let info;
+  if(o){
+    const others=idx.owners[(o.ownerName||'').trim().toUpperCase()]||[];
+    info=`<div class="cell-info">
+      <div class="ci-row"><span>Квартира</span><b>${esc(o.apartment||num)}</b></div>
+      ${o.area?`<div class="ci-row"><span>Метраж</span><b>${esc(o.area)} м²</b></div>`:''}
+      ${o.price?`<div class="ci-row"><span>Цена</span><b>${esc(o.price)}</b></div>`:''}
+      ${o.ownerName?`<div class="ci-row"><span>Собственник</span><b>${esc(o.ownerName)}</b></div>`:''}
+      ${o.ownerPhone?`<div class="ci-row"><span>Телефон</span><b>${esc(o.ownerPhone)}</b></div>`:''}
+      <div class="ci-row"><span>Статус</span><b>${(STATUS[o.dealStatus||'base']||{}).label} · ${STATE_LABEL[stateOf(o)]}</b></div>
+      ${others.length>1?`<div class="ci-row" style="color:var(--brass)"><span>Квартир у собственника</span><b>${others.length}: ${others.map(x=>esc(x.apartment)).join(', ')}</b></div>`:''}
+    </div>`;
+  } else info=`<div style="color:var(--ink-soft);font-size:14px;padding:8px 0">Квартира <b>${num}</b> — башня ${k}, этаж ${f}, кв ${p} на этаже.${o?'':' Не в актуалке.'}</div>`;
+  const ni=schemaInfo[num]||{};
+  const qedit=`<div class="qedit">
+      <div style="font-size:11.5px;color:var(--brass);font-weight:700;letter-spacing:.3px;text-transform:uppercase">Заметка по квартире (не актуалка)</div>
+      <label class="lb">Кадастровый номер</label>
+      <input id="cellCad" placeholder="77:07:0006003:____" value="${esc(ni.cad||'')}" oninput="cellCadHint()">
+      <div id="cellCadHint" class="egrn-meta"></div>
+      <label class="lb">Заметка</label>
+      <textarea id="cellNote" placeholder="живут собственники · ремонт, через год продают · сдают в аренду…">${esc(ni.note||'')}</textarea>
+    </div>`;
+  const body=`${info}${qedit}
+    <div style="font-size:12.5px;font-weight:600;color:var(--ink-soft);margin-top:14px;margin-bottom:2px">Соседние квартиры</div>
+    <div class="nb-grid">
+      <div class="nb" style="visibility:hidden"></div>${nb(k,f+1,p,'этаж выше')}<div class="nb" style="visibility:hidden"></div>
+      ${nb(k,f,p-1,'слева')}<div class="nb mid"><span>эта</span><b>${num}</b></div>${nb(k,f,p+1,'справа')}
+      <div class="nb" style="visibility:hidden"></div>${nb(k,f-1,p,'этаж ниже')}<div class="nb" style="visibility:hidden"></div>
+    </div>`;
+  document.getElementById('cellTitle').textContent='Квартира '+num;
+  document.getElementById('cellBody').innerHTML=body;
+  document.getElementById('cellFoot').innerHTML=`<button class="del" style="color:var(--ink-soft);border-color:var(--line)" onclick="closeCell()">Закрыть</button><button class="save" onclick="quickSave()">Сохранить</button><button class="save" style="background:#4a4a48;flex:none" onclick="cellToCard()">Карточка</button>`;
+  document.getElementById('cellOverlay').classList.add('show');
+  cellCadHint();
+}
+function cellCadHint(){
+  const el=document.getElementById('cellCadHint');if(!el)return;
+  const q=(document.getElementById('cellCad').value||'').trim();
+  if(!q){el.textContent='';return;}
+  if(!egrn.rows.length){el.textContent='база ЕГРН не загружена — подтянуть авто не смогу';return;}
+  const r=(egrn.byCad[q]||[])[0];
+  el.innerHTML=r?`<span style="color:var(--ok)">✓ ${esc(r.fio)}${r.area?', '+esc(r.area)+' м²':''}${r.phone?' · ☎ '+esc(r.phone):''}</span>`:'в базе не найден';
+}
+function quickSave(){
+  if(!_cell)return;const {k,f,p}=_cell,num=encodeApt(k,f,p);
+  const cad=(document.getElementById('cellCad').value||'').trim();
+  const note=document.getElementById('cellNote').value;
+  if(!cad&&!note.trim()) delete schemaInfo[num];
+  else schemaInfo[num]={cad,note,ts:Date.now()};
+  saveSchemaInfo();renderSchema();openCell(k,f,p);
+}
+function cellToCard(){
+  if(!_cell)return;const {k,f,p}=_cell,num=encodeApt(k,f,p),ex=cardAt(k,f,p);
+  closeCell();
+  if(ex)openModal(ex.id);
+  else{openModalForApt(num);const ni=schemaInfo[num];if(ni&&ni.cad){document.getElementById('fld_cadastral').value=ni.cad;egrnLookup();}}
+}
+function closeCell(){document.getElementById('cellOverlay').classList.remove('show');}
+function openModalForApt(num){openModal();document.getElementById('fld_apartment').value=num;}
+
+/* ---------- wire up ---------- */
+document.getElementById('q').addEventListener('input',e=>{state.q=e.target.value;render()});
+document.getElementById('fPay').addEventListener('change',e=>{state.pay=e.target.value;render()});
+document.getElementById('fState').addEventListener('change',e=>{state.objState=e.target.value;render()});
+document.getElementById('fSort').addEventListener('change',e=>{state.sort=e.target.value;render()});
+document.getElementById('overlay').addEventListener('click',e=>{if(e.target.id==='overlay')closeModal()});
+document.getElementById('reportOverlay').addEventListener('click',e=>{if(e.target.id==='reportOverlay')closeReport()});
+document.getElementById('cellOverlay').addEventListener('click',e=>{if(e.target.id==='cellOverlay')closeCell()});
+document.addEventListener('mousemove',e=>{if(state.view==='schema'&&e.target.closest&&e.target.closest('.schemaWrap'))schemaTip(e);else if(!e.target.closest||!e.target.closest('.brick'))document.getElementById('schemaTip').style.display='none';});
+document.getElementById('viewSchema').addEventListener('mouseleave',()=>{document.getElementById('schemaTip').style.display='none';});
+window.addEventListener('resize',()=>{if(state.view==='schema')fitSchema();});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeModal();closeReport();closeCell();}});
+
+setJkLabel();
+loadSchemaInfo();
+buildStateFilter();
+loadEgrnFromStorage();
+initStore();
+</script>
+</body>
+</html>
