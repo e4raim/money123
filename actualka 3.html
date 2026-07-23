@@ -1,0 +1,1831 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Рабочая панель</title>
+<style>
+:root{
+  --paper:#F3F1EC;--card:#FFFFFF;--ink:#23211E;--ink-soft:#6E6A62;--line:#E6E2D9;
+  --brass:#9A7B34;--brass-tint:#F2EAD6;
+  --ok:#2F8F5B;--think:#C79218;--no:#C24A3E;--base:#8A867E;
+  --serif:Georgia,"Times New Roman",serif;
+  --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  --shadow:0 1px 2px rgba(30,28,24,.05),0 6px 18px rgba(30,28,24,.06);
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--paper);color:var(--ink);font-family:var(--sans);-webkit-font-smoothing:antialiased;padding-bottom:90px}
+a{color:inherit}
+
+header{position:sticky;top:0;z-index:40;background:rgba(243,241,236,.86);backdrop-filter:saturate(1.4) blur(12px);border-bottom:1px solid var(--line);padding:14px 18px 12px}
+.bar-top{display:flex;align-items:center;gap:12px;max-width:1240px;margin:0 auto}
+.search{flex:1;position:relative;min-width:0}
+.search input{width:100%;border:1px solid var(--line);background:#fff;border-radius:12px;padding:11px 14px 11px 38px;font-size:15px;color:var(--ink);outline:none}
+.search input:focus{border-color:var(--brass);box-shadow:0 0 0 3px var(--brass-tint)}
+.search svg{position:absolute;left:12px;top:50%;transform:translateY(-50%);width:17px;height:17px;stroke:var(--ink-soft);fill:none;stroke-width:2}
+.btn-add{border:none;background:var(--brass);color:#fff;font-weight:600;font-size:15px;padding:11px 16px;border-radius:12px;cursor:pointer;white-space:nowrap;display:inline-flex;align-items:center;gap:7px;transition:filter .15s}
+.btn-add:hover{filter:brightness(1.07)}
+.btn-add .plus{font-size:19px;line-height:1;margin-top:-1px}
+
+.filters{max-width:1240px;margin:12px auto 0;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.chip{border:1px solid var(--line);background:#fff;color:var(--ink-soft);padding:7px 13px;border-radius:999px;font-size:13.5px;font-weight:500;cursor:pointer;display:inline-flex;align-items:center;gap:7px;transition:.12s}
+.chip .dot{width:8px;height:8px;border-radius:50%;background:var(--base)}
+.chip .cnt{font-variant-numeric:tabular-nums;color:var(--ink-soft);font-weight:600;font-size:12px}
+.chip[data-k="works"] .dot{background:var(--ok)}
+.chip[data-k="thinking"] .dot{background:var(--think)}
+.chip[data-k="refusal"] .dot{background:var(--no)}
+.chip[data-k="base"] .dot{background:var(--base)}
+.chip.active{border-color:var(--ink);color:var(--ink)}
+.chip.active .cnt{color:var(--ink)}
+.chip.warn{border-style:dashed;border-color:#D8B98F;color:#9a6d2b}
+.chip.warn.active{background:var(--brass-tint);border-color:var(--brass);color:#8a6120}
+.spacer{flex:1;min-width:12px}
+select.mini{border:1px solid var(--line);background:#fff;color:var(--ink);border-radius:10px;padding:8px 30px 8px 12px;font-size:13.5px;font-family:var(--sans);cursor:pointer;outline:none;appearance:none;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 10 10'><path d='M1 3l4 4 4-4' stroke='%236E6A62' stroke-width='1.6' fill='none'/></svg>");background-repeat:no-repeat;background-position:right 11px center}
+select.mini:focus{border-color:var(--brass)}
+
+.cloud-note{max-width:1240px;margin:12px auto 0;font-size:12.5px;color:var(--ink-soft);background:var(--brass-tint);border:1px solid #E7D9B4;border-radius:10px;padding:8px 12px;display:flex;gap:8px;align-items:center}
+.cloud-note b{color:#8a6d2b}
+.cloud-note.live{background:#E7F3EC;border-color:#CBE6D5}
+.cloud-note.live b{color:var(--ok)}
+
+main{max-width:1240px;margin:0 auto;padding:18px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(258px,1fr));gap:18px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;overflow:hidden;cursor:pointer;box-shadow:var(--shadow);transition:transform .16s ease,box-shadow .16s ease;display:flex;flex-direction:column}
+.card:hover{transform:translateY(-3px);box-shadow:0 2px 4px rgba(30,28,24,.06),0 14px 30px rgba(30,28,24,.11)}
+.card.incomplete{border-color:#E3CBA0}
+.thumb{position:relative;aspect-ratio:16/10;background:#EDEAE2;overflow:hidden}
+.thumb img{width:100%;height:100%;object-fit:cover;display:block}
+.thumb .placeholder{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#C3BFB4}
+.thumb .placeholder svg{width:44px;height:44px;stroke:currentColor;fill:none;stroke-width:1.4}
+.pill{position:absolute;top:10px;left:10px;font-size:11.5px;font-weight:600;color:#fff;padding:4px 9px;border-radius:999px;letter-spacing:.2px;box-shadow:0 1px 4px rgba(0,0,0,.2)}
+.pill.works{background:var(--ok)} .pill.thinking{background:var(--think)} .pill.refusal{background:var(--no)} .pill.base{background:var(--base)}
+.card.closed .thumb img,.card.closed .thumb .placeholder{filter:grayscale(1);opacity:.5}
+.card.closed .body{opacity:.55}
+.card.closed{border-color:#DAD6CC}
+.sold-overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;z-index:3}
+.sold-overlay span{background:rgba(192,74,62,.94);color:#fff;font-weight:800;font-size:19px;letter-spacing:3px;padding:6px 18px;border-radius:8px;transform:rotate(-8deg);box-shadow:0 4px 14px rgba(0,0,0,.3)}
+.deal-badge{position:absolute;bottom:10px;left:10px;background:rgba(35,33,30,.72);color:#fff;font-size:10.5px;font-weight:700;padding:3px 8px;border-radius:999px;letter-spacing:.3px}
+.deal-badge.rent{background:rgba(47,111,143,.85)}
+.pay-badge{position:absolute;top:10px;right:10px;background:rgba(35,33,30,.82);color:#F2EAD6;font-size:11px;font-weight:700;padding:4px 8px;border-radius:999px;letter-spacing:.3px}
+.todo-badge{position:absolute;bottom:10px;right:10px;background:rgba(154,109,43,.92);color:#fff;font-size:10.5px;font-weight:700;padding:3px 8px;border-radius:999px;letter-spacing:.3px}
+.body{padding:12px 14px 14px;display:flex;flex-direction:column;gap:5px;flex:1}
+.title{font-family:var(--serif);font-size:18px;font-weight:700;line-height:1.15}
+.metr{font-size:13px;color:var(--ink-soft);font-weight:600}
+.price{font-size:16px;font-weight:700;color:var(--ink);margin-top:1px}
+.ppm{font-size:12px;color:var(--brass);font-weight:600}
+.row{display:flex;align-items:center;gap:6px;font-size:12.5px;color:var(--ink-soft)}
+.row .k{color:#A8A296}
+.owner{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:6px;padding-top:9px;border-top:1px solid var(--line)}
+.owner .who{min-width:0}
+.owner .name{font-size:13.5px;font-weight:600;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.owner .ph{font-size:12px;color:var(--ink-soft)}
+.call{flex:none;width:34px;height:34px;border-radius:10px;background:var(--brass-tint);color:var(--brass);display:flex;align-items:center;justify-content:center;text-decoration:none}
+.call svg{width:16px;height:16px;fill:currentColor}
+.next{font-size:12px;color:var(--brass);font-weight:600;margin-top:4px;display:flex;gap:5px;align-items:baseline}
+.next .k{color:#B8AC8A}
+
+.empty{text-align:center;padding:70px 20px;color:var(--ink-soft)}
+.empty .big{font-family:var(--serif);font-size:22px;color:var(--ink);margin-bottom:8px}
+.empty button{margin-top:16px}
+
+.tools{max-width:1240px;margin:26px auto 0;display:flex;gap:10px;flex-wrap:wrap;justify-content:center;font-size:13px;color:var(--ink-soft)}
+.tools button{border:1px solid var(--line);background:#fff;color:var(--ink-soft);border-radius:10px;padding:8px 14px;font-size:13px;cursor:pointer;font-family:var(--sans)}
+.tools button:hover{border-color:var(--brass);color:var(--brass)}
+
+.overlay{position:fixed;inset:0;background:rgba(30,28,24,.42);backdrop-filter:blur(3px);display:none;align-items:flex-start;justify-content:center;z-index:60;padding:24px 16px;overflow-y:auto}
+.overlay.show{display:flex}
+.modal{background:var(--paper);width:100%;max-width:560px;border-radius:20px;box-shadow:0 20px 60px rgba(0,0,0,.28);overflow:hidden;animation:pop .18s ease}
+@keyframes pop{from{opacity:0;transform:translateY(10px) scale(.98)}to{opacity:1;transform:none}}
+.modal-head{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--paper);z-index:2}
+.modal-head h2{margin:0;font-family:var(--serif);font-size:19px}
+.x{border:none;background:none;font-size:24px;color:var(--ink-soft);cursor:pointer;line-height:1;padding:2px 6px}
+.modal-body{padding:18px 20px 4px}
+.photo-drop{aspect-ratio:16/10;border:1.5px dashed #CFC9BC;border-radius:14px;background:#fff;display:flex;align-items:center;justify-content:center;text-align:center;color:var(--ink-soft);cursor:pointer;overflow:hidden;position:relative;margin-bottom:16px;transition:.15s}
+.photo-drop:hover{border-color:var(--brass);color:var(--brass)}
+.photo-drop img{width:100%;height:100%;object-fit:cover}
+.photo-drop .hint{padding:16px;font-size:13.5px;line-height:1.5}
+.photo-drop .hint b{display:block;font-size:15px;color:var(--ink);margin-bottom:3px}
+.photo-clear{position:absolute;top:8px;right:8px;background:rgba(35,33,30,.75);color:#fff;border:none;width:28px;height:28px;border-radius:50%;font-size:16px;cursor:pointer;display:none}
+.photo-drop.has .photo-clear{display:block}
+label.f{display:block;margin-bottom:13px}
+label.f .lb{font-size:12.5px;font-weight:600;color:var(--ink-soft);margin-bottom:5px;display:block}
+.f input,.f select,.f textarea{width:100%;border:1px solid var(--line);background:#fff;border-radius:10px;padding:11px 12px;font-size:15px;color:var(--ink);font-family:var(--sans);outline:none}
+.f textarea{resize:vertical;min-height:64px;line-height:1.45}
+.f input:focus,.f select:focus,.f textarea:focus{border-color:var(--brass);box-shadow:0 0 0 3px var(--brass-tint)}
+.f select{appearance:none;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 10 10'><path d='M1 3l4 4 4-4' stroke='%236E6A62' stroke-width='1.6' fill='none'/></svg>");background-repeat:no-repeat;background-position:right 12px center}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.links-sec{margin-bottom:13px}
+.links-sec .lb{font-size:12.5px;font-weight:600;color:var(--ink-soft);margin-bottom:6px;display:block}
+.link-row{display:grid;grid-template-columns:1fr 1.5fr auto;gap:8px;margin-bottom:8px}
+.link-row input{border:1px solid var(--line);background:#fff;border-radius:10px;padding:10px 11px;font-size:14px;font-family:var(--sans);outline:none;min-width:0}
+.link-row input:focus{border-color:var(--brass);box-shadow:0 0 0 3px var(--brass-tint)}
+.link-row .rm{border:1px solid var(--line);background:#fff;color:var(--no);border-radius:10px;width:40px;cursor:pointer;font-size:17px}
+.add-link{border:1px dashed #CFC9BC;background:#fff;color:var(--brass);border-radius:10px;padding:10px;width:100%;cursor:pointer;font-size:14px;font-weight:600;font-family:var(--sans)}
+.add-link:hover{border-color:var(--brass)}
+@media (max-width:480px){.link-row{grid-template-columns:1fr auto}.link-row .ol-url{grid-column:1/-1}}
+.modal-foot{display:flex;gap:10px;padding:14px 20px 20px;position:sticky;bottom:0;background:var(--paper);border-top:1px solid var(--line)}
+.cadline{font-size:11px;color:#B0AB9F;font-family:ui-monospace,Menlo,monospace;margin-top:-1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#egrnStatus{font-size:12.5px;color:var(--ink-soft)}
+#egrnStatus.egrn-ok{color:var(--ok);font-weight:600}
+.egrn-result{margin-bottom:13px}
+.egrn-result:empty{margin:0}
+.egrn-hint{font-size:12.5px;color:var(--ink-soft);padding:9px 11px;background:#fff;border:1px dashed var(--line);border-radius:10px}
+.egrn-card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin-bottom:8px}
+.egrn-top{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
+.egrn-fio{font-size:14px;font-weight:700;color:var(--ink)}
+.egrn-meta{font-size:12px;color:var(--ink-soft);margin-top:2px}
+.egrn-fill{flex:none;border:none;background:var(--brass);color:#fff;border-radius:9px;padding:8px 12px;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--sans)}
+.egrn-fill:hover{filter:brightness(1.07)}
+.egrn-others{margin-top:8px;padding-top:8px;border-top:1px dashed var(--line);font-size:11.5px;color:var(--ink-soft);line-height:1.45}
+.modal-foot .save{flex:1;background:var(--brass);color:#fff;border:none;border-radius:12px;padding:13px;font-size:15.5px;font-weight:600;cursor:pointer}
+.modal-foot .save:hover{filter:brightness(1.07)}
+.modal-foot .del{border:1px solid #E7C9C4;background:#fff;color:var(--no);border-radius:12px;padding:13px 16px;font-size:14px;cursor:pointer}
+.modal-foot .del:hover{background:#FBEEEC}
+@media (max-width:480px){.two{grid-template-columns:1fr}.btn-add span.t{display:none}.btn-add{padding:11px 13px}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+.rep-check{display:flex;align-items:center;gap:10px;padding:11px 12px;border:1px solid var(--line);background:#fff;border-radius:10px;margin-bottom:8px;cursor:pointer;font-size:14.5px}
+.rep-check input{width:18px;height:18px;accent-color:var(--brass);flex:none}
+.rep-period{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:6px 0 4px}
+#reportOutput{background:#fff;border:1px solid var(--line);border-radius:12px;padding:20px 22px;color:var(--ink);line-height:1.5}
+#reportOutput h1{font-family:var(--serif);font-size:22px;margin:0 0 4px}
+#reportOutput .rsub{color:var(--ink-soft);font-size:13px;margin-bottom:16px}
+#reportOutput h2{font-family:var(--serif);font-size:16px;margin:18px 0 8px;padding-bottom:5px;border-bottom:1px solid var(--line)}
+#reportOutput table{width:100%;border-collapse:collapse;font-size:13px;margin-top:4px}
+#reportOutput th,#reportOutput td{text-align:left;padding:6px 8px;border-bottom:1px solid #F0EDE5;vertical-align:top}
+#reportOutput th{color:var(--ink-soft);font-weight:600;font-size:11.5px;text-transform:uppercase;letter-spacing:.3px}
+#reportOutput .stat{display:inline-block;margin:2px 14px 2px 0;font-size:14px}
+#reportOutput .stat b{font-size:18px;font-family:var(--serif)}
+@media print{
+  body>*{display:none!important}
+  #reportOverlay{display:block!important;position:static!important;background:#fff!important;padding:0!important}
+  #reportOverlay .modal-head,#reportOverlay .modal-foot,#reportOverlay .rep-controls{display:none!important}
+  #reportOverlay .modal{max-width:none!important;box-shadow:none!important;background:#fff!important}
+  #reportOutput{border:none!important;padding:0!important}
+}
+.tabs{max-width:1240px;margin:12px auto 0;display:flex;gap:6px}
+.tab{border:1px solid var(--line);background:#fff;color:var(--ink-soft);border-radius:12px;padding:9px 18px;font-size:14px;font-weight:600;cursor:pointer;font-family:var(--sans)}
+.tab.active{color:#fff;background:var(--brass);border-color:var(--brass)}
+.schema-head{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:14px}
+.twr{border:1px solid var(--line);background:#fff;color:var(--ink-soft);padding:8px 14px;border-radius:999px;font-size:13.5px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:8px}
+.twr .sw{width:13px;height:13px;border-radius:3px;border:1px solid rgba(0,0,0,.15)}
+.twr.w .sw{background:#EEECE6} .twr.b .sw{background:#2C2A28} .twr.g .sw{background:#C9A24B}
+.twr.active{border-color:var(--ink);color:var(--ink);box-shadow:0 0 0 1px var(--ink)}
+.legend{display:flex;gap:12px;flex-wrap:wrap;font-size:12px;color:var(--ink-soft);margin-left:auto}
+.legend span{display:inline-flex;align-items:center;gap:5px}
+.legend i{width:11px;height:11px;border-radius:3px;display:inline-block}
+/* --- дом тремя башнями --- */
+.schemaWrap{--cw:22px;--ch:13px;--gap:3px;display:flex;justify-content:center;align-items:flex-end;gap:14px;padding:6px 0 4px}
+.gutter{display:flex;flex-direction:column;gap:var(--gap);padding-bottom:36px}
+.gutter .g{height:var(--ch);display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--ink-soft);width:24px;font-variant-numeric:tabular-nums}
+.bld{display:flex;flex-direction:column;align-items:center}
+.bld-roof{position:relative;height:20px;width:70%;color:#B7B1A3}
+.bld.b .bld-roof{color:#5c5851}.bld.g .bld-roof{color:#B8912F}
+.bld-roof .cap{position:absolute;left:0;right:0;bottom:0;height:12px;border-radius:7px 7px 0 0;background:currentColor;opacity:.9}
+.bld-roof .spire{position:absolute;left:50%;bottom:11px;transform:translateX(-50%);width:2px;height:11px;background:currentColor}
+.bld.g .bld-roof .spire{height:18px;bottom:11px}
+.bld-body{position:relative;border:1px solid;border-bottom:none;border-radius:9px 9px 0 0;padding:7px 7px 0;overflow:hidden;box-shadow:0 10px 30px rgba(30,28,24,.14)}
+.bld.w .bld-body{background:linear-gradient(180deg,#F9F7F2,#E7E3DA);border-color:#D8D3C7}
+.bld.b .bld-body{background:linear-gradient(180deg,#35332F,#232120);border-color:#141312}
+.bld.g .bld-body{background:linear-gradient(180deg,#ECDBAE,#D6BB77);border-color:#C6A648}
+.floors{display:flex;flex-direction:column;gap:var(--gap)}
+.frow{display:flex;gap:var(--gap);height:var(--ch);justify-content:center}
+.frow.sect{box-shadow:inset 0 2px 0 -1px rgba(154,123,52,.45)}
+.brick{width:var(--cw);height:var(--ch);border-radius:2px;cursor:pointer;transition:transform .08s;position:relative}
+.bld.w .brick.e{background:rgba(120,110,90,.16)} .bld.b .brick.e{background:rgba(255,255,255,.09)} .bld.g .brick.e{background:rgba(90,60,10,.16)}
+.brick.void{background:transparent!important;pointer-events:none;box-shadow:none;cursor:default}
+.brick.noted{background:rgba(154,123,52,.32)!important;box-shadow:inset 0 0 0 1px rgba(154,123,52,.85)}
+.brick.noobj{opacity:.35}
+.brick.kin{box-shadow:0 0 0 1.5px #fff,0 0 0 3.5px var(--brass)!important;z-index:4}
+.port{margin-top:14px;border-top:1px solid var(--line);padding-top:11px}
+.port-h{display:flex;justify-content:space-between;align-items:center;margin-bottom:7px}
+.port-h b{font-size:13.5px}
+.pbadge{background:var(--brass);color:#fff;font-size:11px;font-weight:700;padding:3px 10px;border-radius:999px}
+.pobj{display:flex;align-items:center;gap:9px;padding:8px 0;border-bottom:1px solid #F2EFE8;font-size:13.5px;cursor:pointer}
+.pobj:hover{background:#FBFAF7}
+.pobj.cur{cursor:default;background:var(--brass-tint);border-radius:8px;padding-left:8px;padding-right:8px}
+.pobj .pi{width:22px;text-align:center;flex:none}
+.pobj .pm{flex:1;font-weight:600;line-height:1.25}
+.pobj .pm small{display:block;font-weight:400;color:var(--ink-soft);font-size:11.5px}
+.pobj .ptag{font-size:11px;font-weight:700;color:var(--brass)}
+.pobj .pgo{color:#C7C2B6;font-size:16px}
+.pextra{margin-top:9px;font-size:12px;color:var(--ink-soft);background:#FBFAF7;border:1px dashed var(--line);border-radius:9px;padding:8px 10px;line-height:1.5}
+.auth-gate{position:fixed;inset:0;z-index:200;background:var(--paper);display:none;align-items:center;justify-content:center;padding:24px}
+.auth-gate.show{display:flex}
+.auth-box{width:100%;max-width:340px;background:#fff;border:1px solid var(--line);border-radius:18px;padding:32px 24px 26px;box-shadow:0 18px 50px rgba(30,28,24,.14)}
+.auth-box input{width:100%;border:1px solid var(--line);border-radius:11px;padding:13px 14px;font-size:16px;font-family:var(--sans);outline:none;margin-bottom:10px;background:#fff;color:var(--ink)}
+.auth-box input:focus{border-color:var(--brass);box-shadow:0 0 0 3px var(--brass-tint)}
+.auth-box button{width:100%;border:none;background:var(--brass);color:#fff;border-radius:11px;padding:13px;font-size:15.5px;font-weight:600;cursor:pointer;font-family:var(--sans);margin-top:4px}
+.auth-box button:hover{filter:brightness(1.07)}
+#authErr{font-size:13px;text-align:center;margin-top:11px;min-height:17px;color:var(--no)}
+.auth-foot{font-size:11.5px;color:var(--ink-soft);text-align:center;margin-top:16px;line-height:1.5}
+:root{--fam:#7B5EA7;--fam-tint:#EFEAF7}
+.sug-box{position:absolute;top:calc(100% + 6px);left:0;right:0;background:#fff;border:1px solid var(--line);border-radius:14px;box-shadow:0 14px 40px rgba(30,28,24,.16);z-index:90;display:none;max-height:60vh;overflow-y:auto;padding:6px}
+.sug-box.show{display:block}
+.sg-h{font-size:10.5px;font-weight:700;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.4px;padding:8px 10px 4px}
+.sg-row{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:9px;cursor:pointer;font-size:14px}
+.sg-row:hover{background:var(--brass-tint)}
+.sg-ic{width:22px;text-align:center;flex:none}
+.sg-m{flex:1;min-width:0;font-weight:600;line-height:1.3}
+.sg-m small{display:block;font-weight:400;color:var(--ink-soft);font-size:11.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pers-top{background:#FBFAF7;border:1px solid var(--line);border-radius:12px;padding:13px 15px}
+.pers-name{font-family:var(--serif);font-size:18px;font-weight:700;line-height:1.2}
+.pers-sub{font-size:12.5px;color:var(--ink-soft);margin-top:3px}
+.fixmark{display:block;font-size:11px;color:var(--brass);margin-top:6px;font-weight:600}
+.sec{margin-top:15px;border-top:1px solid var(--line);padding-top:12px}
+.sec-h{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;gap:8px}
+.sec-h b{font-size:13.5px}
+.empty2{font-size:12.5px;color:var(--ink-soft);padding:5px 0}
+.mem{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid #F2EFE8;font-size:13.5px}
+.mem .av{width:30px;height:30px;border-radius:50%;background:var(--fam-tint);color:var(--fam);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:11.5px;flex:none}
+.mem .in{flex:1;min-width:0;line-height:1.3;cursor:pointer}
+.mem .in small{display:block;color:var(--ink-soft);font-size:11.5px}
+.mem .rm{border:none;background:none;color:#C7C2B6;font-size:18px;cursor:pointer;padding:2px 6px}
+.mem .rm:hover{color:var(--no)}
+.addbtn{width:100%;border:1px dashed #CFC9BC;background:#fff;color:var(--brass);border-radius:10px;padding:10px;font-size:13.5px;font-weight:600;cursor:pointer;font-family:var(--sans);margin-top:9px}
+.addbtn:hover{border-color:var(--brass)}
+.noteline{font-size:13px;padding:8px 10px;background:#FBFAF7;border:1px solid var(--line);border-radius:9px;margin-bottom:6px;cursor:pointer;line-height:1.4}
+.noteline:hover{border-color:var(--brass)}
+.noteline b{color:var(--brass);margin-right:5px}
+.lrow{padding:10px 12px;border:1px solid var(--line);border-radius:10px;margin-bottom:7px;cursor:pointer;font-size:13.5px}
+.lrow:hover{border-color:var(--brass);background:var(--brass-tint)}
+.lrow small{display:block;color:var(--ink-soft);font-size:11.5px;margin-top:2px}
+/* --- режим приватности: скрывает персональные данные --- */
+body.privacy .pii,
+body.privacy .owner .name,
+body.privacy .owner .ph,
+body.privacy .pers-name,
+body.privacy .pers-sub,
+body.privacy .mem .in,
+body.privacy .lrow{filter:blur(5.5px);user-select:none;pointer-events:auto}
+body.privacy .pii:active,
+body.privacy .owner .name:active,
+body.privacy .pers-name:active{filter:none}
+.privbtn{border:1px solid var(--line);background:#fff;color:var(--ink-soft);border-radius:11px;width:42px;height:42px;flex:none;cursor:pointer;font-size:17px;display:flex;align-items:center;justify-content:center}
+.privbtn.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.floatlock{position:fixed;right:16px;bottom:16px;z-index:70;width:52px;height:52px;border-radius:50%;border:none;background:var(--ink);color:#fff;font-size:20px;cursor:pointer;box-shadow:0 6px 20px rgba(30,28,24,.3)}
+.floatlock:active{transform:scale(.93)}
+/* --- вкладка База --- */
+.db-bar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+.db-bar input{flex:1;min-width:220px;border:1px solid var(--line);border-radius:11px;padding:11px 13px;font-size:15px;font-family:var(--sans);outline:none;background:#fff;color:var(--ink)}
+.db-bar input:focus{border-color:var(--brass);box-shadow:0 0 0 3px var(--brass-tint)}
+.db-count{font-size:12.5px;color:var(--ink-soft);margin-bottom:9px}
+.db-table{background:#fff;border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.db-head,.db-row{display:grid;grid-template-columns:110px 58px 44px 1fr 76px;gap:8px;padding:9px 13px;align-items:center;font-size:13.5px}
+.db-head{background:#FBFAF7;border-bottom:1px solid var(--line);font-size:10.5px;font-weight:700;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.3px;position:sticky;top:0;z-index:2}
+.db-row{border-bottom:1px solid #F4F1EA;cursor:pointer}
+.db-row:hover{background:var(--brass-tint)}
+.db-num{font-weight:700;white-space:nowrap}
+.db-fio{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.db-fio i{color:#C7C2B6}
+.db-cad{font-family:ui-monospace,Menlo,monospace;font-size:11px;color:var(--ink-soft);text-align:right}
+@media(max-width:640px){.db-head,.db-row{grid-template-columns:92px 46px 1fr}.db-head span:nth-child(3),.db-row span:nth-child(3),.db-head span:nth-child(5),.db-row span:nth-child(5){display:none}}
+/* --- вкладка Настройки --- */
+.settings{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px;align-items:start}
+.st-card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:16px 18px;box-shadow:var(--shadow)}
+.st-h{font-family:var(--serif);font-size:16px;font-weight:700;margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.st-tag{font-family:var(--sans);font-size:10px;font-weight:700;color:var(--brass);background:var(--brass-tint);padding:3px 8px;border-radius:999px;letter-spacing:.2px}
+.st-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 0;border-bottom:1px solid #F4F1EA}
+.st-row:last-of-type{border-bottom:none}
+.st-l b{font-size:14px;display:block}
+.st-l small{display:block;font-size:11.5px;color:var(--ink-soft);margin-top:2px;line-height:1.4}
+.st-note{font-size:12.5px;color:var(--ink-soft);line-height:1.5;margin-bottom:10px}
+.st-btn{width:100%;border:1px solid var(--line);background:#fff;color:var(--ink);border-radius:10px;padding:11px;font-size:14px;cursor:pointer;font-family:var(--sans);margin-top:8px}
+.st-btn:hover{border-color:var(--brass);color:var(--brass)}
+.st-btn.danger{color:var(--no);border-color:#EBD3CF}
+.st-btn.danger:hover{background:#FBEEEC;color:var(--no)}
+.tgl{width:46px;height:27px;border-radius:999px;border:none;background:#DAD6CC;cursor:pointer;position:relative;flex:none;transition:.15s}
+.tgl i{position:absolute;top:3px;left:3px;width:21px;height:21px;border-radius:50%;background:#fff;transition:.15s;box-shadow:0 1px 3px rgba(0,0,0,.2)}
+.tgl.on{background:var(--ok)}
+.tgl.on i{left:22px}
+.brick.works{background:var(--ok)} .brick.thinking{background:var(--think)} .brick.refusal{background:var(--no)} .brick.base{background:#8f9aa8} .brick.closed{background:#6f6b64}
+.brick:hover{transform:scale(1.55);z-index:6;outline:2px solid var(--brass);border-radius:2px}
+.brick.multi::after{content:"";position:absolute;top:1px;right:1px;width:4px;height:4px;border-radius:50%;background:#fff;box-shadow:0 0 0 1px rgba(0,0,0,.35)}
+.bld-base{border:1px solid;border-top-width:3px;border-radius:0 0 10px 10px;padding:7px 12px;text-align:center;font-size:11px;font-weight:700;letter-spacing:.3px;min-width:80%}
+.bld.w .bld-base{background:#EDEAE2;border-color:#D8D3C7;color:#4a463f}
+.bld.b .bld-base{background:#2B2A28;border-color:#141312;color:#EDE7D9}
+.bld.g .bld-base{background:#D6BB77;border-color:#C6A648;color:#3a2f12}
+.bld-base small{display:block;font-weight:500;font-size:9.5px;opacity:.8;margin-top:1px}
+#schemaTip{position:fixed;z-index:80;pointer-events:none;background:rgba(35,33,30,.96);color:#fff;font-size:12px;padding:7px 10px;border-radius:9px;box-shadow:0 6px 20px rgba(0,0,0,.3);display:none;max-width:220px;line-height:1.35}
+#schemaTip b{color:#F2EAD6}
+#schemaTip .st-st{display:inline-block;margin-top:3px;font-size:11px;opacity:.9}
+.zoombar{display:flex;gap:6px;align-items:center;justify-content:center;margin-top:10px;font-size:12.5px;color:var(--ink-soft)}
+.zoombar button{border:1px solid var(--line);background:#fff;border-radius:8px;padding:5px 12px;cursor:pointer;font-family:var(--sans);font-size:13px}
+.zoombar button.on{border-color:var(--brass);color:var(--brass);font-weight:700}
+.cell-info .ci-row{display:flex;justify-content:space-between;gap:10px;font-size:13.5px;padding:7px 0;border-bottom:1px solid var(--line)}
+.cell-info .ci-row span{color:var(--ink-soft)}
+.qedit{margin-top:14px}
+.qedit .lb{font-size:12px;font-weight:600;color:var(--ink-soft);margin:8px 0 4px;display:block}
+.qedit input,.qedit textarea{width:100%;border:1px solid var(--line);border-radius:9px;padding:10px 11px;font-size:14.5px;font-family:var(--sans);outline:none;background:#fff;color:var(--ink)}
+.qedit textarea{min-height:58px;resize:vertical;line-height:1.4}
+.qedit input:focus,.qedit textarea:focus{border-color:var(--brass);box-shadow:0 0 0 3px var(--brass-tint)}
+.qedit .egrn-meta{min-height:15px;margin-top:4px}
+.nb-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:6px}
+.nb{border:1px solid var(--line);border-radius:8px;padding:7px 4px;text-align:center;font-size:10.5px;color:var(--ink-soft);line-height:1.3}
+.nb b{display:block;font-size:13px;color:var(--ink);font-variant-numeric:tabular-nums}
+.nb.occ{background:var(--brass-tint);border-color:#E3D3A8}
+.nb.mid{background:#2B2A28;color:#F2EAD6;border-color:#2B2A28}
+.nb.mid b{color:#fff}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="bar-top">
+    <div class="search">
+      <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <input id="q" type="search" placeholder="Поиск: ФИО, № квартиры, кадастр, телефон…" autocomplete="off">
+      <div id="sugBox" class="sug-box"></div>
+    </div>
+    <button class="privbtn" id="privBtn" onclick="togglePrivacy()" title="Скрыть персональные данные">👁</button>
+    <button class="privbtn" onclick="lockNow()" title="Быстро заблокировать">🔒</button>
+    <button class="btn-add" onclick="openModal()"><span class="plus">+</span><span class="t">Добавить объект</span></button>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" id="tabActualka" onclick="switchView('actualka')">Актуалка</button>
+    <button class="tab" id="tabDb" onclick="switchView('db')">База</button>
+    <button class="tab" id="tabSchema" onclick="switchView('schema')">Схема дома</button>
+    <button class="tab" id="tabSettings" onclick="switchView('settings')">Настройки</button>
+  </div>
+
+  <div class="filters" id="statusChips"></div>
+  <div class="filters" id="filtersRow2" style="margin-top:8px">
+    <select class="mini" id="fDeal" onchange="onDealFilter()">
+      <option value="all">Продажа + аренда</option>
+      <option value="sale">Только продажа</option>
+      <option value="rent">Только аренда</option>
+    </select>
+    <select class="mini" id="fState"></select>
+    <select class="mini" id="fPay">
+      <option value="all">Оплата — любая</option>
+      <option value="yes">Платит</option>
+      <option value="split">Делится с агентом</option>
+      <option value="low">Мало платит</option>
+      <option value="no">Не платит</option>
+    </select>
+    <span class="spacer"></span>
+    <select class="mini" id="fSort">
+      <option value="new">Сначала новые</option>
+      <option value="area_desc">Метраж: большие → меньшие</option>
+      <option value="area_asc">Метраж: меньшие → большие</option>
+      <option value="price_desc">Дороже → дешевле</option>
+      <option value="price_asc">Дешевле → дороже</option>
+      <option value="ppm_desc">Метр: дорогой → дешёвый</option>
+      <option value="ppm_asc">Метр: дешёвый → дорогой</option>
+      <option value="contact">По дате контакта</option>
+    </select>
+  </div>
+
+  <div id="cloudNote" class="cloud-note"></div>
+</header>
+
+<main>
+  <div id="viewActualka">
+  <div class="grid" id="grid"></div>
+  <div class="tools">
+    <button onclick="document.getElementById('egrnFile').click()">🗄 Загрузить базу ЕГРН</button>
+    <span id="egrnStatus">база ЕГРН не загружена</span>
+    <span style="flex-basis:100%;height:0"></span>
+    <button onclick="openReport()">📄 Отчёт</button>
+    <button onclick="exportJSON()">⭳ Сохранить резервную копию</button>
+    <button onclick="document.getElementById('importFile').click()">⭱ Загрузить копию</button>
+  </div>
+  </div>
+  <div id="viewSchema" style="display:none"></div>
+  <div id="viewDb" style="display:none"></div>
+  <div id="viewSettings" style="display:none"></div>
+</main>
+<input type="file" id="egrnFile" accept=".xlsx,.xls,.csv" hidden onchange="loadEgrn(this)">
+<input type="file" id="importFile" accept="application/json" hidden onchange="importJSON(this)">
+<button class="floatlock" onclick="lockNow()" title="Заблокировать">🔒</button>
+<div id="schemaTip"></div>
+
+<div class="overlay" id="overlay">
+  <div class="modal" id="modal">
+    <div class="modal-head">
+      <h2 id="mTitle">Новый объект</h2>
+      <button class="x" onclick="closeModal()">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="photo-drop" id="photoDrop" onclick="pickPhoto()">
+        <input type="file" id="photoInput" accept="image/*" hidden onchange="onPhotoFile(this.files[0])">
+        <div class="hint" id="photoHint"><b>Фото квартиры</b>Нажми, чтобы выбрать · или вставь скриншот (Ctrl/⌘+V)</div>
+        <img id="photoPreview" style="display:none">
+        <button class="photo-clear" id="photoClear" onclick="clearPhoto(event)">×</button>
+      </div>
+
+      <div class="two">
+        <label class="f"><span class="lb">Квартира</span><input id="fld_apartment" placeholder="№ 214, кв. …"></label>
+        <label class="f"><span class="lb">Метраж, м²</span><input id="fld_area" inputmode="decimal" placeholder="72"></label>
+      </div>
+      <label class="f"><span class="lb">Кадастровый номер <span style="color:var(--brass);font-weight:700">— автопоиск в базе</span></span><input id="fld_cadastral" placeholder="77:07:0006003:____ · или № кв / ФИО" oninput="egrnLookupDebounced()"></label>
+      <div id="egrnResult" class="egrn-result"></div>
+      <div class="two">
+        <label class="f"><span class="lb">Цена</span><input id="fld_price" placeholder="120 000 000 ₽"></label>
+        <label class="f"><span class="lb">Доля</span><input id="fld_share" placeholder="1/1"></label>
+      </div>
+
+      <div class="two">
+        <label class="f"><span class="lb">Собственник (ФИО)</span><input id="fld_ownerName" placeholder="Иванов Иван"></label>
+        <label class="f"><span class="lb">Телефон</span><input id="fld_ownerPhone" placeholder="+7 ___ ___-__-__"></label>
+      </div>
+
+      <div class="two">
+        <label class="f"><span class="lb">Кто ведёт сейчас</span><input id="fld_currentAgent" placeholder="Агентство / агент"></label>
+        <label class="f"><span class="lb">Ссылка на объявление</span><input id="fld_listingUrl" placeholder="cian / avito / …"></label>
+      </div>
+
+      <div class="links-sec">
+        <span class="lb">Ссылки других агентов (дубли)</span>
+        <div id="otherLinks"></div>
+        <button type="button" class="add-link" onclick="addOtherRow()">+ Добавить ссылку</button>
+      </div>
+
+      <div class="two">
+        <label class="f"><span class="lb">Тип сделки</span>
+          <select id="fld_dealType">
+            <option value="sale">Продажа</option>
+            <option value="rent">Аренда</option>
+            <option value="both">Продажа + аренда</option>
+          </select>
+        </label>
+        <label class="f"><span class="lb">Состояние объекта</span>
+          <select id="fld_objState" onchange="onStateFieldChange()">
+            <option value="active">В работе</option>
+            <option value="sold">Продано</option>
+            <option value="rented">Сдано</option>
+            <option value="withdrawn">Снято с продажи</option>
+          </select>
+        </label>
+      </div>
+      <div class="two" id="closeDatesRow">
+        <label class="f"><span class="lb">Дата закрытия (прод./сдачи)</span><input id="fld_closedDate" type="date"></label>
+        <label class="f"><span class="lb">Договор аренды до</span><input id="fld_leaseEnd" type="date"></label>
+      </div>
+
+      <label class="f"><span class="lb">Статус</span>
+        <select id="fld_dealStatus">
+          <option value="base">Не общались</option>
+          <option value="thinking">Думает</option>
+          <option value="works">Работает</option>
+          <option value="refusal">Отказ</option>
+        </select>
+      </label>
+
+      <div class="two">
+        <label class="f"><span class="lb">Оплата нам</span>
+          <select id="fld_willPay">
+            <option value="unknown">— не выяснено</option>
+            <option value="yes">Платит</option>
+            <option value="split">Делится с агентом</option>
+            <option value="low">Мало платит</option>
+            <option value="no">Не платит</option>
+          </select>
+        </label>
+        <label class="f"><span class="lb">Эксклюзив у другого?</span>
+          <select id="fld_exclusive">
+            <option value="unknown">— не выяснено</option>
+            <option value="no">Нет</option>
+            <option value="yes">Да</option>
+          </select>
+        </label>
+      </div>
+
+      <div class="two">
+        <label class="f"><span class="lb">Последний контакт</span><input id="fld_lastContact" type="date"></label>
+        <label class="f"><span class="lb">Когда перезвонить</span><input id="fld_nextDate" type="date"></label>
+      </div>
+      <label class="f"><span class="lb">Следующий шаг</span><input id="fld_nextStep" placeholder="Скинуть покупателя, дожать по комиссии…"></label>
+      <label class="f"><span class="lb">Заметки</span><textarea id="fld_notes" placeholder="Возражения, характер, торг, детали…"></textarea></label>
+    </div>
+    <div class="modal-foot">
+      <button class="del" id="delBtn" onclick="delCurrent()" style="display:none">Удалить</button>
+      <button class="save" onclick="saveCard()">Сохранить</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="reportOverlay">
+  <div class="modal" style="max-width:700px">
+    <div class="modal-head">
+      <h2>Отчёт по актуалке</h2>
+      <button class="x" onclick="closeReport()">×</button>
+    </div>
+    <div class="modal-body rep-controls">
+      <label class="rep-check"><input type="checkbox" id="rc_stats" checked> Сводка по статусам и состояниям</label>
+      <label class="rep-check"><input type="checkbox" id="rc_sale" checked> Активные в продаже</label>
+      <label class="rep-check"><input type="checkbox" id="rc_rent" checked> Активные в аренде</label>
+      <label class="rep-check"><input type="checkbox" id="rc_sold" checked> Проданные</label>
+      <label class="rep-check"><input type="checkbox" id="rc_rented" checked> Сданные</label>
+      <label class="rep-check"><input type="checkbox" id="rc_call"> Кому перезвонить (по дате)</label>
+      <label class="rep-check"><input type="checkbox" id="rc_incomplete"> Недозаполненные</label>
+      <div style="font-size:12.5px;font-weight:600;color:var(--ink-soft);margin:12px 0 2px">Период для проданных/сданных (по дате закрытия, необязательно):</div>
+      <div class="rep-period">
+        <label class="f" style="margin:0"><span class="lb">С</span><input id="rc_from" type="date"></label>
+        <label class="f" style="margin:0"><span class="lb">По</span><input id="rc_to" type="date"></label>
+      </div>
+      <div id="reportOutput" style="margin-top:16px"></div>
+    </div>
+    <div class="modal-foot">
+      <button class="del" style="color:var(--ink-soft);border-color:var(--line)" onclick="closeReport()">Закрыть</button>
+      <button class="save" onclick="generateReport()">Сформировать</button>
+      <button class="save" style="background:#4a4a48;flex:none" onclick="window.print()">Печать / PDF</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="cellOverlay">
+  <div class="modal" style="max-width:460px">
+    <div class="modal-head">
+      <h2 id="cellTitle">Квартира</h2>
+      <button class="x" onclick="closeCell()">×</button>
+    </div>
+    <div class="modal-body" id="cellBody"></div>
+    <div class="modal-foot" id="cellFoot"></div>
+  </div>
+</div>
+
+<div class="overlay" id="personOverlay">
+  <div class="modal" style="max-width:480px">
+    <div class="modal-head"><h2 id="personTitle">Собственник</h2><button class="x" onclick="closePerson()">×</button></div>
+    <div class="modal-body" id="personBody"></div>
+    <div class="modal-foot" id="personFoot"></div>
+  </div>
+</div>
+
+<div class="overlay" id="linkOverlay">
+  <div class="modal" style="max-width:440px">
+    <div class="modal-head"><h2>Кого связать</h2><button class="x" onclick="closeLink()">×</button></div>
+    <div class="modal-body">
+      <input id="linkQ" placeholder="Поиск: ФИО, № квартиры, телефон…" style="width:100%;border:1px solid var(--line);border-radius:10px;padding:11px 12px;font-size:15px;font-family:var(--sans);outline:none">
+      <div id="linkCount" style="font-size:11.5px;color:var(--ink-soft);margin:9px 0 6px"></div>
+      <div id="linkList"></div>
+    </div>
+    <div class="modal-foot"><button class="del" style="flex:1;color:var(--ink-soft);border-color:var(--line)" onclick="closeLink()">Отмена</button></div>
+  </div>
+</div>
+
+<div class="auth-gate show" id="authGate">
+  <div class="auth-box">
+    <input id="authEmail" type="email" autocomplete="username" placeholder="Почта" onkeydown="if(event.key==='Enter')document.getElementById('authPass').focus()">
+    <input id="authPass" type="password" autocomplete="current-password" placeholder="Пароль" onkeydown="if(event.key==='Enter')doLogin()">
+    <button onclick="doLogin()">Войти</button>
+    <div id="authErr"></div>
+  </div>
+</div>
+
+<!-- Firebase SDK — работает только если вставлен конфиг; если не загрузится, приложение уходит в локальный режим -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+<script>
+/* ============================================================
+   FIREBASE — вставь свой конфиг сюда, чтобы включить облако.
+   Пока поля пустые — работает локально + резервные копии.
+   ============================================================ */
+const FIREBASE_CONFIG = { apiKey:"AIzaSyAe2prvX263zrbliZQzO5WEfytekEU0raM", authDomain:"diff-1822e.firebaseapp.com", databaseURL:"https://diff-1822e-default-rtdb.firebaseio.com", projectId:"diff-1822e" };
+/* ============================================================ */
+
+const HYDE_PREFIX="77:07:0006003:";
+const HYDE_OBJ={"5698":["1003М",4.0,-1],"5699":["1004М",5.1,-1],"5708":["1012М",5.0,-1],"5299":["2012М",3.7,-2],"6986":["5Н",50.6,1],"6985":["5Н/1",41.4,1],"6092":["1021",75.6,2],"6203":["1022",48.9,2],"6314":["1023",49.7,2],"6425":["1024",54.7,2],"6647":["1026",98.2,2],"6758":["1027",77.0,2],"6869":["1031",75.8,3],"5114":["1032",49.5,3],"5225":["1033",49.6,3],"5336":["1034",54.9,3],"5558":["1036",98.7,3],"5669":["1037",77.4,3],"5780":["1041",75.8,4],"5891":["1042",49.3,4],"6002":["1043",49.5,4],"6081":["1044",54.9,4],"6093":["1045",54.7,4],"6115":["1047",77.1,4],"6126":["1051",75.6,5],"6137":["1052",49.4,5],"6148":["1053",49.7,5],"6170":["1055",54.7,5],"6181":["1056",98.2,5],"6192":["1057",77.2,5],"6215":["1062",49.2,6],"6226":["1063",50.3,6],"6237":["1064",55.1,6],"6248":["1065",55.0,6],"6259":["1066",99.1,6],"6270":["1067",77.1,6],"6281":["1071",75.4,7],"6303":["1073",50.1,7],"6315":["1074",55.1,7],"6326":["1075",54.9,7],"6337":["1076",98.9,7],"6348":["1077",77.0,7],"6370":["1082",49.0,8],"6381":["1083",50.2,8],"6392":["1084",55.0,8],"6403":["1085",54.8,8],"6414":["1086",98.7,8],"6426":["1087",77.0,8],"6437":["1091",75.2,9],"6448":["1092",49.2,9],"6459":["1093",50.1,9],"6470":["1094",55.0,9],"6481":["1095",54.8,9],"6492":["1096",98.7,9],"6503":["1097",77.1,9],"6514":["1101",75.5,10],"6525":["1102",49.1,10],"6537":["1103",50.8,10],"6548":["1104",55.1,10],"6559":["1105",55.0,10],"6570":["1106",99.3,10],"6581":["1107",76.9,10],"6592":["1111",75.4,11],"6603":["1112",48.9,11],"6614":["1113",50.7,11],"6625":["1114",55.2,11],"6636":["1115",54.9,11],"6648":["1116",99.1,11],"6659":["1117",76.9,11],"6670":["1121",75.2,12],"6681":["1122",48.8,12],"6692":["1123",50.8,12],"6714":["1125",55.0,12],"6725":["1126",99.1,12],"6759":["1132",48.6,13],"6770":["1133",50.6,13],"6781":["1134",55.7,13],"6792":["1135",55.4,13],"6814":["1137",77.5,13],"6825":["1141",76.2,14],"6836":["1142",48.4,14],"6847":["1143",50.8,14],"6858":["1144",55.6,14],"6870":["1145",55.3,14],"6881":["1146",99.6,14],"6892":["1147",77.4,14],"6903":["1151",76.3,15],"6914":["1152",48.7,15],"6925":["1153",50.5,15],"6936":["1154",55.5,15],"6947":["1155",55.4,15],"6969":["1157",77.5,15],"5115":["1161",76.3,16],"5126":["1162",48.6,16],"5137":["1163",50.7,16],"5159":["1165",55.1,16],"5170":["1166",99.3,16],"5181":["1167",77.4,16],"5192":["1171",76.2,17],"5203":["1172",48.6,17],"5214":["1173",50.6,17],"5226":["1174",55.7,17],"5237":["1175",55.2,17],"5248":["1176",99.5,17],"5259":["1177",77.5,17],"5270":["1181",76.3,18],"5281":["1182",48.7,18],"5292":["1183",50.7,18],"5303":["1184",55.5,18],"5314":["1185",55.4,18],"5325":["1186",99.6,18],"5337":["1187",77.5,18],"5348":["1191",76.3,19],"5359":["1192",48.5,19],"5370":["1193",50.8,19],"5381":["1194",55.6,19],"5392":["1195",55.3,19],"5403":["1196",99.5,19],"5414":["1197",77.4,19],"5425":["1201",76.3,20],"5436":["1202",48.7,20],"5448":["1203",50.7,20],"5459":["1204",55.7,20],"5470":["1205",55.3,20],"5481":["1206",99.7,20],"5492":["1207",77.4,20],"5503":["1211",76.2,21],"5514":["1212",48.7,21],"5525":["1213",51.2,21],"5536":["1214",56.3,21],"5547":["1215",56.1,21],"5559":["1216",99.9,21],"5570":["1217",77.4,21],"5581":["1221",72.8,22],"5592":["1222",46.2,22],"5603":["1223",49.9,22],"5625":["1225",55.3,22],"5636":["1226",96.3,22],"5647":["1227",74.2,22],"5658":["1231",76.3,23],"5670":["1232",48.8,23],"5681":["1233",51.1,23],"5703":["1235",56.2,23],"5714":["1236",100.2,23],"5725":["1237",77.5,23],"5736":["1241",76.5,24],"5747":["1242",49.1,24],"5758":["1243",51.3,24],"5769":["1244",56.7,24],"5781":["1245",56.2,24],"5792":["1246",100.7,24],"5803":["1247",77.9,24],"5814":["1251",76.8,25],"5825":["1252",48.9,25],"5836":["1253",51.2,25],"5847":["1254",56.7,25],"5858":["1255",56.3,25],"5869":["1256",100.7,25],"5880":["1257",77.9,25],"5892":["1261",77.0,26],"5903":["1262",49.3,26],"5914":["1263",51.5,26],"5925":["1264",56.7,26],"5936":["1265",56.6,26],"5947":["1266",101.1,26],"5958":["1267",78.0,26],"5969":["1271",76.9,27],"5980":["1272",49.5,27],"5991":["1273",51.5,27],"6003":["1274",56.9,27],"6014":["1275",56.7,27],"6025":["1276",101.2,27],"6036":["1277",78.2,27],"6047":["1281",77.0,28],"6058":["1282",49.4,28],"6069":["1283",51.4,28],"6078":["1284",57.0,28],"6079":["1285",56.5,28],"6080":["1286",101.4,28],"6082":["1287",78.4,28],"6084":["1292",49.5,29],"6085":["1293",51.6,29],"6086":["1294",56.8,29],"6087":["1295",56.5,29],"6088":["1296",101.1,29],"6089":["1297",78.3,29],"6090":["1301",77.9,30],"6091":["1302",51.0,30],"6094":["1303",51.7,30],"6095":["1304",57.6,30],"6096":["1305",57.3,30],"6097":["1306",103.6,30],"6098":["1307",79.3,30],"6099":["1311",77.6,31],"6100":["1312",104.5,31],"6101":["1313",57.8,31],"6103":["1315",104.9,31],"6105":["1316",78.6,31],"6106":["1321",77.7,32],"6107":["1322",105.5,32],"6109":["1324",57.8,32],"6110":["1325",105.9,32],"6111":["1326",79.0,32],"6112":["1331",77.9,33],"6113":["1332",105.6,33],"6114":["1333",57.9,33],"6116":["1334",57.9,33],"6117":["1335",105.8,33],"6118":["1336",79.0,33],"6119":["1341",78.3,34],"6120":["1342",106.6,34],"6121":["1343",58.3,34],"6122":["1344",58.4,34],"6123":["1345",106.8,34],"6124":["1346",79.3,34],"6125":["1351",78.2,35],"6127":["1352",106.6,35],"6128":["1353",58.4,35],"6129":["1354",58.3,35],"6130":["1355",106.8,35],"6131":["1356",79.3,35],"6132":["1361",78.5,36],"6133":["1362",107.7,36],"6134":["1363",58.8,36],"6135":["1364",58.6,36],"6136":["1365",107.9,36],"6138":["1366",79.9,36],"6140":["1372",107.7,37],"6143":["1375",107.4,37],"6145":["1381",78.8,38],"6146":["1382",108.5,38],"6147":["1383",59.0,38],"6149":["1384",58.8,38],"6150":["1385",108.7,38],"6151":["1386",80.0,38],"6152":["1391",79.0,39],"6153":["1392",108.6,39],"6154":["1393",58.9,39],"6155":["1394",58.8,39],"6157":["1396",79.9,39],"6158":["1401",79.4,40],"6160":["1402",109.4,40],"6161":["1403",59.2,40],"6162":["1404",59.2,40],"6163":["1405",109.2,40],"6164":["1406",80.2,40],"6165":["1411",160.1,41],"6166":["1412",147.6,41],"6167":["1413",188.8,41],"6168":["2021",47.7,2],"6169":["2022",47.5,2],"6171":["2023",76.3,2],"6172":["2024",55.5,2],"6173":["2025",55.4,2],"6174":["2026",75.8,2],"6175":["2027",47.6,2],"6176":["2028",47.8,2],"6177":["2031",47.8,3],"6179":["2033",76.6,3],"6180":["2034",55.5,3],"6182":["2035",55.4,3],"6183":["2036",76.1,3],"6184":["2037",47.4,3],"6185":["2038",47.7,3],"6186":["2041",47.9,4],"6187":["2042",47.6,4],"6188":["2043",76.7,4],"6189":["2044",55.5,4],"6190":["2045",55.5,4],"6191":["2046",76.3,4],"6193":["2047",47.6,4],"6194":["2048",47.9,4],"6195":["2051",47.9,5],"6196":["2052",47.8,5],"6197":["2053",76.7,5],"6198":["2054",55.4,5],"6199":["2055",55.6,5],"6200":["2056",76.5,5],"6201":["2057",47.7,5],"6205":["2061",48.0,6],"6206":["2062",47.8,6],"6207":["2063",77.3,6],"6208":["2064",55.8,6],"6209":["2065",55.6,6],"6210":["2066",76.9,6],"6211":["2067",47.5,6],"6212":["2068",47.9,6],"6216":["2073",77.4,7],"6217":["2074",55.7,7],"6218":["2075",55.7,7],"6219":["2076",77.0,7],"6220":["2077",47.7,7],"6221":["2078",47.8,7],"6222":["2081",47.9,8],"6223":["2082",47.8,8],"6224":["2083",77.1,8],"6227":["2085",55.3,8],"6228":["2086",77.0,8],"6229":["2087",47.7,8],"6230":["2088",47.9,8],"6232":["2092",47.7,9],"6233":["2093",77.4,9],"6234":["2094",55.6,9],"6235":["2095",55.6,9],"6236":["2096",76.9,9],"6238":["2097",47.6,9],"6239":["2098",48.0,9],"6240":["2101",47.9,10],"6241":["2102",47.7,10],"6242":["2103",78.1,10],"6243":["2104",55.6,10],"6244":["2105",55.8,10],"6245":["2106",77.7,10],"6246":["2107",47.6,10],"6247":["2108",47.9,10],"6249":["2111",47.8,11],"6250":["2112",47.7,11],"6251":["2113",77.9,11],"6252":["2114",55.7,11],"6253":["2115",55.7,11],"6254":["2116",77.6,11],"6255":["2117",47.7,11],"6256":["2118",48.0,11],"6258":["2122",47.7,12],"6260":["2123",77.8,12],"6261":["2124",55.9,12],"6262":["2125",55.7,12],"6263":["2126",77.7,12],"6264":["2127",47.7,12],"6265":["2128",47.9,12],"6266":["2131",49.1,13],"6267":["2132",47.8,13],"6268":["2133",78.6,13],"6269":["2134",56.2,13],"6271":["2135",56.0,13],"6272":["2136",78.5,13],"6273":["2137",47.7,13],"6274":["2138",49.3,13],"6275":["2141",49.0,14],"6276":["2142",47.7,14],"6277":["2143",78.5,14],"6278":["2144",56.2,14],"6279":["2145",56.2,14],"6280":["2146",78.6,14],"6282":["2147",47.6,14],"6283":["2148",49.0,14],"6284":["2151",49.1,15],"6285":["2152",47.8,15],"6286":["2153",78.8,15],"6287":["2154",56.2,15],"6288":["2155",56.2,15],"6289":["2156",78.6,15],"6290":["2157",47.6,15],"6291":["2158",49.1,15],"6293":["2161",49.1,16],"6296":["2164",56.2,16],"6297":["2165",56.2,16],"6298":["2166",78.4,16],"6299":["2167",47.4,16],"6300":["2168",49.2,16],"6301":["2171",49.1,17],"6302":["2172",47.7,17],"6304":["2173",78.9,17],"6308":["2177",47.7,17],"6309":["2178",49.1,17],"6310":["2181",49.0,18],"6311":["2182",47.7,18],"6312":["2183",78.9,18],"6313":["2184",56.3,18],"6316":["2185",56.2,18],"6317":["2186",78.6,18],"6318":["2187",47.8,18],"6319":["2188",49.0,18],"6320":["2191",49.1,19],"6321":["2192",47.8,19],"6324":["2195",56.0,19],"6325":["2196",78.6,19],"6327":["2197",47.5,19],"6328":["2198",49.2,19],"6330":["2202",47.8,20],"6331":["2203",78.8,20],"6332":["2204",56.1,20],"6333":["2205",55.9,20],"6335":["2207",47.6,20],"6336":["2208",49.1,20],"6338":["2211",49.1,21],"6339":["2212",47.8,21],"6340":["2213",78.8,21],"6342":["2215",57.0,21],"6343":["2216",78.4,21],"6344":["2217",47.5,21],"6345":["2218",49.0,21],"6346":["2221",47.7,22],"6347":["2222",44.7,22],"6349":["2223",75.4,22],"6350":["2224",55.8,22],"6351":["2225",55.6,22],"6352":["2226",75.2,22],"6353":["2227",44.9,22],"6354":["2228",47.6,22],"6355":["2231",49.0,23],"6357":["2233",78.8,23],"6358":["2234",57.1,23],"6360":["2235",57.2,23],"6362":["2237",47.6,23],"6364":["2241",49.0,24],"6365":["2242",47.6,24],"6366":["2243",78.9,24],"6367":["2244",57.1,24],"6368":["2245",57.2,24],"6369":["2246",78.5,24],"6371":["2247",47.5,24],"6372":["2248",48.9,24],"6373":["2251",49.0,25],"6374":["2252",47.7,25],"6375":["2253",78.7,25],"6376":["2254",57.1,25],"6377":["2255",57.3,25],"6378":["2256",78.5,25],"6380":["2258",49.0,25],"6382":["2261",49.0,26],"6383":["2262",47.6,26],"6384":["2263",78.7,26],"6386":["2265",57.2,26],"6387":["2266",78.6,26],"6388":["2267",47.5,26],"6389":["2268",49.1,26],"6391":["2272",47.7,27],"6393":["2273",78.5,27],"6394":["2274",57.2,27],"6395":["2275",57.3,27],"6396":["2276",78.4,27],"6397":["2277",47.4,27],"6399":["2281",49.0,28],"6400":["2282",47.6,28],"6401":["2283",78.8,28],"6404":["2285",57.2,28],"6405":["2286",78.6,28],"6407":["2288",49.0,28],"6408":["2291",49.1,29],"6409":["2292",47.7,29],"6410":["2293",78.8,29],"6411":["2294",57.2,29],"6412":["2295",57.1,29],"6413":["2296",78.6,29],"6415":["2297",47.5,29],"6416":["2298",49.0,29],"6417":["2301",48.8,30],"6419":["2303",78.8,30],"6420":["2304",57.1,30],"6421":["2305",57.3,30],"6422":["2306",78.7,30],"6423":["2307",47.6,30],"6424":["2308",49.0,30],"6429":["2313",57.3,31],"6430":["2314",57.1,31],"6431":["2315",78.5,31],"6432":["2316",47.5,31],"6433":["2317",49.1,31],"6434":["2321",75.4,32],"6435":["2322",101.9,32],"6436":["2323",56.9,32],"6438":["2324",57.0,32],"6439":["2325",78.6,32],"6440":["2326",47.5,32],"6441":["2327",49.0,32],"6442":["2331",75.5,33],"6443":["2332",102.2,33],"6444":["2333",57.2,33],"6445":["2334",57.2,33],"6447":["2336",47.6,33],"6449":["2337",49.0,33],"6451":["2342",102.2,34],"6452":["2343",57.1,34],"6453":["2344",57.2,34],"6454":["2345",78.6,34],"6455":["2346",47.6,34],"6456":["2347",48.9,34],"6457":["2351",75.5,35],"6458":["2352",102.3,35],"6460":["2353",57.3,35],"6461":["2354",57.1,35],"6462":["2355",78.6,35],"6463":["2356",47.6,35],"6464":["2357",49.1,35],"6465":["2361",75.5,36],"6468":["2364",57.3,36],"6469":["2365",78.6,36],"6471":["2366",47.6,36],"6472":["2367",49.0,36],"6473":["2371",75.5,37],"6474":["2372",102.3,37],"6475":["2373",57.3,37],"6476":["2374",57.2,37],"6477":["2375",78.6,37],"6478":["2376",47.6,37],"6480":["2381",75.6,38],"6482":["2382",102.4,38],"6483":["2383",57.1,38],"6484":["2384",57.2,38],"6485":["2385",78.8,38],"6486":["2386",47.6,38],"6487":["2387",49.0,38],"6488":["2391",75.5,39],"6489":["2392",102.4,39],"6490":["2393",57.3,39],"6491":["2394",57.1,39],"6493":["2395",78.6,39],"6494":["2396",47.5,39],"6495":["2397",48.9,39],"6496":["2401",75.4,40],"6497":["2402",102.1,40],"6499":["2404",57.1,40],"6500":["2405",78.9,40],"6501":["2406",47.5,40],"6502":["2407",48.8,40],"6505":["2412",143.4,41],"6506":["2413",182.3,41],"6508":["3022",32.2,2],"6509":["3023",38.1,2],"6515":["3028",61.1,2],"6517":["3032",32.3,3],"6518":["3033",38.2,3],"6519":["3034",59.7,3],"6520":["3035",62.1,3],"6521":["3036",73.1,3],"6527":["3043",38.4,4],"6529":["3045",62.5,4],"6530":["3046",71.0,4],"6531":["3047",71.7,4],"6534":["3052",32.2,5],"6535":["3053",38.0,5],"6538":["3054",59.7,5],"6539":["3055",61.9,5],"6541":["3057",70.4,5],"6542":["3058",61.3,5],"6544":["3062",32.4,6],"6545":["3063",38.2,6],"6546":["3064",60.1,6],"6547":["3065",62.4,6],"6549":["3066",71.4,6],"6551":["3068",60.7,6],"6553":["3072",32.1,7],"6554":["3073",37.4,7],"6555":["3074",58.6,7],"6556":["3075",61.8,7],"6557":["3076",72.8,7],"6560":["3078",61.7,7],"6561":["3081",63.2,8],"6562":["3082",32.3,8],"6563":["3083",37.2,8],"6564":["3084",60.0,8],"6565":["3085",62.3,8],"6566":["3086",72.1,8],"6568":["3088",62.9,8],"6569":["3091",64.8,9],"6572":["3093",35.7,9],"6573":["3094",57.4,9],"6574":["3095",61.8,9],"6575":["3096",74.3,9],"6577":["3098",62.6,9],"6578":["3101",64.2,10],"6579":["3102",33.7,10],"6580":["3103",36.2,10],"6582":["3104",59.9,10],"6583":["3105",64.0,10],"6584":["3106",75.1,10],"6586":["3108",62.7,10],"6587":["3111",65.4,11],"6588":["3112",35.4,11],"6589":["3113",36.8,11],"6590":["3114",59.9,11],"6591":["3115",62.0,11],"6593":["3116",78.0,11],"6594":["3117",66.7,11],"6595":["3118",62.6,11],"6596":["3121",44.7,12],"6597":["3122",65.2,12],"6598":["3123",36.7,12],"6600":["3125",63.7,12],"6601":["3126",76.8,12],"6604":["3128",46.3,12],"6605":["3131",45.0,13],"6606":["3132",67.6,13],"6607":["3133",36.5,13],"6608":["3134",59.1,13],"6609":["3135",64.0,13],"6610":["3136",79.2,13],"6612":["3138",46.5,13],"6613":["3141",44.7,14],"6615":["3142",68.2,14],"6616":["3143",34.8,14],"6617":["3144",59.1,14],"6618":["3145",66.4,14],"6619":["3146",79.2,14],"6621":["3148",46.8,14],"6622":["3151",43.6,15],"6623":["3152",70.0,15],"6624":["3153",35.1,15],"6626":["3154",60.3,15],"6627":["3155",64.7,15],"6628":["3156",81.4,15],"6629":["3157",70.1,15],"6630":["3158",47.6,15],"6631":["3161",45.1,16],"6632":["3162",67.8,16],"6633":["3163",34.5,16],"6634":["3164",59.7,16],"6635":["3165",52.6,16],"6638":["3167",72.5,16],"6639":["3168",46.2,16],"6640":["3171",45.5,17],"6642":["3173",34.5,17],"6643":["3174",61.8,17],"6644":["3175",52.8,17],"6645":["3176",93.6,17],"6646":["3177",70.9,17],"6649":["3178",46.2,17],"6650":["3181",46.2,18],"6651":["3182",70.2,18],"6652":["3183",34.0,18],"6653":["3184",60.6,18],"6654":["3185",53.1,18],"6655":["3186",98.5,18],"6657":["3188",46.3,18],"6658":["3191",46.5,19],"6660":["3192",73.1,19],"6661":["3193",98.4,19],"6662":["3194",53.5,19],"6663":["3195",97.8,19],"6664":["3196",69.7,19],"6665":["3197",46.1,19],"6666":["3201",46.8,20],"6667":["3202",72.0,20],"6668":["3203",97.2,20],"6669":["3204",54.0,20],"6671":["3205",99.9,20],"6672":["3206",70.5,20],"6673":["3207",46.5,20],"6674":["3211",47.3,21],"6675":["3212",74.2,21],"6676":["3213",99.1,21],"6677":["3214",53.0,21],"6678":["3215",98.5,21],"6680":["3217",45.6,21],"6682":["3221",46.4,22],"6683":["3222",68.5,22],"6684":["3223",92.9,22],"6685":["3224",50.9,22],"6686":["3225",96.5,22],"6687":["3226",66.7,22],"6688":["3227",45.2,22],"6689":["3231",47.9,23],"6690":["3232",73.3,23],"6693":["3234",51.1,23],"6695":["3236",68.7,23],"6696":["3237",46.1,23],"6698":["3242",73.4,24],"6699":["3243",94.1,24],"6700":["3244",50.1,24],"6701":["3245",101.3,24],"6705":["3251",47.5,25],"6706":["3252",73.9,25],"6707":["3253",93.6,25],"6708":["3254",49.5,25],"6709":["3255",100.6,25],"6711":["3257",46.7,25],"6712":["3261",47.1,26],"6713":["3262",74.0,26],"6715":["3263",91.6,26],"6716":["3264",50.6,26],"6717":["3265",100.0,26],"6719":["3267",46.1,26],"6721":["3272",74.4,27],"6722":["3273",91.4,27],"6724":["3275",99.3,27],"6726":["3276",63.8,27],"6727":["3277",47.7,27],"6729":["3282",74.3,28],"6730":["3283",91.2,28],"6732":["3285",99.6,28],"6734":["3287",47.5,28],"6735":["3291",48.0,29],"6737":["3292",75.7,29],"6738":["3293",90.0,29],"6739":["3294",49.7,29],"6740":["3295",99.8,29],"6741":["3296",63.4,29],"6742":["3297",46.9,29],"6743":["3301",49.8,30],"6744":["3302",75.3,30],"6746":["3304",61.9,30],"6748":["3305",101.0,30],"6751":["3311",47.7,31],"6752":["3312",89.9,31],"6753":["3313",75.2,31],"6755":["3315",102.3,31],"6756":["3316",32.9,31],"6760":["3321",47.6,32],"6761":["3322",91.7,32],"6762":["3323",78.5,32],"6765":["3326",33.3,32],"6766":["3327",66.0,32],"6767":["3331",47.0,33],"6768":["3332",92.4,33],"6769":["3333",76.6,33],"6771":["3334",63.6,33],"6772":["3335",101.4,33],"6773":["3336",32.2,33],"6774":["3337",65.5,33],"6775":["3341",47.5,34],"6776":["3342",93.3,34],"6777":["3343",80.8,34],"6778":["3344",62.9,34],"6779":["3345",102.8,34],"6780":["3346",34.6,34],"6783":["3351",46.8,35],"6784":["3352",92.8,35],"6785":["3353",76.4,35],"6786":["3354",63.1,35],"6787":["3355",102.3,35],"6788":["3356",32.7,35],"6790":["3361",45.9,36],"6791":["3362",96.8,36],"6793":["3363",83.7,36],"6794":["3364",49.9,36],"6795":["3365",118.4,36],"6796":["3366",36.1,36],"6798":["3371",45.9,37],"6799":["3372",97.3,37],"6800":["3373",76.7,37],"6801":["3374",49.9,37],"6802":["3375",119.2,37],"6804":["3376",33.6,37],"6808":["3383",83.6,38],"6809":["3384",50.0,38],"6810":["3385",118.3,38],"6811":["3386",35.9,38],"6813":["3391",45.9,39],"6815":["3392",97.2,39],"6816":["3393",76.9,39],"6817":["3394",49.8,39],"6818":["3395",119.0,39],"6819":["3396",33.5,39],"6821":["3401",45.9,40],"6822":["3402",96.6,40],"6823":["3403",83.4,40],"6824":["3404",49.8,40],"6826":["3405",118.1,40],"6827":["3406",36.1,40],"6829":["3411",220.7,41],"6830":["3412",272.0,41],"5697":["1002М",14.5,-1],"5700":["1005М",15.2,-1],"5702":["1007М",20.4,-1],"5704":["1008М",16.9,-1],"5707":["1011М",17.3,-1],"5709":["1013М",19.1,-1],"5712":["1016М",14.3,-1],"5717":["1020М",15.3,-1],"5718":["1021М",15.9,-1],"5719":["1022М",13.8,-1],"5720":["1023М",15.9,-1],"5721":["1024М",15.9,-1],"5722":["1025М",13.8,-1],"5723":["1026М",15.9,-1],"5724":["1027М",15.9,-1],"5726":["1028М",13.8,-1],"5727":["1029М",13.8,-1],"5729":["1031М",19.4,-1],"5732":["1034М",16.2,-1],"5734":["1036М",16.1,-1],"5735":["1037М",16.1,-1],"5738":["1039М",16.0,-1],"5739":["1040М",17.2,-1],"5741":["1042М",15.2,-1],"5744":["1045М",15.9,-1],"5745":["1046М",15.9,-1],"5746":["1047М",13.8,-1],"5748":["1048М",15.9,-1],"5750":["1050М",13.8,-1],"5753":["1053М",13.8,-1],"5756":["1056М",13.8,-1],"5759":["1058М",15.4,-1],"5760":["1059М",13.8,-1],"5761":["1060М",15.4,-1],"5762":["1061М",14.5,-1],"5764":["1063М",15.4,-1],"5765":["1064М",13.8,-1],"5766":["1065М",16.5,-1],"5772":["1070М",16.3,-1],"5779":["1077М",14.4,-1],"5782":["1078М",14.0,-1],"5789":["1085М",16.9,-1],"5790":["1086М",14.5,-1],"5791":["1087М",17.8,-1],"5795":["1090М",13.8,-1],"5796":["1091М",16.0,-1],"5797":["1092М",16.3,-1],"5798":["1093М",16.3,-1],"5799":["1094М",16.0,-1],"5800":["1095М",13.8,-1],"5801":["1096М",16.0,-1],"5802":["1097М",15.8,-1],"5804":["1098М",13.8,-1],"5808":["1102М",13.3,-1],"5809":["1103М",13.3,-1],"5812":["1106М",15.9,-1],"5813":["1107М",15.9,-1],"5816":["1109М",15.7,-1],"5817":["1110М",15.2,-1],"5818":["1111М",14.4,-1],"5819":["1112М",19.3,-1],"5820":["1113М",17.7,-1],"5821":["1114М",14.9,-1],"5822":["1115М",13.3,-1],"5823":["1116М",14.8,-1],"5826":["1118М",13.3,-1],"5827":["1119М",14.8,-1],"5829":["1121М",13.3,-1],"5830":["1122М",14.8,-1],"5849":["1139М",15.4,-1],"5850":["1140М",16.0,-1],"5855":["1145М",15.9,-1],"5856":["1146М",16.6,-1],"5859":["1148М",13.3,-1],"5860":["1149М",15.4,-1],"5861":["1150М",21.5,-1],"5864":["1153М",13.3,-1],"5865":["1154М",14.3,-1],"5871":["1159М",13.4,-1],"5872":["1160М",13.4,-1],"5873":["1161М",14.8,-1],"5874":["1162М",15.4,-1],"5875":["1163М",15.2,-1],"5876":["1164М",15.5,-1],"5877":["1165М",13.3,-1],"5878":["1166М",13.3,-1],"5879":["1167М",17.0,-1],"5881":["1168М",17.4,-1],"5882":["1169М",16.7,-1],"5884":["1171М",13.3,-1],"5886":["1173М",14.8,-1],"5887":["1174М",13.3,-1],"5888":["1175М",15.4,-1],"5889":["1176М",16.9,-1],"5890":["1177М",16.6,-1],"5893":["1178М",15.4,-1],"5894":["1179М",13.3,-1],"5897":["1182М",13.3,-1],"5898":["1183М",15.3,-1],"5899":["1184М",16.5,-1],"5900":["1185М",17.1,-1],"5901":["1186М",15.1,-1],"5902":["1187М",13.3,-1],"5904":["1188М",13.3,-1],"5905":["1189М",16.3,-1],"5906":["1190М",16.4,-1],"5913":["1197М",15.4,-1],"5915":["1198М",13.8,-1],"5916":["1199М",16.7,-1],"5917":["1200М",15.1,-1],"5918":["1201М",13.8,-1],"5919":["1202М",15.7,-1],"5920":["1203М",18.6,-1],"5921":["1204М",15.4,-1],"5922":["1205М",13.3,-1],"5923":["1206М",16.6,-1],"5924":["1207М",16.2,-1],"5926":["1208М",13.3,-1],"5927":["1209М",15.2,-1],"5928":["1210М",18.3,-1],"5948":["1228М",16.2,-1],"5950":["1230М",15.1,-1],"5951":["1231М",15.1,-1],"5960":["1239М",14.5,-1],"5989":["1266М",13.3,-1],"5990":["1267М",13.3,-1],"5994":["1270М",13.3,-1],"5995":["1271М",16.3,-1],"5996":["1272М",16.5,-1],"5997":["1273М",13.3,-1],"6001":["1277М",15.4,-1],"6004":["1278М",13.3,-1],"6006":["1280М",14.3,-1],"6007":["1281М",13.3,-1],"6008":["1282М",15.2,-1],"6009":["1283М",15.2,-1],"6010":["1284М",13.3,-1],"6011":["1285М",13.3,-1],"6043":["1314М",13.3,-1],"6044":["1315М",13.8,-1],"6048":["1318М",15.4,-1],"6049":["1319М",16.0,-1],"6050":["1320М",13.3,-1],"6051":["1321М",13.8,-1],"6052":["1322М",15.4,-1],"6053":["1323М",16.0,-1],"6054":["1324М",15.4,-1],"6061":["1330М",20.7,-1],"6066":["1335М",16.8,-1],"6067":["1336М",16.5,-1],"6068":["1337М",17.3,-1],"6070":["1338М",19.3,-1],"6071":["1339М",14.9,-1],"6072":["1340М",14.9,-1],"6073":["1341М",15.7,-1],"6074":["1342М",13.3,-1],"6075":["1343М",13.3,-1],"5287":["2001М",17.2,-2],"5288":["2002М",14.4,-2],"5291":["2005М",16.2,-2],"5294":["2007М",20.2,-2],"5295":["2008М",17.9,-2],"5297":["2010М",16.6,-2],"5298":["2011М",18.8,-2],"5300":["2013М",19.9,-2],"5302":["2015М",18.4,-2],"5304":["2016М",19.8,-2],"5305":["2017М",15.6,-2],"5306":["2018М",13.8,-2],"5307":["2019М",13.8,-2],"5308":["2020М",15.2,-2],"5309":["2021М",15.9,-2],"5311":["2023М",15.9,-2],"5312":["2024М",15.9,-2],"5313":["2025М",13.8,-2],"5315":["2026М",15.8,-2],"5317":["2028М",13.8,-2],"5318":["2029М",13.8,-2],"5319":["2030М",15.8,-2],"5323":["2034М",15.9,-2],"5324":["2035М",16.1,-2],"5327":["2037М",14.6,-2],"5330":["2040М",16.0,-2],"5331":["2041М",13.8,-2],"5332":["2042М",15.9,-2],"5333":["2043М",15.3,-2],"5334":["2044М",13.8,-2],"5335":["2045М",15.4,-2],"5338":["2046М",17.3,-2],"5339":["2047М",15.9,-2],"5340":["2048М",15.9,-2],"5341":["2049М",15.9,-2],"5343":["2051М",15.9,-2],"5344":["2052М",15.9,-2],"5345":["2053М",13.8,-2],"5346":["2054М",15.9,-2],"5347":["2055М",15.9,-2],"5349":["2056М",13.8,-2],"5350":["2057М",15.9,-2],"5351":["2058М",15.9,-2],"5352":["2059М",13.8,-2],"5356":["2063М",14.2,-2],"5357":["2064М",17.4,-2],"5358":["2065М",15.3,-2],"5360":["2066М",17.0,-2],"5361":["2067М",13.6,-2],"5362":["2068М",15.2,-2],"5363":["2069М",14.2,-2],"5364":["2070М",14.1,-2],"5365":["2071М",15.2,-2],"5367":["2073М",15.4,-2],"5368":["2074М",17.9,-2],"5372":["2077М",15.7,-2],"5373":["2078М",17.0,-2],"5377":["2082М",14.6,-2],"5379":["2084М",19.5,-2],"5382":["2086М",14.7,-2],"5384":["2088М",18.0,-2],"5385":["2089М",19.0,-2],"5386":["2090М",15.8,-2],"5387":["2091М",13.6,-2],"5388":["2092М",15.8,-2],"5389":["2093М",16.1,-2],"5390":["2094М",16.1,-2],"5391":["2095М",15.7,-2],"5393":["2096М",13.5,-2],"5394":["2097М",15.8,-2],"5395":["2098М",15.7,-2],"5398":["2101М",14.6,-2],"5399":["2102М",14.7,-2],"5402":["2105М",15.4,-2],"5404":["2106М",15.4,-2],"5407":["2109М",14.0,-2],"5408":["2110М",15.2,-2],"5409":["2111М",14.9,-2],"5410":["2112М",15.1,-2],"5411":["2113М",18.5,-2],"5412":["2114М",18.9,-2],"5413":["2115М",14.7,-2],"5418":["2119М",13.3,-2],"5420":["2121М",14.5,-2],"5421":["2122М",13.3,-2],"5430":["2130М",17.2,-2],"5431":["2131М",18.3,-2],"5432":["2132М",16.2,-2],"5433":["2133М",18.5,-2],"5434":["2134М",14.4,-2],"5435":["2135М",15.6,-2],"5445":["2144М",15.4,-2],"5446":["2145М",15.9,-2],"5449":["2146М",16.2,-2],"5450":["2147М",16.4,-2],"5452":["2149М",16.7,-2],"5453":["2150М",15.4,-2],"5454":["2151М",20.5,-2],"5457":["2154М",13.3,-2],"5458":["2155М",14.2,-2],"5468":["2164М",15.1,-2],"5469":["2165М",15.4,-2],"5475":["2170М",19.3,-2],"5476":["2171М",15.1,-2],"5478":["2173М",14.5,-2],"5479":["2174М",16.6,-2],"5480":["2175М",13.3,-2],"5482":["2176М",15.3,-2],"5484":["2178М",21.8,-2],"5485":["2179М",19.6,-2],"5486":["2180М",15.3,-2],"5487":["2181М",13.3,-2],"5488":["2182М",14.8,-2],"5489":["2183М",16.3,-2],"5490":["2184М",13.3,-2],"5491":["2185М",15.2,-2],"5493":["2186М",20.3,-2],"5498":["2191М",15.9,-2],"5499":["2192М",16.2,-2],"5500":["2193М",16.1,-2],"5501":["2194М",16.3,-2],"5502":["2195М",13.3,-2],"5504":["2196М",13.3,-2],"5505":["2197М",16.3,-2],"5506":["2198М",16.4,-2],"5508":["2200М",14.7,-2],"5509":["2201М",17.6,-2],"5510":["2202М",17.6,-2],"5511":["2203М",14.7,-2],"5512":["2204М",17.8,-2],"5513":["2205М",15.2,-2],"5515":["2206М",15.4,-2],"5516":["2207М",13.3,-2],"5517":["2208М",16.6,-2],"5518":["2209М",16.2,-2],"5519":["2210М",13.3,-2],"5520":["2211М",15.2,-2],"5521":["2212М",15.0,-2],"5522":["2213М",15.5,-2],"5524":["2215М",15.6,-2],"5526":["2216М",15.9,-2],"5527":["2217М",13.6,-2],"5528":["2218М",15.9,-2],"5529":["2219М",15.9,-2],"5531":["2221М",15.9,-2],"5532":["2222М",15.9,-2],"5552":["2240М",17.4,-2],"5557":["2245М",16.9,-2],"5604":["2286М",15.2,-2],"5605":["2287М",15.2,-2],"5607":["2289М",15.2,-2],"5608":["2290М",15.2,-2],"5610":["2292М",15.2,-2],"5611":["2293М",15.2,-2],"5634":["2314М",15.3,-2],"5635":["2315М",15.4,-2],"5648":["2326М",14.4,-2],"5649":["2327М",13.3,-2],"5650":["2328М",16.3,-2],"5651":["2329М",16.5,-2],"5652":["2330М",13.3,-2],"5653":["2331М",14.5,-2],"5657":["2335М",16.1,-2],"5659":["2336М",13.3,-2],"5660":["2337М",15.2,-2],"5675":["2350М",15.2,-2],"5676":["2351М",15.6,-2],"5682":["2356М",18.2,-2],"5684":["2358М",15.4,-2],"5685":["2359М",16.2,-2],"5686":["2360М",17.6,-2],"5687":["2361М",19.1,-2],"5688":["2362М",14.8,-2],"5689":["2363М",14.9,-2],"5690":["2364М",14.1,-2],"6963":["108К",3.8,-2],"6841":["10Н",126.7,1],"6967":["112К",5.8,-2],"6968":["113К",6.9,-2],"6973":["117К",5.6,-2],"6974":["118К",5.7,-2],"6975":["119К",6.4,-2],"6842":["11Н",101.5,1],"6976":["120К",12.1,-2],"6978":["122К",5.2,-2],"5117":["125К",2.7,-2],"5119":["127К",10.7,-2],"6856":["12К",3.0,-2],"6843":["12Н",27.9,1],"5122":["130К",10.4,-2],"5123":["131К",7.1,-2],"5124":["132К",8.4,-2],"5125":["133К",8.6,-2],"5127":["134К",4.7,-2],"5128":["135К",9.2,-2],"5132":["139К",3.7,-1],"6857":["13К",3.0,-2],"5133":["140К",3.6,-1],"5134":["141К",6.3,-1],"5138":["144К",8.3,-1],"5139":["145К",5.0,-1],"5140":["146К",5.1,-1],"5149":["154К",5.3,-1],"5150":["155К",6.0,-1],"5151":["156К",5.5,-1],"5152":["157К",6.2,-1],"5153":["158К",10.0,-1],"5154":["159К",6.8,-1],"5160":["164К",14.8,-1],"5161":["165К",3.6,-1],"5179":["182К",11.1,-1],"5180":["183К",6.5,-1],"5182":["184К",10.0,-1],"5183":["185К",5.9,-1],"5184":["186К",6.4,-1],"5189":["191К",15.0,-1],"5191":["193К",7.6,-1],"5193":["194К",9.5,-1],"5194":["195К",8.5,-1],"6831":["1Н",78.0,1],"5207":["207К",6.3,-1],"5208":["208К",7.6,-1],"5209":["209К",10.4,-1],"6876":["29К",8.2,-2],"6832":["2Н",107.8,1],"6877":["30К",11.8,-2],"6878":["31К",11.6,-2],"6880":["33К",4.9,-2],"6882":["34К",9.6,-2],"6887":["39К",8.3,-2],"6833":["3Н",21.5,1],"6888":["40К",4.7,-2],"6889":["41К",4.5,-2],"6894":["45К",6.4,-2],"6834":["4Н",105.8,1],"6899":["50К",5.5,-2],"6901":["52К",4.7,-2],"6902":["53К",6.6,-2],"6904":["54К",7.5,-2],"6905":["55К",7.5,-2],"6906":["56К",9.1,-2],"6907":["57К",4.7,-2],"6908":["58К",4.4,-2],"6909":["59К",4.5,-2],"6910":["60К",8.4,-2],"6911":["61К",5.1,-2],"6912":["62К",4.5,-2],"6913":["63К",4.8,-2],"6915":["64К",4.4,-2],"6916":["65К",4.8,-2],"6917":["66К",5.8,-2],"6918":["67К",11.7,-2],"6919":["68К",6.2,-2],"6920":["69К",4.2,-2],"6921":["70К",3.6,-2],"6922":["71К",6.5,-2],"6923":["72К",3.6,-2],"6924":["73К",6.5,-2],"6926":["74К",7.6,-2],"6927":["75К",5.9,-2],"6928":["76К",3.6,-2],"6929":["77К",4.2,-2],"6931":["79К",10.2,-2],"6851":["7К",4.5,-2],"6937":["84К",4.7,-2],"6938":["85К",8.3,-2],"6939":["86К",9.6,-2],"6940":["87К",3.0,-2],"6941":["88К",5.1,-2],"6942":["89К",8.2,-2],"6839":["8Н",431.0,1],"6944":["91К",9.1,-2],"6946":["93К",3.6,-2]};
+const STATUS = {
+  works:   {label:"Работает"},
+  thinking:{label:"Думает"},
+  refusal: {label:"Отказ"},
+  base:    {label:"Не общались"}
+};
+const PAY = {yes:"платит", split:"делится с агентом", low:"мало платит", no:"не платит", unknown:""};
+const CLOSED = ['sold','rented','withdrawn'];
+const STATE_LABEL = {active:"В работе", sold:"Продано", rented:"Сдано", withdrawn:"Снято"};
+function dealOf(o){return o.dealType||'sale'}
+function stateOf(o){return o.objState||'active'}
+
+let items = [];
+let cloud=false, dbRef=null, editingId=null, pendingPhoto=null;
+const state = {q:"", status:"all", pay:"all", sort:"new", dealType:"all", objState:"all", view:"actualka"};
+
+/* ---------- ЖК label ---------- */
+function jkName(){return localStorage.getItem('actualka_jk')||'Хайд'}
+function setJkLabel(){const el=document.getElementById('jkLabel');if(el)el.textContent='ЖК '+jkName();}
+function renameJK(){
+  const v=prompt('Название ЖК для этой актуалки:', jkName());
+  if(v!==null && v.trim()){localStorage.setItem('actualka_jk',v.trim());setJkLabel();}
+}
+
+/* ---------- storage + вход ---------- */
+function configured(){return FIREBASE_CONFIG.apiKey && FIREBASE_CONFIG.databaseURL}
+function initStore(){
+  const note=document.getElementById('cloudNote');
+  if(configured() && window.firebase && firebase.auth){
+    try{
+      if(!firebase.apps.length) firebase.initializeApp(FIREBASE_CONFIG);
+      if(localStorage.getItem('actualka_noremember')==='1'){
+        try{firebase.auth().setPersistence(firebase.auth.Auth.Persistence.SESSION);}catch(e){}
+      }
+      firebase.auth().onAuthStateChanged(u=>{
+        if(u&&idleExpired()){forceLogout('Сессия истекла — войди заново');return;}
+        u?startCloud(u):showGate();
+      });
+      return;
+    }catch(e){cloud=false;console.error(e);}
+  }
+  note.className="cloud-note";
+  note.innerHTML='<b>Локальный режим.</b> Данные в этом браузере. Регулярно жми «Сохранить резервную копию».';
+  hideGate(); loadLocal(); render();
+}
+function startCloud(user){
+  hideGate();
+  dbRef=firebase.database().ref('actualka');
+  cloud=true;
+  dbRef.off();
+  dbRef.on('value',s=>{const v=s.val()||{};items=Object.keys(v).map(k=>({...v[k],id:k}));render();if(state.view==='schema')renderSchema();offerMigration();},
+    err=>{const n=document.getElementById('cloudNote');n.className='cloud-note';n.innerHTML='<b>Нет доступа к базе.</b> Проверь правила Firebase (должно быть auth != null).';console.error(err);});
+  claimSession(user);
+  startAux();
+  armIdle();
+  const note=document.getElementById('cloudNote');
+  note.className="cloud-note live";
+  note.innerHTML=`<b>● Облако подключено</b> — ${esc(user.email||'')} · <a href="#" onclick="doLogout();return false" style="color:var(--ok);font-weight:600">выйти</a>`;
+}
+
+/* ---------- одна сессия на аккаунт ---------- */
+const SESSION_ID=(function(){
+  let id=null;
+  try{id=localStorage.getItem('actualka_dev');}catch(e){}
+  if(!id){id=Math.random().toString(36).slice(2)+Date.now().toString(36);try{localStorage.setItem('actualka_dev',id);}catch(e){}}
+  return id;
+})();
+let sessRef=null;
+function claimSession(user){
+  try{
+    sessRef=firebase.database().ref('sessions/'+user.uid);
+    sessRef.set({id:SESSION_ID,ts:Date.now(),ua:(navigator.userAgent||'').slice(0,90)});
+    sessRef.on('value',s=>{
+      const v=s.val();
+      if(v&&v.id&&v.id!==SESSION_ID) forceLogout('Вход выполнен на другом устройстве');
+    });
+  }catch(e){console.error(e);}
+}
+function forceLogout(msg){
+  try{if(sessRef){sessRef.off();sessRef=null;}}catch(e){}
+  clearTimeout(_idleT);
+  localStorage.removeItem('actualka_seen');
+  firebase.auth().signOut().finally(()=>{
+    showGate();
+    const err=document.getElementById('authErr');
+    if(err){err.style.color='var(--brass)';err.textContent=msg;}
+  });
+}
+
+/* ---------- выход по бездействию (30 мин) ---------- */
+function idleMins(){let v=parseInt(localStorage.getItem('actualka_idle')||'60');return (v>0&&v<=720)?v:60;}
+Object.defineProperty(window,'IDLE_MS',{get:()=>idleMins()*60*1000});
+let _idleT=null,_lastTouch=0,_idleArmed=false;
+function armIdle(){
+  if(_idleArmed)return;
+  _idleArmed=true;
+  touchIdle(true);
+  ['click','keydown','touchstart','scroll','mousemove'].forEach(ev=>
+    document.addEventListener(ev,()=>touchIdle(),{passive:true}));
+}
+function touchIdle(force){
+  if(!cloud)return;
+  const now=Date.now();
+  if(!force&&now-_lastTouch<20000)return;   /* пишем не чаще раза в 20 сек */
+  _lastTouch=now;
+  try{localStorage.setItem('actualka_seen',String(now));}catch(e){}
+  clearTimeout(_idleT);
+  _idleT=setTimeout(()=>forceLogout('Сессия закрыта по бездействию'),IDLE_MS);
+}
+function idleExpired(){
+  const t=parseInt(localStorage.getItem('actualka_seen')||'0');
+  return t>0 && (Date.now()-t)>IDLE_MS;
+}
+
+/* ---------- перенос старых локальных карточек в облако ---------- */
+let _migAsked=false;
+function offerMigration(){
+  if(_migAsked||!cloud)return;
+  _migAsked=true;
+  let local=[];
+  try{local=JSON.parse(localStorage.getItem('actualka')||'[]')}catch(e){}
+  if(!local.length)return;
+  const have=new Set(items.map(o=>o.apartment).filter(Boolean));
+  const add=local.filter(o=>!o.apartment||!have.has(o.apartment));
+  if(!add.length)return;
+  if(confirm(`В памяти этого браузера нашлось ${add.length} карточек, которых нет в облаке.\nПеренести их в облако?`)){
+    add.forEach(o=>{o.id=o.id||genId();o.createdAt=o.createdAt||Date.now();upsert(o);});
+  }
+}
+function showGate(){
+  cloud=false; items=[]; if(dbRef){dbRef.off();dbRef=null;}
+  const g=document.getElementById('authGate');if(g)g.classList.add('show');
+  const gr=document.getElementById('grid');if(gr)gr.innerHTML='';
+}
+function hideGate(){const g=document.getElementById('authGate');if(g)g.classList.remove('show');}
+function doLogin(){
+  const em=(document.getElementById('authEmail').value||'').trim();
+  const pw=document.getElementById('authPass').value||'';
+  const err=document.getElementById('authErr');
+  if(!em||!pw){err.textContent='Введи почту и пароль';return;}
+  err.style.color='var(--ink-soft)';err.textContent='Проверяю…';
+  firebase.auth().signInWithEmailAndPassword(em,pw)
+    .then(()=>{err.textContent='';document.getElementById('authPass').value='';})
+    .catch(ex=>{
+      err.style.color='var(--no)';
+      const m={'auth/invalid-email':'Неверный формат почты','auth/user-not-found':'Пользователь не найден','auth/wrong-password':'Неверный пароль','auth/invalid-credential':'Неверная почта или пароль','auth/too-many-requests':'Слишком много попыток — подожди пару минут','auth/network-request-failed':'Нет связи (возможно, VPN)','auth/operation-not-allowed':'В Firebase не включён вход по паролю'};
+      err.textContent=m[ex.code]||('Ошибка: '+ex.code);
+    });
+}
+function doLogout(){if(confirm('Выйти из аккаунта?')){localStorage.removeItem('actualka_seen');if(sessRef){try{sessRef.off();sessRef.remove();}catch(e){}sessRef=null;}firebase.auth().signOut();}}
+function loadLocal(){try{items=JSON.parse(localStorage.getItem('actualka')||'[]')}catch(e){items=[]}}
+function saveLocal(){localStorage.setItem('actualka',JSON.stringify(items))}
+function upsert(item){
+  if(cloud){dbRef.child(item.id).set(strip(item));}
+  else{const i=items.findIndex(x=>x.id===item.id);if(i>=0)items[i]=item;else items.push(item);saveLocal();render();}
+}
+function removeItem(id){if(cloud){dbRef.child(id).remove();}else{items=items.filter(x=>x.id!==id);saveLocal();render();}}
+function strip(o){const c={...o};delete c.id;return c;}
+function genId(){return 'o'+Date.now().toString(36)+Math.random().toString(36).slice(2,6)}
+
+/* ---------- helpers ---------- */
+function num(v){return parseFloat(String(v==null?'':v).replace(/[^\d.,]/g,'').replace(',','.'))||0}
+function ppm(o){const a=num(o.area),p=num(o.price);return a>0&&p>0?p/a:0}
+function jq(s){return String(s==null?'':s).replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/"/g,'&quot;').replace(/</g,'&lt;');}
+function esc(s){return (s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
+function fmtDate(d){if(!d)return'';const[y,m,day]=d.split('-');return`${day}.${m}`}
+function fmtDateY(d){if(!d)return'';const[y,m,day]=d.split('-');return`${day}.${m}.${y.slice(2)}`}
+function fmtMoney(v){const n=num(v);if(!n)return esc(v||'');return n.toLocaleString('ru-RU')+' ₽'}
+function isIncomplete(o){return !o.ownerPhone || !num(o.price) || !num(o.area) || !o.listingUrl}
+
+/* ---------- render ---------- */
+function filtered(){
+  let out=items.slice();
+  const q=state.q.trim().toLowerCase();
+  if(q) out=out.filter(o=>[o.apartment,o.cadastral,o.ownerName,o.ownerPhone,o.currentAgent,o.notes]
+      .filter(Boolean).join(' ').toLowerCase().includes(q));
+  if(state.status==='incomplete') out=out.filter(isIncomplete);
+  else if(state.status!=='all') out=out.filter(o=>(o.dealStatus||'base')===state.status);
+  if(state.pay!=='all') out=out.filter(o=>(o.willPay||'unknown')===state.pay);
+  if(state.dealType==='sale') out=out.filter(o=>dealOf(o)==='sale'||dealOf(o)==='both');
+  else if(state.dealType==='rent') out=out.filter(o=>dealOf(o)==='rent'||dealOf(o)==='both');
+  if(state.objState==='active') out=out.filter(o=>stateOf(o)==='active');
+  else if(state.objState==='closed') out=out.filter(o=>CLOSED.includes(stateOf(o)));
+  else if(state.objState!=='all') out=out.filter(o=>stateOf(o)===state.objState);
+
+  const s=state.sort, low=1e18;
+  out.sort((a,b)=>{
+    if(s==='area_desc') return num(b.area)-num(a.area);
+    if(s==='area_asc')  return (num(a.area)||low)-(num(b.area)||low);
+    if(s==='price_desc')return num(b.price)-num(a.price);
+    if(s==='price_asc') return (num(a.price)||low)-(num(b.price)||low);
+    if(s==='ppm_desc')  return ppm(b)-ppm(a);
+    if(s==='ppm_asc')   return (ppm(a)||low)-(ppm(b)||low);
+    if(s==='contact')   return (b.lastContact||'').localeCompare(a.lastContact||'');
+    return (b.createdAt||0)-(a.createdAt||0);
+  });
+  return out;
+}
+
+function render(){
+  setJkLabel(); buildChips();
+  const grid=document.getElementById('grid');
+  const list=filtered();
+  if(!items.length){
+    grid.innerHTML=`<div class="empty" style="grid-column:1/-1"><div class="big">Пока пусто</div>
+      Добавь первый объект — квартиру, которую ведёт другой агент и которую хочешь забрать.
+      <div><button class="btn-add" onclick="openModal()"><span class="plus">+</span> Добавить объект</button></div></div>`;
+    return;
+  }
+  if(!list.length){grid.innerHTML=`<div class="empty" style="grid-column:1/-1"><div class="big">Ничего не найдено</div>Сбрось фильтры или поиск.</div>`;return;}
+
+  grid.innerHTML=list.map(o=>{
+    const st=STATUS[o.dealStatus||'base'];
+    const pay=PAY[o.willPay||'unknown'];
+    const phoneClean=(o.ownerPhone||'').replace(/[^\d+]/g,'');
+    const perM=ppm(o);
+    const closed=CLOSED.includes(stateOf(o));
+    const overlayTxt=stateOf(o)==='sold'?'ПРОДАНО':stateOf(o)==='rented'?'СДАНО':stateOf(o)==='withdrawn'?'СНЯТО':'';
+    const dl=dealOf(o), dealTxt=dl==='rent'?'Аренда':dl==='both'?'Прод.+Аренда':'Продажа';
+    return `<div class="card ${isIncomplete(o)?'incomplete':''} ${closed?'closed':''}" onclick="openModal('${o.id}')">
+      <div class="thumb">
+        ${o.photo?`<img src="${o.photo}" alt="">`:`<div class="placeholder"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="8.5" cy="10" r="1.5"/><path d="M4 17l5-4 3 2 4-4 4 4"/></svg></div>`}
+        <span class="pill ${o.dealStatus||'base'}">${st.label}</span>
+        ${o.willPay==='yes'&&!closed?`<span class="pay-badge">₽ ПЛАТИТ</span>`:''}
+        ${isIncomplete(o)&&!closed?`<span class="todo-badge">не дозаполнено</span>`:''}
+        <span class="deal-badge ${dl==='rent'?'rent':''}">${dealTxt}</span>
+        ${overlayTxt?`<div class="sold-overlay"><span>${overlayTxt}</span></div>`:''}
+      </div>
+      <div class="body">
+        <div class="title">${esc(o.apartment)||'Без номера'}</div>
+        ${num(o.area)?`<div class="metr">${esc(o.area)} м²${o.share&&o.share!=='1/1'?` · доля ${esc(o.share)}`:''}</div>`:(o.share&&o.share!=='1/1'?`<div class="metr">доля ${esc(o.share)}</div>`:'')}
+        ${o.cadastral?`<div class="cadline">${esc(o.cadastral)}</div>`:''}
+        ${num(o.price)?`<div class="price">${fmtMoney(o.price)}</div>`:(o.price?`<div class="price">${esc(o.price)}</div>`:'')}
+        ${perM?`<div class="ppm">${Math.round(perM).toLocaleString('ru-RU')} ₽/м²</div>`:''}
+        ${(dl!=='sale')&&o.leaseEnd?`<div class="row"><span class="k">Договор до:</span> ${fmtDateY(o.leaseEnd)}</div>`:''}
+        ${o.currentAgent?`<div class="row"><span class="k">Ведёт:</span> ${esc(o.currentAgent)}</div>`:''}
+        ${(o.otherListings&&o.otherListings.filter(x=>x&&x.url).length)?`<div class="row"><span class="k">Ещё продают:</span> ${o.otherListings.filter(x=>x&&x.url).length} агент(ов)</div>`:''}
+        ${pay&&o.willPay!=='unknown'?`<div class="row"><span class="k">Оплата:</span> ${pay}</div>`:''}
+        <div class="owner">
+          <div class="who">
+            <div class="name">${esc(o.ownerName)||'—'}</div>
+            ${o.ownerPhone?`<div class="ph">${esc(o.ownerPhone)}</div>`:''}
+          </div>
+          ${phoneClean?`<a class="call" href="tel:${phoneClean}" onclick="event.stopPropagation()" aria-label="Позвонить"><svg viewBox="0 0 24 24"><path d="M6.6 10.8c1.4 2.8 3.8 5.2 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.1.4 2.3.6 3.6.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1C10.6 21 3 13.4 3 4c0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.2.2 2.4.6 3.6.1.4 0 .8-.3 1z"/></svg></a>`:''}
+        </div>
+        ${o.nextStep?`<div class="next"><span class="k">Дальше:</span> ${esc(o.nextStep)}${o.nextDate?` · ${fmtDate(o.nextDate)}`:''}</div>`:''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function buildChips(){
+  const counts={all:items.length,works:0,thinking:0,refusal:0,base:0,incomplete:0};
+  items.forEach(o=>{counts[o.dealStatus||'base']++;if(isIncomplete(o))counts.incomplete++;});
+  const defs=[['all','Все'],['works','Работает'],['thinking','Думает'],['refusal','Отказ'],['base','Не общались']];
+  let html=defs.map(([k,lab])=>`<button class="chip ${state.status===k?'active':''}" data-k="${k}" onclick="setStatus('${k}')">${k!=='all'?'<span class="dot"></span>':''}${lab}<span class="cnt">${counts[k]}</span></button>`).join('');
+  html+=`<button class="chip warn ${state.status==='incomplete'?'active':''}" onclick="setStatus('incomplete')">Не дозаполнено<span class="cnt">${counts.incomplete}</span></button>`;
+  document.getElementById('statusChips').innerHTML=html;
+}
+function setStatus(k){state.status=(state.status===k&&k==='incomplete')?'all':k;render()}
+
+/* ---------- фильтры сделка/состояние ---------- */
+function stateFilterOptions(){
+  const d=state.dealType;
+  if(d==='sale') return [['all','Все объекты'],['active','В продаже'],['sold','Продано']];
+  if(d==='rent') return [['all','Все объекты'],['active','В аренде'],['rented','Сдано']];
+  return [['all','Все состояния'],['active','Активные'],['closed','Закрытые']];
+}
+function buildStateFilter(){
+  const sel=document.getElementById('fState');if(!sel)return;
+  const opts=stateFilterOptions();
+  if(!opts.some(o=>o[0]===state.objState)) state.objState='all';
+  sel.innerHTML=opts.map(([v,l])=>`<option value="${v}" ${state.objState===v?'selected':''}>${l}</option>`).join('');
+}
+function onDealFilter(){state.dealType=document.getElementById('fDeal').value;state.objState='all';buildStateFilter();render();}
+function onStateFieldChange(){
+  const s=document.getElementById('fld_objState').value, cd=document.getElementById('fld_closedDate');
+  if((s==='sold'||s==='rented')&&!cd.value) cd.value=new Date().toISOString().slice(0,10);
+}
+
+/* ---------- отчёт ---------- */
+function openReport(){document.getElementById('reportOutput').innerHTML='';document.getElementById('reportOverlay').classList.add('show');}
+function closeReport(){document.getElementById('reportOverlay').classList.remove('show');}
+function inPeriod(o){
+  const from=document.getElementById('rc_from').value, to=document.getElementById('rc_to').value;
+  if(!from&&!to) return true;
+  const d=o.closedDate||''; if(!d) return false;
+  if(from&&d<from) return false; if(to&&d>to) return false; return true;
+}
+function rowTable(list,cols){
+  if(!list.length) return '<div style="color:var(--ink-soft);font-size:13px">— нет</div>';
+  const head=cols.map(c=>`<th>${c[0]}</th>`).join('');
+  const body=list.map(o=>'<tr>'+cols.map(c=>`<td>${esc(String(c[1](o)||'—'))}</td>`).join('')+'</tr>').join('');
+  return `<table><thead><tr>${head}</tr></thead><tbody>${body}</tbody></table>`;
+}
+function generateReport(){
+  const out=document.getElementById('reportOutput'), get=id=>document.getElementById(id).checked;
+  const now=new Date().toLocaleDateString('ru-RU');
+  let h=`<h1>Актуалка — ${esc(jkName())}</h1><div class="rsub">Сформировано ${now} · всего объектов: ${items.length}</div>`;
+  if(get('rc_stats')){
+    const cs={works:0,thinking:0,refusal:0,base:0};items.forEach(o=>cs[o.dealStatus||'base']++);
+    const active=items.filter(o=>stateOf(o)==='active').length,sold=items.filter(o=>stateOf(o)==='sold').length,rented=items.filter(o=>stateOf(o)==='rented').length;
+    h+=`<h2>Сводка</h2><div>
+      <span class="stat"><b>${cs.works}</b> работает</span><span class="stat"><b>${cs.thinking}</b> думает</span>
+      <span class="stat"><b>${cs.refusal}</b> отказ</span><span class="stat"><b>${cs.base}</b> не общались</span></div>
+      <div style="margin-top:8px"><span class="stat"><b>${active}</b> в работе</span><span class="stat"><b>${sold}</b> продано</span><span class="stat"><b>${rented}</b> сдано</span></div>`;
+  }
+  const cP=[['Кв.',o=>o.apartment],['Метраж',o=>o.area?o.area+' м²':''],['Цена',o=>o.price],['Собственник',o=>o.ownerName],['Телефон',o=>o.ownerPhone],['Статус',o=>(STATUS[o.dealStatus||'base']||{}).label]];
+  if(get('rc_sale')){const l=items.filter(o=>(dealOf(o)==='sale'||dealOf(o)==='both')&&stateOf(o)==='active');h+=`<h2>В продаже (${l.length})</h2>`+rowTable(l,cP);}
+  if(get('rc_rent')){const l=items.filter(o=>(dealOf(o)==='rent'||dealOf(o)==='both')&&stateOf(o)==='active');h+=`<h2>В аренде (${l.length})</h2>`+rowTable(l,cP.concat([['Договор до',o=>fmtDateY(o.leaseEnd)]]));}
+  if(get('rc_sold')){const l=items.filter(o=>stateOf(o)==='sold'&&inPeriod(o));h+=`<h2>Проданные (${l.length})</h2>`+rowTable(l,cP.concat([['Закрыто',o=>fmtDateY(o.closedDate)]]));}
+  if(get('rc_rented')){const l=items.filter(o=>stateOf(o)==='rented'&&inPeriod(o));h+=`<h2>Сданные (${l.length})</h2>`+rowTable(l,cP.concat([['Закрыто',o=>fmtDateY(o.closedDate)]]));}
+  if(get('rc_call')){const l=items.filter(o=>o.nextDate).sort((a,b)=>(a.nextDate||'').localeCompare(b.nextDate||''));h+=`<h2>Перезвонить (${l.length})</h2>`+rowTable(l,[['Дата',o=>fmtDateY(o.nextDate)],['Кв.',o=>o.apartment],['Собственник',o=>o.ownerName],['Телефон',o=>o.ownerPhone],['Шаг',o=>o.nextStep]]);}
+  if(get('rc_incomplete')){const l=items.filter(isIncomplete);h+=`<h2>Недозаполненные (${l.length})</h2>`+rowTable(l,cP);}
+  out.innerHTML=h;
+  out.scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+/* ---------- modal ---------- */
+function openModal(id){
+  editingId=id||null; pendingPhoto=null;
+  const o=id?items.find(x=>x.id===id):{};
+  document.getElementById('mTitle').textContent=id?'Редактировать объект':'Новый объект';
+  document.getElementById('delBtn').style.display=id?'block':'none';
+  const set=(f,v)=>document.getElementById('fld_'+f).value=v||'';
+  set('apartment',o.apartment);set('area',o.area);set('price',o.price);set('cadastral',o.cadastral);set('share',o.share);
+  set('ownerName',o.ownerName);set('ownerPhone',o.ownerPhone);
+  set('currentAgent',o.currentAgent);set('listingUrl',o.listingUrl);
+  set('dealStatus',o.dealStatus||'base');set('willPay',o.willPay||'unknown');set('exclusive',o.exclusive||'unknown');
+  set('dealType',o.dealType||'sale');set('objState',o.objState||'active');set('closedDate',o.closedDate);set('leaseEnd',o.leaseEnd);
+  set('lastContact',o.lastContact);set('nextDate',o.nextDate);set('nextStep',o.nextStep);set('notes',o.notes);
+  renderOtherLinks(o.otherListings||[]);
+  document.getElementById('egrnResult').innerHTML='';
+  if(o.cadastral) egrnLookup();
+  setPhotoPreview(o.photo||null);
+  document.getElementById('overlay').classList.add('show');
+}
+function closeModal(){document.getElementById('overlay').classList.remove('show')}
+function saveCard(){
+  const g=f=>document.getElementById('fld_'+f).value.trim();
+  const existing=editingId?items.find(x=>x.id===editingId):null;
+  const item={
+    id:editingId||genId(),
+    apartment:g('apartment'),area:g('area'),price:g('price'),cadastral:g('cadastral'),share:g('share'),
+    ownerName:g('ownerName'),ownerPhone:g('ownerPhone'),
+    currentAgent:g('currentAgent'),listingUrl:g('listingUrl'),
+    dealStatus:g('dealStatus'),willPay:g('willPay'),exclusive:g('exclusive'),
+    dealType:g('dealType'),objState:g('objState'),closedDate:g('closedDate'),leaseEnd:g('leaseEnd'),
+    lastContact:g('lastContact'),nextDate:g('nextDate'),nextStep:g('nextStep'),notes:g('notes'),
+    otherListings:collectOtherLinks(),
+    photo:pendingPhoto!==null?pendingPhoto:(existing?existing.photo:null),
+    createdAt:existing?existing.createdAt:Date.now()
+  };
+  if(!item.apartment && !item.ownerName && !item.listingUrl){alert('Заполни хотя бы квартиру, ФИО или ссылку на объявление');return;}
+  upsert(item); closeModal(); if(state.view==='schema')renderSchema();
+}
+function delCurrent(){if(editingId&&confirm('Удалить объект без возможности вернуть?')){removeItem(editingId);closeModal();if(state.view==='schema')renderSchema();}}
+
+/* ---------- ссылки других агентов ---------- */
+function renderOtherLinks(list){
+  const box=document.getElementById('otherLinks');box.innerHTML='';
+  (list||[]).forEach(l=>addOtherRow(l.label,l.url));
+}
+function addOtherRow(label='',url=''){
+  const box=document.getElementById('otherLinks');
+  const row=document.createElement('div');row.className='link-row';
+  const a=v=>String(v||'').replace(/"/g,'&quot;');
+  row.innerHTML=`<input class="ol-label" placeholder="Агентство" value="${a(label)}">
+    <input class="ol-url" placeholder="ссылка на объявление" value="${a(url)}">
+    <button type="button" class="rm" onclick="this.parentNode.remove()">×</button>`;
+  box.appendChild(row);
+}
+function collectOtherLinks(){
+  return [...document.querySelectorAll('#otherLinks .link-row')].map(r=>({
+    label:r.querySelector('.ol-label').value.trim(),
+    url:r.querySelector('.ol-url').value.trim()
+  })).filter(x=>x.url||x.label);
+}
+
+/* ---------- photo ---------- */
+function pickPhoto(){document.getElementById('photoInput').click()}
+function onPhotoFile(file){if(file)compress(file,d=>{pendingPhoto=d;setPhotoPreview(d)})}
+function clearPhoto(e){e.stopPropagation();pendingPhoto="";setPhotoPreview(null)}
+function setPhotoPreview(src){
+  const drop=document.getElementById('photoDrop'),img=document.getElementById('photoPreview'),hint=document.getElementById('photoHint');
+  if(src){img.src=src;img.style.display='block';hint.style.display='none';drop.classList.add('has');}
+  else{img.style.display='none';img.src='';hint.style.display='block';drop.classList.remove('has');}
+}
+function compress(file,cb){
+  const r=new FileReader();
+  r.onload=e=>{const img=new Image();img.onload=()=>{
+    const max=1000;let{width,height}=img;
+    if(width>max){height=Math.round(height*max/width);width=max;}
+    const c=document.createElement('canvas');c.width=width;c.height=height;
+    c.getContext('2d').drawImage(img,0,0,width,height);
+    cb(c.toDataURL('image/jpeg',0.72));
+  };img.src=e.target.result;};
+  r.readAsDataURL(file);
+}
+document.addEventListener('paste',e=>{
+  if(!document.getElementById('overlay').classList.contains('show'))return;
+  const it=[...(e.clipboardData||{}).items||[]].find(i=>i.type.startsWith('image/'));
+  if(it){const f=it.getAsFile();if(f)onPhotoFile(f);}
+});
+
+/* ---------- backup ---------- */
+function exportJSON(){
+  const blob=new Blob([JSON.stringify(items,null,2)],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);
+  a.download='aktualka-'+jkName()+'-'+new Date().toISOString().slice(0,10)+'.json';a.click();
+}
+function importJSON(input){
+  const f=input.files[0];if(!f)return;
+  const r=new FileReader();
+  r.onload=e=>{try{
+    const arr=JSON.parse(e.target.result);if(!Array.isArray(arr))throw 0;
+    if(!confirm(`В файле ${arr.length} объектов. Добавить их к текущему списку?`)){input.value='';return;}
+    arr.forEach(o=>{o.id=o.id||genId();o.createdAt=o.createdAt||Date.now();upsert(o);});
+    if(!cloud)render();
+  }catch(err){alert('Не получилось прочитать файл.')}
+  input.value='';};
+  r.readAsText(f);
+}
+
+/* ---------- база ЕГРН (только локально, в браузере) ---------- */
+let egrn={rows:[],byCad:{},byOwner:{}}, egrnMatches=[], egrnTimer=null;
+function normFio(s){return (s||'').toString().trim().toUpperCase().replace(/\s+/g,' ')}
+function shortType(t){t=(t||'').toString();if(/кварт/i.test(t))return '🏠 кв';if(/машином/i.test(t))return '🚗 мм';if(/кладов/i.test(t))return '📦 клад';if(/помещ/i.test(t))return 'помещ';return t.replace(/^\d+\s*-\s*/,'')||'объект';}
+function buildEgrnIndex(){
+  egrn.byCad={};egrn.byOwner={};
+  egrn.rows.forEach(r=>{
+    if(r.cad){(egrn.byCad[r.cad]=egrn.byCad[r.cad]||[]).push(r);}
+    const k=normFio(r.fio);if(k){(egrn.byOwner[k]=egrn.byOwner[k]||[]).push(r);}
+  });
+}
+function updateEgrnStatus(){
+  const el=document.getElementById('egrnStatus');if(!el)return;
+  if(egrn.rows.length){el.textContent='база ЕГРН: '+egrn.rows.length+' записей (локально)';el.className='egrn-ok';}
+  else{el.textContent='база ЕГРН не загружена';el.className='';}
+}
+function loadEgrnFromStorage(){
+  try{const raw=localStorage.getItem('actualka_egrn');if(raw){const o=JSON.parse(raw);egrn.rows=o.rows||[];buildEgrnIndex();}}catch(e){}
+  updateEgrnStatus();
+}
+function colFinder(headers){
+  const H=(headers||[]).map(h=>(h==null?'':h).toString().toLowerCase());
+  const find=(...keys)=>{for(let i=0;i<H.length;i++){if(keys.some(k=>H[i].includes(k)))return i;}return -1;};
+  return {cad:find('кадастровый № объекта','кадастровый номер','кадастр'),fio:find('фио правооблад','фио'),
+    phone:find('телефон'),area:find('площадь'),share:find('доли','доля'),type:find('вид он','тип объект','тип'),
+    addr:find('адрес объект','адрес'),email:find('email','почта'),birth:find('дата рожд')};
+}
+function rowsFromAoa(aoa){
+  let hi=aoa.findIndex(r=>r&&r.some(c=>/кадастров/i.test((c==null?'':c).toString())));
+  if(hi<0)hi=aoa.findIndex(r=>r&&r.some(c=>/фио правооблад/i.test((c==null?'':c).toString())));
+  if(hi<0)hi=0;
+  const cols=colFinder(aoa[hi]),out=[],g=(row,i)=>i>=0&&row[i]!=null?row[i].toString().trim():'';
+  for(let i=hi+1;i<aoa.length;i++){
+    const row=aoa[i];if(!row)continue;
+    const cad=g(row,cols.cad),fio=g(row,cols.fio);
+    if(!cad&&!fio)continue;
+    out.push({cad,fio,phone:g(row,cols.phone),area:g(row,cols.area),share:g(row,cols.share),type:g(row,cols.type),addr:g(row,cols.addr),email:g(row,cols.email),birth:g(row,cols.birth)});
+  }
+  return out;
+}
+function parseEgrnWb(wb){
+  const nm=wb.SheetNames.find(n=>/данн/i.test(n))||wb.SheetNames.find(n=>{const a=XLSX.utils.sheet_to_json(wb.Sheets[n],{header:1,defval:''}).slice(0,6);return a.some(r=>r.some(c=>/фио правооблад/i.test((c||'').toString())));})||wb.SheetNames[0];
+  return rowsFromAoa(XLSX.utils.sheet_to_json(wb.Sheets[nm],{header:1,defval:''}));
+}
+function parseEgrnCsv(text){
+  const lines=text.split(/\r?\n/).filter(l=>l.trim());if(!lines.length)return[];
+  const delim=(lines[0].match(/;/g)||[]).length>(lines[0].match(/,/g)||[]).length?';':',';
+  const split=l=>{const out=[];let cur='',q=false;for(const ch of l){if(ch==='"')q=!q;else if(ch===delim&&!q){out.push(cur);cur='';}else cur+=ch;}out.push(cur);return out.map(s=>s.trim());};
+  return rowsFromAoa(lines.map(split));
+}
+function loadEgrn(input){
+  const f=input.files[0];if(!f)return;
+  const name=f.name.toLowerCase(),reader=new FileReader();
+  reader.onload=e=>{
+    try{
+      let rows;
+      if(name.endsWith('.csv'))rows=parseEgrnCsv(e.target.result);
+      else{if(!window.XLSX){alert('Не загрузилась библиотека чтения Excel — проверь интернет и обнови страницу.');return;}rows=parseEgrnWb(XLSX.read(new Uint8Array(e.target.result),{type:'array'}));}
+      if(!rows.length){alert('Не нашёл данные. Нужен лист «Данные» с колонками: кадастровый №, ФИО, телефон, площадь.');input.value='';return;}
+      egrn.rows=rows;buildEgrnIndex();
+      try{localStorage.setItem('actualka_egrn',JSON.stringify({rows,loadedAt:Date.now(),count:rows.length}));}
+      catch(err){alert('База прочитана ('+rows.length+'), но не поместилась в память браузера. Работает в этой сессии.');}
+      updateEgrnStatus();
+      if(state.view==='settings')renderSettings();
+      if(state.view==='db')renderDbRows();
+      alert('База загружена: '+rows.length+' записей.\nХранится только в этом браузере, на GitHub не уходит.');
+    }catch(err){console.error(err);alert('Не смог прочитать файл: '+err.message);}
+    input.value='';
+  };
+  if(name.endsWith('.csv'))reader.readAsText(f,'utf-8');else reader.readAsArrayBuffer(f);
+}
+function ownerOtherObjects(fio,exceptCad){return (egrn.byOwner[normFio(fio)]||[]).filter(r=>r.cad!==exceptCad);}
+function egrnLookupDebounced(){clearTimeout(egrnTimer);egrnTimer=setTimeout(egrnLookup,250);}
+function egrnLookup(){
+  const box=document.getElementById('egrnResult');
+  const q=document.getElementById('fld_cadastral').value.trim();
+  if(!egrn.rows.length){box.innerHTML=q?'<div class="egrn-hint">База ЕГРН не загружена — кнопка «Загрузить базу ЕГРН» внизу страницы.</div>':'';return;}
+  if(q.length<3){box.innerHTML='';return;}
+  const ql=q.toLowerCase();
+  let matched=egrn.byCad[q];
+  if(!matched){matched=egrn.rows.filter(r=>r.cad.toLowerCase().includes(ql)||r.addr.toLowerCase().includes(ql)||normFio(r.fio).toLowerCase().includes(ql)).slice(0,12);}
+  egrnMatches=matched;
+  if(!matched.length){box.innerHTML='<div class="egrn-hint">Ничего не найдено в базе.</div>';return;}
+  box.innerHTML=matched.map((r,idx)=>{
+    const others=ownerOtherObjects(r.fio,r.cad);
+    return `<div class="egrn-card">
+      <div class="egrn-top">
+        <div>
+          <div class="egrn-fio">${esc(r.fio)}</div>
+          <div class="egrn-meta">${esc(r.cad)}${r.area?` · ${esc(r.area)} м²`:''}${r.share&&r.share!=='1/1'?` · доля ${esc(r.share)}`:''} · ${esc(shortType(r.type))}</div>
+          ${r.phone?`<div class="egrn-meta">☎ ${esc(r.phone)}</div>`:''}
+        </div>
+        <button type="button" class="egrn-fill" onclick="fillFromEgrn(${idx})">Заполнить</button>
+      </div>
+      ${others.length?`<div class="egrn-others"><b>Ещё у собственника в Хайде (${others.length}):</b> ${others.slice(0,14).map(o=>shortType(o.type)+' '+(o.area?o.area+'м² ':'')+o.cad).join('; ')}${others.length>14?' …':''}</div>`:''}
+    </div>`;
+  }).join('');
+}
+function fillFromEgrn(idx){
+  const r=egrnMatches[idx];if(!r)return;
+  const set=(f,v)=>{const el=document.getElementById('fld_'+f);if(el&&v)el.value=v;};
+  set('cadastral',r.cad);set('ownerName',r.fio);set('ownerPhone',r.phone);set('area',r.area);set('share',r.share);
+  const co=(egrn.byCad[r.cad]||[]).filter(x=>x.fio!==r.fio);
+  const others=ownerOtherObjects(r.fio,r.cad);
+  const info=[];
+  if(co.length)info.push('Сособственники: '+co.map(c=>c.fio+(c.share?` (${c.share})`:'')).join(', '));
+  if(others.length)info.push('Ещё в Хайде: '+others.slice(0,14).map(o=>shortType(o.type)+' '+(o.area?o.area+'м² ':'')+o.cad).join('; '));
+  const notesEl=document.getElementById('fld_notes'),marker='[ЕГРН] ';
+  if(info.length){
+    const cleaned=(notesEl.value||'').split('\n').filter(l=>!l.startsWith(marker)).join('\n').trim();
+    notesEl.value=(cleaned?cleaned+'\n':'')+info.map(l=>marker+l).join('\n');
+  }
+  egrnLookup();
+}
+
+/* ---------- схема дома (шахматка) ---------- */
+const TOWERS=[{k:1,name:'Westdale',ru:'Белая',cls:'w'},{k:2,name:'Parklane',ru:'Чёрная',cls:'b'},{k:3,name:'Riverside',ru:'Золотая',cls:'g'}];
+const FLOORS=41;
+let curTower=1;
+function maxPos(k){return k===1?7:8}
+function posCount(k,f){
+  if(f<2)return 0;
+  if(k===1){ if(f===41)return 3; if(f>=31&&f<=40)return 6; return 7; }
+  if(k===2){ if(f===41)return 3; if(f>=31&&f<=40)return 7; return 8; }
+  if(k===3){ if(f===41)return 2; if(f>=19&&f<=40)return 7; return 8; }
+  return 8;
+}
+function aptExists(k,f,p){return p>=1&&p<=posCount(k,f)}
+function decodeApt(a){const d=(a||'').toString().replace(/\D/g,'');if(d.length<3)return null;const k=+d[0],f=+d.slice(1,3),p=+d.slice(3)||1;if(k<1||k>3||f<1||f>FLOORS)return null;return{k,f,p};}
+function encodeApt(k,f,p){return `${k}${String(f).padStart(2,'0')}${p}`}
+let schemaInfo={};
+/* --- встроенная таблица объектов Хайда: кадастр ↔ номер --- */
+const HYDE_BY_NUM={};
+Object.keys(HYDE_OBJ).forEach(suf=>{HYDE_BY_NUM[HYDE_OBJ[suf][0]]=suf;});
+function objTypeOf(num){const u=(num||'').toUpperCase();
+  if(u.includes('М'))return 'mm'; if(u.includes('К'))return 'kl'; if(u.includes('Н'))return 'com'; return 'kv';}
+function typeLabel(t){return {mm:'машино-место',kl:'кладовая',com:'коммерция',kv:'квартира'}[t]||t}
+function typeIcon(t){return {mm:'🚗',kl:'📦',com:'🏢',kv:'🏠'}[t]||'•'}
+function cadOfNum(num){const s=HYDE_BY_NUM[(num||'').toUpperCase()];return s?HYDE_PREFIX+s:''}
+function objOfCad(cad){
+  if(!cad)return null;
+  const suf=cad.split(':').pop(),v=HYDE_OBJ[suf];
+  if(!v)return null;
+  return {num:v[0],area:v[1],floor:v[2],type:objTypeOf(v[0]),cad:HYDE_PREFIX+suf};
+}
+function objOfNum(num){return objOfCad(cadOfNum(num))}
+function isFlat(t){return /кварт/i.test((t||'').toString())}
+function cadOfApt(num){
+  const auto=cadOfNum(num);if(auto)return auto;
+  const ni=schemaInfo[num];if(ni&&ni.cad)return ni.cad;
+  const c=items.find(o=>o.apartment===num&&o.cadastral);return c?c.cadastral:'';
+}
+function aptOfCad(cad){
+  const o=objOfCad(cad);if(o)return o.num;
+  const k=Object.keys(schemaInfo).find(a=>schemaInfo[a].cad===cad);if(k)return k;
+  const it=items.find(o=>o.cadastral===cad&&o.apartment);return it?it.apartment:'';
+}
+function cadKey(cad){return (cad||'').split(':').pop()}
+function ownerRecOfCad(cad){
+  if(!cad)return null;
+  const base=(egrn.byCad[cad]||[])[0];
+  const fix=ownerFix[cadKey(cad)];
+  if(!fix)return base||null;
+  return Object.assign({cad,fio:'',phone:'',share:''},base||{},fix);
+}
+function ownerOfApt(num){const r=ownerRecOfCad(cadOfApt(num));return r?r.fio:''}
+function ownerObjects(fio){
+  if(!fio)return [];
+  const key=normFio(fio);
+  const out=(egrn.byOwner[key]||[]).slice();
+  /* объекты, переписанные вручную на этого человека */
+  Object.keys(ownerFix).forEach(k=>{
+    const f=ownerFix[k];
+    if(f&&normFio(f.fio)===key&&!out.some(r=>cadKey(r.cad)===k))
+      out.push(Object.assign({cad:HYDE_PREFIX+k},f));
+  });
+  /* объекты, переписанные с этого человека на другого */
+  return out.filter(r=>{const f=ownerFix[cadKey(r.cad)];return !f||normFio(f.fio)===key;});
+}
+/* ---------- семьи / группы ---------- */
+function groupOf(fio){const k=normFio(fio);return groups.find(g=>g.members.some(m=>normFio(m)===k))}
+function groupMembers(fio){const g=groupOf(fio);return g?g.members:[fio]}
+function linkPeople(a,b,name){
+  let g=groupOf(a)||groupOf(b);
+  if(!g){g={id:'g'+Date.now().toString(36),name:name||('Семья '+(a.split(' ')[0]||'')),members:[]};groups.push(g);}
+  [a,b].forEach(x=>{if(!g.members.some(m=>normFio(m)===normFio(x)))g.members.push(x);});
+  saveGroups();
+}
+function unlinkPerson(fio){
+  const g=groupOf(fio);if(!g)return;
+  g.members=g.members.filter(m=>normFio(m)!==normFio(fio));
+  if(g.members.length<2)groups=groups.filter(x=>x!==g);
+  saveGroups();
+}
+function renameGroup(fio){
+  const g=groupOf(fio);if(!g)return;
+  const v=prompt('Название группы:',g.name);
+  if(v&&v.trim()){g.name=v.trim();saveGroups();}
+}
+function familyApts(fio){
+  const out=new Set();
+  groupMembers(fio).forEach(m=>ownerObjects(m).forEach(r=>{
+    const a=aptOfCad(r.cad);if(a&&objTypeOf(a)==='kv')out.add(a);
+  }));
+  return out;
+}
+function kinApts(fio,exceptApt){
+  const s=familyApts(fio);s.delete(exceptApt);return s;
+}
+/* ---------- доп. слои в облаке: заметки, семьи, правки собственников ---------- */
+let groups=[], ownerFix={}, auxRef=null;
+function startAux(){
+  let localSchema={};
+  try{localSchema=JSON.parse(localStorage.getItem('actualka_schema')||'{}')||{}}catch(e){}
+  let auxFirst=true;
+  auxRef=firebase.database().ref('aux');
+  auxRef.off();
+  auxRef.on('value',s=>{
+    const v=s.val()||{};
+    schemaInfo=v.schema||{};
+    groups=Array.isArray(v.groups)?v.groups:(v.groups?Object.values(v.groups):[]);
+    ownerFix=v.owners||{};
+    /* первый заход: поднимаем заметки с устройства в облако, ничего не теряя */
+    if(auxFirst){
+      auxFirst=false;
+      const add=Object.keys(localSchema).filter(k=>!schemaInfo[k]);
+      if(add.length){
+        add.forEach(k=>{schemaInfo[k]=localSchema[k];});
+        auxRef.child('schema').set(schemaInfo);
+        console.log('перенесено заметок в облако:',add.length);
+      }
+    }
+    if(state.view==='schema')renderSchema();
+    if(_cell)refreshCellIfOpen();
+  });
+}
+function refreshCellIfOpen(){
+  const ov=document.getElementById('cellOverlay');
+  if(ov&&ov.classList.contains('show')&&_cell)openCell(_cell.k,_cell.f,_cell.p);
+}
+function pushAux(child,val){
+  if(cloud&&auxRef){auxRef.child(child).set(val);}
+  else{
+    if(child==='schema')saveSchemaInfo();
+    else localStorage.setItem('actualka_'+child,JSON.stringify(val));
+  }
+}
+function saveGroups(){pushAux('groups',groups)}
+function saveOwnerFix(){pushAux('owners',ownerFix)}
+function saveSchemaInfo(){
+  if(cloud&&auxRef){auxRef.child('schema').set(schemaInfo);return;}
+  try{localStorage.setItem('actualka_schema',JSON.stringify(schemaInfo));}catch(e){}
+}
+function loadAuxLocal(){
+  try{schemaInfo=JSON.parse(localStorage.getItem('actualka_schema')||'{}')||{}}catch(e){schemaInfo={}}
+  try{groups=JSON.parse(localStorage.getItem('actualka_groups')||'[]')||[]}catch(e){groups=[]}
+  try{ownerFix=JSON.parse(localStorage.getItem('actualka_owners')||'{}')||{}}catch(e){ownerFix={}}
+}
+function schemaIndex(){
+  const map={},owners={};
+  items.forEach(o=>{const d=decodeApt(o.apartment);if(d)map[`${d.k}-${d.f}-${d.p}`]=o;
+    const nm=(o.ownerName||'').trim().toUpperCase();if(nm)(owners[nm]=owners[nm]||[]).push(o);});
+  const multi={};Object.keys(owners).forEach(nm=>{if(owners[nm].length>1)owners[nm].forEach(o=>{const d=decodeApt(o.apartment);if(d)multi[`${d.k}-${d.f}-${d.p}`]=nm;});});
+  return {map,owners,multi};
+}
+function switchView(v){
+  state.view=v;
+  [['actualka','tabActualka'],['db','tabDb'],['schema','tabSchema'],['settings','tabSettings']]
+    .forEach(([k,id])=>{const b=document.getElementById(id);if(b)b.classList.toggle('active',v===k);});
+  document.getElementById('viewActualka').style.display=v==='actualka'?'':'none';
+  document.getElementById('viewSchema').style.display=v==='schema'?'':'none';
+  document.getElementById('viewDb').style.display=v==='db'?'':'none';
+  document.getElementById('viewSettings').style.display=v==='settings'?'':'none';
+  const act=v==='actualka';
+  document.getElementById('statusChips').style.display=act?'':'none';
+  document.getElementById('filtersRow2').style.display=act?'':'none';
+  if(v==='schema')renderSchema();
+  if(v==='db')renderDb();
+  if(v==='settings')renderSettings();
+}
+
+/* ---------- вкладка «База» ---------- */
+const dbState={q:'',type:'all',sort:'num',limit:400};
+function dbRows(){
+  let rows=Object.keys(HYDE_OBJ).map(suf=>{
+    const v=HYDE_OBJ[suf],num=v[0],cad=HYDE_PREFIX+suf;
+    const rec=ownerRecOfCad(cad);
+    return {num,area:v[1],floor:v[2],cad,type:objTypeOf(num),fio:rec?rec.fio:'',phone:rec?rec.phone:'',note:(schemaInfo[num]||{}).note||''};
+  });
+  if(dbState.type!=='all')rows=rows.filter(r=>r.type===dbState.type);
+  const q=dbState.q.trim().toLowerCase();
+  if(q)rows=rows.filter(r=>r.num.toLowerCase().includes(q)||r.cad.includes(q)||r.fio.toLowerCase().includes(q)||(r.phone||'').replace(/\D/g,'').includes(q.replace(/\D/g,''))&&q.replace(/\D/g,'').length>2||r.note.toLowerCase().includes(q));
+  const s=dbState.sort;
+  rows.sort((a,b)=>{
+    if(s==='area')return b.area-a.area;
+    if(s==='area_asc')return a.area-b.area;
+    if(s==='fio')return (a.fio||'я').localeCompare(b.fio||'я','ru');
+    if(s==='floor')return b.floor-a.floor;
+    return a.num.localeCompare(b.num,'ru',{numeric:true});
+  });
+  return rows;
+}
+function renderDb(){
+  const cnt={kv:0,mm:0,kl:0,com:0};
+  Object.keys(HYDE_OBJ).forEach(s=>{cnt[objTypeOf(HYDE_OBJ[s][0])]++});
+  document.getElementById('viewDb').innerHTML=`
+    <div class="db-bar">
+      <input id="dbQ" placeholder="Поиск: № квартиры, ФИО, кадастр, телефон, заметка…" value="${esc(dbState.q)}">
+      <select class="mini" id="dbType">
+        <option value="all" ${dbState.type==='all'?'selected':''}>Все (${Object.keys(HYDE_OBJ).length})</option>
+        <option value="kv" ${dbState.type==='kv'?'selected':''}>🏠 Квартиры (${cnt.kv})</option>
+        <option value="mm" ${dbState.type==='mm'?'selected':''}>🚗 Машино-места (${cnt.mm})</option>
+        <option value="kl" ${dbState.type==='kl'?'selected':''}>📦 Кладовые (${cnt.kl})</option>
+        <option value="com" ${dbState.type==='com'?'selected':''}>🏢 Коммерция (${cnt.com})</option>
+      </select>
+      <select class="mini" id="dbSort">
+        <option value="num" ${dbState.sort==='num'?'selected':''}>По номеру</option>
+        <option value="area" ${dbState.sort==='area'?'selected':''}>Метраж ↓</option>
+        <option value="area_asc" ${dbState.sort==='area_asc'?'selected':''}>Метраж ↑</option>
+        <option value="floor" ${dbState.sort==='floor'?'selected':''}>По этажу</option>
+        <option value="fio" ${dbState.sort==='fio'?'selected':''}>По ФИО</option>
+      </select>
+    </div>
+    <div class="db-count" id="dbCount"></div>
+    <div class="db-table" id="dbTable"></div>
+    <div id="dbMore"></div>`;
+  const q=document.getElementById('dbQ');
+  let t=null;
+  q.addEventListener('input',()=>{clearTimeout(t);t=setTimeout(()=>{dbState.q=q.value;dbState.limit=400;renderDbRows();},160);});
+  document.getElementById('dbType').addEventListener('change',e=>{dbState.type=e.target.value;dbState.limit=400;renderDbRows();});
+  document.getElementById('dbSort').addEventListener('change',e=>{dbState.sort=e.target.value;renderDbRows();});
+  renderDbRows();
+}
+function renderDbRows(){
+  const rows=dbRows(),shown=rows.slice(0,dbState.limit);
+  const cEl=document.getElementById('dbCount');if(!cEl)return;
+  cEl.innerHTML=`Найдено: <b>${rows.length}</b>${rows.length>shown.length?` · показано ${shown.length}`:''}${egrn.rows.length?'':' · <span style="color:var(--brass)">база ЕГРН не загружена — ФИО не показаны</span>'}`;
+  document.getElementById('dbTable').innerHTML=
+    `<div class="db-head"><span>Объект</span><span>м²</span><span>Эт.</span><span>Собственник</span><span>Кадастр</span></div>`+
+    (shown.length?shown.map(r=>`<div class="db-row" onclick="dbOpen('${r.num}')">
+        <span class="db-num">${typeIcon(r.type)} ${r.num}</span>
+        <span>${r.area}</span>
+        <span>${r.floor}</span>
+        <span class="db-fio pii">${esc(r.fio)||'<i>—</i>'}${r.note?' <span class="db-note">📝</span>':''}</span>
+        <span class="db-cad">${r.cad.split(':').pop()}</span>
+      </div>`).join('')
+     :'<div style="padding:24px;text-align:center;color:var(--ink-soft);font-size:13.5px">Ничего не найдено</div>');
+  document.getElementById('dbMore').innerHTML=rows.length>shown.length
+    ?`<button class="addbtn" style="max-width:300px;margin:14px auto;display:block" onclick="dbState.limit+=600;renderDbRows()">Показать ещё</button>`:'';
+}
+function dbOpen(num){
+  const rec=ownerRecOfCad(cadOfNum(num));
+  if(objTypeOf(num)==='kv')jumpTo(num);
+  else if(rec)openPerson(rec.fio);
+  else alert('Объект '+num+' — собственник не найден');
+}
+
+/* ---------- вкладка «Настройки» ---------- */
+function renderSettings(){
+  const priv=document.body.classList.contains('privacy');
+  const noRemember=localStorage.getItem('actualka_noremember')==='1';
+  document.getElementById('viewSettings').innerHTML=`
+    <div class="settings">
+      <div class="st-card">
+        <div class="st-h">Безопасность</div>
+        <div class="st-row"><div class="st-l"><b>Режим инкогнито</b><small>Скрывает ФИО и телефоны. Нажать и удерживать — подсмотреть.</small></div>
+          <button class="tgl ${priv?'on':''}" onclick="togglePrivacy();renderSettings()"><i></i></button></div>
+        <div class="st-row"><div class="st-l"><b>Автоблокировка</b><small>Выход при бездействии</small></div>
+          <select class="mini" onchange="localStorage.setItem('actualka_idle',this.value);touchIdle(true);renderSettings()">
+            ${[5,15,30,60,120].map(m=>`<option value="${m}" ${idleMins()===m?'selected':''}>${m>=60?(m/60)+' ч':m+' мин'}</option>`).join('')}
+          </select></div>
+        <div class="st-row"><div class="st-l"><b>Не запоминать вход</b><small>Спрашивать пароль при каждом открытии</small></div>
+          <button class="tgl ${noRemember?'on':''}" onclick="toggleRemember();renderSettings()"><i></i></button></div>
+        <button class="st-btn danger" onclick="lockNow()">🔒 Заблокировать сейчас</button>
+      </div>
+
+      <div class="st-card">
+        <div class="st-h">База ЕГРН <span class="st-tag">только на этом устройстве</span></div>
+        <div class="st-note">${egrn.rows.length?`Загружено записей: <b>${egrn.rows.length}</b>`:'Не загружена — ФИО и телефоны не отображаются.'}</div>
+        <button class="st-btn" onclick="document.getElementById('egrnFile').click()">🗄 ${egrn.rows.length?'Заменить базу':'Загрузить базу'}</button>
+      </div>
+
+      <div class="st-card">
+        <div class="st-h">Данные</div>
+        <div class="st-note">${cloud?'Облако подключено — карточки, заметки и семьи синхронизируются.':'Локальный режим — данные только в этом браузере.'}</div>
+        <button class="st-btn" onclick="exportJSON()">⭳ Сохранить резервную копию</button>
+        <button class="st-btn" onclick="document.getElementById('importFile').click()">⭱ Загрузить копию</button>
+        <button class="st-btn" onclick="openReport()">📄 Сформировать отчёт</button>
+      </div>
+
+      <div class="st-card">
+        <div class="st-h">Комплекс</div>
+        <div class="st-note">Объектов в схеме: <b>${Object.keys(HYDE_OBJ).length}</b> · карточек в актуалке: <b>${items.length}</b> · заметок: <b>${Object.keys(schemaInfo).length}</b> · семей: <b>${groups.length}</b></div>
+        <button class="st-btn" onclick="renameJK();renderSettings()">Изменить название ЖК</button>
+        ${cloud?`<button class="st-btn danger" onclick="doLogout()">Выйти из аккаунта</button>`:''}
+      </div>
+    </div>`;
+}
+function toggleRemember(){
+  const on=localStorage.getItem('actualka_noremember')==='1';
+  const next=!on;
+  localStorage.setItem('actualka_noremember',next?'1':'0');
+  if(window.firebase&&firebase.auth){
+    try{firebase.auth().setPersistence(next?firebase.auth.Auth.Persistence.SESSION:firebase.auth.Auth.Persistence.LOCAL);}catch(e){}
+  }
+}
+let _sidx=null, zoomMode='fit', _cell=null, _kinFio=null;
+function setZoom(m){zoomMode=m;renderSchema();}
+function fitSchema(){
+  const wrap=document.querySelector('.schemaWrap');if(!wrap)return;
+  let ch;
+  if(zoomMode==='fit'){
+    const top=wrap.getBoundingClientRect().top;
+    const avail=Math.max(320, window.innerHeight - top - 88);
+    ch=Math.max(13, Math.min(24, Math.floor(avail/(FLOORS-1))-1));
+  } else ch=zoomMode;
+  wrap.style.setProperty('--ch',ch+'px');
+  wrap.style.setProperty('--cw',(ch*1.7).toFixed(1)+'px');
+}
+function renderSchema(){
+  const box=document.getElementById('viewSchema'),idx=schemaIndex();
+  const _kin=(_cell&&_kinFio)?kinApts(_kinFio,encodeApt(_cell.k,_cell.f,_cell.p)):new Set();
+  _sidx=idx;
+  const legend=`<div class="legend">
+    <span><i style="background:var(--ok)"></i>работает</span><span><i style="background:var(--think)"></i>думает</span>
+    <span><i style="background:var(--no)"></i>отказ</span><span><i style="background:#8f9aa8"></i>не общались</span>
+    <span><i style="background:#6f6b64"></i>продано/сдано</span><span><i style="background:#fff;box-shadow:0 0 0 1.5px rgba(0,0,0,.3)"></i>неск. квартир</span></div>`;
+  const gutter=()=>{let g='';for(let f=FLOORS;f>=2;f--)g+=`<div class="g">${f}</div>`;return `<div class="gutter">${g}</div>`;};
+  const tower=t=>{
+    const cols=maxPos(t.k);let floors='';let cnt=0;
+    for(let f=FLOORS;f>=2;f--){
+      let cells='';
+      for(let p=1;p<=cols;p++){
+        if(!aptExists(t.k,f,p)){cells+=`<div class="brick void"></div>`;continue;}
+        const key=`${t.k}-${f}-${p}`,o=idx.map[key];
+        const num=encodeApt(t.k,f,p);
+        const kinCls=_kin.has(num)?'kin':'';
+        const noObj=cadOfNum(num)?'':'noobj';
+        if(o){const cls=CLOSED.includes(stateOf(o))?'closed':(o.dealStatus||'base');cnt++;
+          cells+=`<div class="brick ${cls} ${idx.multi[key]?'multi':''} ${kinCls}" data-k="${t.k}" data-f="${f}" data-p="${p}" onclick="openCell(${t.k},${f},${p})"></div>`;}
+        else {const ni=schemaInfo[num];const nc=ni&&(ni.note||ni.cad)?'noted':'e';
+          cells+=`<div class="brick ${nc} ${kinCls} ${noObj}" data-k="${t.k}" data-f="${f}" data-p="${p}" onclick="openCell(${t.k},${f},${p})"></div>`;}
+      }
+      floors+=`<div class="frow ${f%10===0?'sect':''}">${cells}</div>`;
+    }
+    return `<div class="bld ${t.cls}">
+      <div class="bld-roof"><span class="spire"></span><span class="cap"></span></div>
+      <div class="bld-body"><div class="floors">${floors}</div></div>
+      <div class="bld-base">${t.ru} · лобби<small>${t.name} · ${cnt} в базе</small></div>
+    </div>`;
+  };
+  box.innerHTML=`<div class="schema-head">${legend}</div>
+    <div class="schemaWrap">${gutter()}${TOWERS.map(tower).join('')}${gutter()}</div>
+    <div class="zoombar">
+      <span>Масштаб:</span>
+      <button onclick="setZoom('fit')" class="${zoomMode==='fit'?'on':''}">по экрану</button>
+      <button onclick="setZoom(20)" class="${zoomMode===20?'on':''}">норма</button>
+      <button onclick="setZoom(28)" class="${zoomMode===28?'on':''}">крупнее</button>
+    </div>`;
+  fitSchema();
+}
+function schemaTip(e){
+  const b=e.target.closest('.brick');const tip=document.getElementById('schemaTip');
+  if(!b||!_sidx){tip.style.display='none';return;}
+  const k=+b.dataset.k,f=+b.dataset.f,p=+b.dataset.p,num=encodeApt(k,f,p),o=_sidx.map[`${k}-${f}-${p}`];
+  let html=`<b>${num}</b> · ${TOWERS[k-1].ru}, ${f} эт.`;
+  if(o){
+    html+=`<br>${esc(o.ownerName||'без ФИО')}`;
+    if(o.area)html+=` · ${esc(o.area)} м²`;
+    html+=`<span class="st-st"><br>${(STATUS[o.dealStatus||'base']||{}).label} · ${STATE_LABEL[stateOf(o)]}</span>`;
+    const oth=_sidx.owners[(o.ownerName||'').trim().toUpperCase()]||[];
+    if(oth.length>1)html+=`<br>◦ у собственника ${oth.length} кв.`;
+  } else {
+    const ni=schemaInfo[num], fo=ownerOfApt(num), ob=objOfNum(num);
+    if(ob)html+=`<br>${ob.area} м²`;
+    if(fo)html+=`<br>${esc(fo)}`;
+    if(ni&&ni.note)html+=`<br>📝 ${esc(ni.note)}`;
+    if(!fo&&!ni&&!ob)html+='<br>нет данных';
+  }
+  tip.innerHTML=html;tip.style.display='block';
+  const x=Math.min(e.clientX+14,window.innerWidth-230),y=Math.min(e.clientY+14,window.innerHeight-90);
+  tip.style.left=x+'px';tip.style.top=y+'px';
+}
+function cardAt(k,f,p){return items.find(o=>{const d=decodeApt(o.apartment);return d&&d.k===k&&d.f===f&&d.p===p;});}
+function openCell(k,f,p){
+  k=+k;_cell={k,f,p};const idx=schemaIndex();_sidx=idx;const key=`${k}-${f}-${p}`,o=idx.map[key],num=encodeApt(k,f,p);
+  const obj=objOfNum(num), cad=cadOfApt(num), rec=ownerRecOfCad(cad);
+  _kinFio=rec?rec.fio:null;
+  const nb=(nk,nf,np,label)=>{if(nf<1||nf>FLOORS||np<1||!aptExists(nk,nf,np))return `<div class="nb"><span>${label}</span><b>—</b><div>нет кв.</div></div>`;
+    const no=idx.map[`${nk}-${nf}-${np}`],nn=encodeApt(nk,nf,np),fo=ownerOfApt(nn);
+    return `<div class="nb ${no?'occ':''}"><span>${label}</span><b>${nn}</b><div>${no?esc((no.ownerName||'занята').split(' ')[0]):(fo?esc(fo.split(' ')[0]):'—')}</div></div>`;};
+
+  let info=`<div class="cell-info">
+      <div class="ci-row"><span>Квартира</span><b>${num}</b></div>
+      ${obj?`<div class="ci-row"><span>Метраж (реестр)</span><b>${obj.area} м²</b></div>`:''}
+      ${cad?`<div class="ci-row"><span>Кадастр</span><b style="font-size:11px">${esc(cad)}</b></div>`:'<div class="ci-row"><span>Кадастр</span><b style="color:var(--ink-soft)">нет в реестре</b></div>'}
+      ${rec?`<div class="ci-row"><span>Собственник</span><b class="pii">${esc(rec.fio)}</b></div>
+             ${rec.phone?`<div class="ci-row"><span>Телефон</span><b class="pii">${esc(rec.phone)}</b></div>`:''}
+             ${rec.share&&rec.share!=='1/1'?`<div class="ci-row"><span>Доля</span><b>${esc(rec.share)}</b></div>`:''}`
+           :(cad?`<div class="ci-row"><span>Собственник</span><b style="color:var(--ink-soft)">${egrn.rows.length?'нет в базе ЕГРН':'загрузи базу ЕГРН'}</b></div>`:'')}
+      ${o?`<div class="ci-row"><span>В актуалке</span><b>${(STATUS[o.dealStatus||'base']||{}).label} · ${STATE_LABEL[stateOf(o)]}</b></div>`:''}
+    </div>`;
+
+  /* --- портфель собственника --- */
+  let port='';
+  if(rec){
+    const all=ownerObjects(rec.fio).map(r=>({rec:r,o:objOfCad(r.cad)}));
+    const flats=all.filter(x=>x.o&&x.o.type==='kv');
+    const rest=all.filter(x=>!x.o||x.o.type!=='kv');
+    const cnt={};rest.forEach(x=>{const t=x.o?x.o.type:'?';cnt[t]=(cnt[t]||0)+1});
+    const co=(egrn.byCad[cad]||[]).filter(x=>x.fio!==rec.fio);
+    port=`<div class="port">
+      <div class="port-h"><b>Портфель собственника</b>${flats.length>1?`<span class="pbadge">инвестор · ${flats.length} кв.</span>`:''}</div>
+      ${flats.map(x=>{const cur=x.o.num===num;
+        return `<div class="pobj ${cur?'cur':''}" ${cur?'':`onclick="jumpTo('${x.o.num}')"`}>
+          <span class="pi">🏠</span>
+          <span class="pm">${x.o.num}<small>${x.o.area} м² · ${x.o.floor} эт.</small></span>
+          ${cur?'<span class="ptag">эта</span>':'<span class="pgo">→</span>'}
+        </div>`;}).join('')}
+      ${Object.keys(cnt).length?`<div class="pextra">Прочее: ${Object.entries(cnt).map(([t,n])=>`${typeIcon(t)} ${typeLabel(t)} — ${n}`).join(' · ')}<br><span style="opacity:.75">${rest.map(x=>x.o?x.o.num:'—').join(', ')}</span></div>`:''}
+      ${co.length?`<div class="pextra" style="border-color:#E3CBA0;color:#8a6d2b">Долевая собственность: <span class="pii">${co.map(c=>esc(c.fio)+(c.share?` (${c.share})`:'')).join(', ')}</span></div>`:''}
+    </div>`;
+  }
+
+  const ni=schemaInfo[num]||{};
+  const qedit=`<div class="qedit">
+      <div style="font-size:11.5px;color:var(--brass);font-weight:700;letter-spacing:.3px;text-transform:uppercase">Заметка по квартире</div>
+      <textarea id="cellNote" placeholder="живут собственники · ремонт, через год продают · сдают в аренду…">${esc(ni.note||'')}</textarea>
+    </div>`;
+  const body=`${info}${port}${qedit}
+    <div style="font-size:12.5px;font-weight:600;color:var(--ink-soft);margin-top:14px;margin-bottom:2px">Соседние квартиры</div>
+    <div class="nb-grid">
+      <div class="nb" style="visibility:hidden"></div>${nb(k,f+1,p,'этаж выше')}<div class="nb" style="visibility:hidden"></div>
+      ${nb(k,f,p-1,'слева')}<div class="nb mid"><span>эта</span><b>${num}</b></div>${nb(k,f,p+1,'справа')}
+      <div class="nb" style="visibility:hidden"></div>${nb(k,f-1,p,'этаж ниже')}<div class="nb" style="visibility:hidden"></div>
+    </div>`;
+  document.getElementById('cellTitle').textContent='Квартира '+num;
+  document.getElementById('cellBody').innerHTML=body;
+  document.getElementById('cellFoot').innerHTML=`<button class="del" style="color:var(--ink-soft);border-color:var(--line)" onclick="closeCell()">Закрыть</button><button class="save" onclick="quickSave()">Сохранить заметку</button><button class="save" style="background:#4a4a48;flex:none" onclick="cellToCard()">Карточка</button>`;
+  document.getElementById('cellOverlay').classList.add('show');
+  renderSchema();
+}
+function jumpTo(numStr){
+  const d=decodeApt(numStr);if(!d)return;
+  if(state.view!=='schema')switchView('schema');
+  openCell(d.k,d.f,d.p);
+}
+/* ---------- карточка человека ---------- */
+let _person=null;
+function openPerson(fio){
+  _person=fio;
+  const objs=ownerObjects(fio);
+  const rec=objs[0]||{fio,phone:'',share:''};
+  const flats=objs.map(r=>({r,o:objOfCad(r.cad)})).filter(x=>x.o&&x.o.type==='kv');
+  const rest=objs.map(r=>({r,o:objOfCad(r.cad)})).filter(x=>!x.o||x.o.type!=='kv');
+  const g=groupOf(fio);
+  const fam=g?g.members.filter(m=>normFio(m)!==normFio(fio)):[];
+  const phones=[...new Set(groupMembers(fio).map(m=>{const o=ownerObjects(m)[0];return o&&o.phone?m+': '+o.phone:null;}).filter(Boolean))];
+
+  /* заметки по всем его квартирам */
+  const notes=[];
+  flats.forEach(x=>{const ni=schemaInfo[x.o.num];if(ni&&ni.note)notes.push({num:x.o.num,note:ni.note});});
+  /* карточки актуалки по его квартирам */
+  const cards=flats.map(x=>items.find(o=>o.apartment===x.o.num)).filter(Boolean);
+
+  let famTotal=0;groupMembers(fio).forEach(m=>{famTotal+=ownerObjects(m).filter(r=>{const o=objOfCad(r.cad);return o&&o.type==='kv';}).length;});
+
+  const h=`
+    <div class="pers-top">
+      <div class="pers-name">${esc(fio)}</div>
+      <div class="pers-sub">${rec.phone?'☎ '+esc(rec.phone):'телефон не указан'}${rec.share&&rec.share!=='1/1'?' · доля '+esc(rec.share):''}</div>
+      ${flats.length>1?`<span class="pbadge" style="margin-top:7px;display:inline-block">инвестор · ${flats.length} кв.</span>`:''}
+      ${ownerFix[cadKey(rec.cad||'')]?'<span class="fixmark">данные скорректированы вручную</span>':''}
+    </div>
+
+    <div class="sec">
+      <div class="sec-h"><b>Квартиры (${flats.length})</b></div>
+      ${flats.length?flats.map(x=>{
+        const card=items.find(o=>o.apartment===x.o.num);
+        const st=card?(STATUS[card.dealStatus||'base']||{}).label:'';
+        return `<div class="pobj" onclick="closePerson();jumpTo('${x.o.num}')">
+          <span class="pi">🏠</span>
+          <span class="pm">${x.o.num}<small>${x.o.area} м² · ${x.o.floor} эт.${st?' · '+st:''}</small></span>
+          <span class="pgo">→</span></div>`;}).join(''):'<div class="empty2">нет квартир в базе</div>'}
+      ${rest.length?`<div class="pextra">Прочее: ${rest.map(x=>x.o?typeIcon(x.o.type)+' '+x.o.num:'—').join(', ')}</div>`:''}
+    </div>
+
+    <div class="sec">
+      <div class="sec-h"><b>Семья / связанные лица</b>
+        ${g?`<span class="pbadge" style="background:var(--fam)" onclick="renameGroup('${jq(fio)}');openPerson('${jq(fio)}')">${esc(g.name)} · ${famTotal} кв.</span>`:'<span class="pbadge" style="background:var(--base)">не связан</span>'}</div>
+      ${fam.length?fam.map(m=>{
+        const mo=ownerObjects(m),mf=mo.filter(r=>{const o=objOfCad(r.cad);return o&&o.type==='kv';});
+        return `<div class="mem">
+          <div class="av">${esc((m.split(' ')[0]||' ')[0]+((m.split(' ')[1]||' ')[0]||''))}</div>
+          <div class="in" onclick="openPerson('${jq(m)}')">${esc(m)}<small>${mf.length} кв. · ${mf.map(r=>objOfCad(r.cad).num).join(', ')||'—'}</small></div>
+          <button class="rm" title="убрать из группы" onclick="unlinkPerson('${jq(m)}');openPerson('${jq(fio)}')">×</button>
+        </div>`;}).join(''):'<div class="empty2">пока ни с кем не связан</div>'}
+      <button class="addbtn" onclick="openLink('${jq(fio)}')">+ Связать с человеком</button>
+      ${phones.length>1?`<div class="pextra">Телефоны группы:<br>${phones.map(esc).join('<br>')}</div>`:''}
+    </div>
+
+    ${notes.length?`<div class="sec">
+      <div class="sec-h"><b>Заметки по квартирам</b></div>
+      ${notes.map(n=>`<div class="noteline" onclick="closePerson();jumpTo('${n.num}')"><b>${n.num}</b> ${esc(n.note)}</div>`).join('')}
+    </div>`:''}
+
+    ${cards.length?`<div class="sec">
+      <div class="sec-h"><b>В актуалке (${cards.length})</b></div>
+      ${cards.map(c=>`<div class="noteline" onclick="closePerson();openModal('${c.id}')"><b>${esc(c.apartment)}</b> ${(STATUS[c.dealStatus||'base']||{}).label} · ${STATE_LABEL[stateOf(c)]}${c.price?' · '+esc(c.price):''}</div>`).join('')}
+    </div>`:''}`;
+
+  document.getElementById('personTitle').textContent='Собственник';
+  document.getElementById('personBody').innerHTML=h;
+  document.getElementById('personFoot').innerHTML=`<button class="del" style="color:var(--ink-soft);border-color:var(--line)" onclick="closePerson()">Закрыть</button><button class="save" onclick="editOwner('${jq(fio)}')">Изменить данные</button>`;
+  document.getElementById('personOverlay').classList.add('show');
+}
+function closePerson(){document.getElementById('personOverlay').classList.remove('show')}
+
+/* --- правка данных собственника --- */
+function editOwner(fio){
+  const objs=ownerObjects(fio);
+  if(!objs.length){alert('Нет объектов для правки');return;}
+  const list=objs.map((r,i)=>{const o=objOfCad(r.cad);return `${i+1}. ${o?o.num:r.cad}`;}).join('\n');
+  const pick=objs.length===1?'1':prompt('Какой объект правим?\n'+list+'\n\nНомер строки:','1');
+  if(!pick)return;
+  const idx=parseInt(pick)-1;const r=objs[idx];if(!r)return;
+  const o=objOfCad(r.cad),key=cadKey(r.cad),cur=ownerFix[key]||{};
+  const nf=prompt('ФИО собственника'+(o?' ('+o.num+')':'')+':',cur.fio||r.fio||'');
+  if(nf===null)return;
+  const np=prompt('Телефон:',cur.phone||r.phone||'');
+  if(np===null)return;
+  const nn=prompt('Комментарий (например: продал в марте 2026):',cur.note||'');
+  if(nn===null)return;
+  if(!nf.trim()){delete ownerFix[key];}
+  else ownerFix[key]={fio:nf.trim().toUpperCase(),phone:(np||'').trim(),note:(nn||'').trim(),ts:Date.now()};
+  saveOwnerFix();
+  if(state.view==='schema')renderSchema();
+  openPerson(nf.trim()?nf.trim().toUpperCase():fio);
+}
+
+/* --- выбор человека для связи --- */
+let _linkFor=null;
+function openLink(fio){
+  _linkFor=fio;
+  document.getElementById('linkQ').value='';
+  fillLink();
+  document.getElementById('linkOverlay').classList.add('show');
+  setTimeout(()=>document.getElementById('linkQ').focus(),60);
+}
+function closeLink(){document.getElementById('linkOverlay').classList.remove('show')}
+function allOwners(){
+  const set=new Map();
+  Object.keys(egrn.byOwner||{}).forEach(k=>{const r=egrn.byOwner[k][0];if(r&&r.fio)set.set(normFio(r.fio),r.fio);});
+  Object.values(ownerFix).forEach(f=>{if(f&&f.fio)set.set(normFio(f.fio),f.fio);});
+  return [...set.values()];
+}
+function fillLink(){
+  const fio=_linkFor,q=(document.getElementById('linkQ').value||'').trim().toLowerCase();
+  const mem=groupMembers(fio).map(normFio);
+  let list=allOwners().filter(f=>!mem.includes(normFio(f)));
+  if(q)list=list.filter(f=>{
+    const objs=ownerObjects(f),ph=(objs[0]||{}).phone||'';
+    return f.toLowerCase().includes(q)
+      || objs.some(r=>{const o=objOfCad(r.cad);return o&&o.num.toLowerCase().includes(q);})
+      || (q.replace(/\D/g,'').length>2&&ph.replace(/\D/g,'').includes(q.replace(/\D/g,'')));
+  });
+  list=list.slice(0,40);
+  document.getElementById('linkCount').textContent=q?`найдено: ${list.length}`:`всего: ${allOwners().length-mem.length}`;
+  document.getElementById('linkList').innerHTML=list.length?list.map(f=>{
+    const objs=ownerObjects(f),fl=objs.map(r=>objOfCad(r.cad)).filter(o=>o&&o.type==='kv');
+    const same=f.split(' ')[0]===fio.split(' ')[0];
+    return `<div class="lrow" onclick="linkPeople('${jq(fio)}','${jq(f)}');closeLink();openPerson('${jq(fio)}')">
+      ${esc(f)}${same?' <span style="color:var(--fam);font-size:11px">· однофамилец</span>':''}
+      <small>${fl.length} кв.${fl.length?' · '+fl.map(o=>o.num).join(', '):''}</small></div>`;}).join('')
+    :'<div class="empty2">никого не найдено</div>';
+}
+function quickSave(){
+  if(!_cell)return;const {k,f,p}=_cell,num=encodeApt(k,f,p);
+  const cad=cadOfApt(num);
+  const note=document.getElementById('cellNote').value;
+  if(!note.trim()) delete schemaInfo[num];
+  else schemaInfo[num]={cad,note,ts:Date.now()};
+  saveSchemaInfo();renderSchema();openCell(k,f,p);
+}
+function cellToCard(){
+  if(!_cell)return;const {k,f,p}=_cell,num=encodeApt(k,f,p),ex=cardAt(k,f,p);
+  closeCell();
+  if(ex){openModal(ex.id);return;}
+  openModalForApt(num);
+  const cad=cadOfApt(num),obj=objOfNum(num);
+  if(cad){document.getElementById('fld_cadastral').value=cad;egrnLookup();}
+  if(obj&&!document.getElementById('fld_area').value)document.getElementById('fld_area').value=obj.area;
+  const rec=ownerRecOfCad(cad);
+  if(rec){
+    const setIf=(id,v)=>{const el=document.getElementById(id);if(el&&!el.value&&v)el.value=v;};
+    setIf('fld_ownerName',rec.fio);setIf('fld_ownerPhone',rec.phone);setIf('fld_share',rec.share);
+  }
+  const ni=schemaInfo[num];
+  if(ni&&ni.note){const n=document.getElementById('fld_notes');if(n&&!n.value)n.value=ni.note;}
+}
+function closeCell(){document.getElementById('cellOverlay').classList.remove('show');}
+function openModalForApt(num){openModal();document.getElementById('fld_apartment').value=num;}
+
+/* ---------- глобальный поиск-подсказка ---------- */
+function globalSuggest(q){
+  q=(q||'').trim().toLowerCase();
+  if(q.length<2)return null;
+  const digits=q.replace(/\D/g,'');
+  const out={people:[],apts:[],groups:[]};
+  /* люди */
+  allOwners().forEach(f=>{
+    if(out.people.length>=6)return;
+    const objs=ownerObjects(f),ph=(objs[0]||{}).phone||'';
+    const hit=f.toLowerCase().includes(q)||(digits.length>2&&ph.replace(/\D/g,'').includes(digits));
+    if(hit)out.people.push({fio:f,objs});
+  });
+  /* квартиры и объекты */
+  Object.keys(HYDE_OBJ).forEach(suf=>{
+    if(out.apts.length>=6)return;
+    const v=HYDE_OBJ[suf],num=v[0];
+    if(num.toLowerCase().includes(q)||suf.includes(q)||(HYDE_PREFIX+suf).includes(q))
+      out.apts.push({num,area:v[1],floor:v[2],cad:HYDE_PREFIX+suf});
+  });
+  /* группы */
+  groups.forEach(g=>{if(out.groups.length<4&&(g.name||'').toLowerCase().includes(q))out.groups.push(g);});
+  return out;
+}
+function renderSuggest(){
+  const box=document.getElementById('sugBox');if(!box)return;
+  const q=document.getElementById('q').value;
+  const r=globalSuggest(q);
+  if(!r||(!r.people.length&&!r.apts.length&&!r.groups.length)){box.classList.remove('show');box.innerHTML='';return;}
+  let h='';
+  if(r.people.length){
+    h+='<div class="sg-h">Собственники</div>';
+    h+=r.people.map(p=>{
+      const fl=p.objs.map(x=>objOfCad(x.cad)).filter(o=>o&&o.type==='kv');
+      const g=groupOf(p.fio);
+      return `<div class="sg-row" onclick="pickSuggestPerson('${jq(p.fio)}')">
+        <span class="sg-ic">👤</span><span class="sg-m pii">${esc(p.fio)}
+        <small>${fl.length} кв.${fl.length?' · '+fl.map(o=>o.num).join(', '):''}${g?' · '+esc(g.name):''}</small></span></div>`;}).join('');
+  }
+  if(r.apts.length){
+    h+='<div class="sg-h">Объекты</div>';
+    h+=r.apts.map(a=>{
+      const own=ownerRecOfCad(a.cad),ni=schemaInfo[a.num];
+      return `<div class="sg-row" onclick="pickSuggestApt('${a.num}')">
+        <span class="sg-ic">${typeIcon(objTypeOf(a.num))}</span><span class="sg-m">${a.num}
+        <small>${a.area} м² · ${a.floor} эт.${own?' · '+esc(own.fio):''}${ni&&ni.note?' · 📝':''}</small></span></div>`;}).join('');
+  }
+  if(r.groups.length){
+    h+='<div class="sg-h">Семьи</div>';
+    h+=r.groups.map(g=>`<div class="sg-row" onclick="pickSuggestPerson('${jq(g.members[0])}')">
+      <span class="sg-ic">👪</span><span class="sg-m">${esc(g.name)}<small>${g.members.length} чел.</small></span></div>`).join('');
+  }
+  box.innerHTML=h;box.classList.add('show');
+}
+function pickSuggestPerson(fio){hideSuggest();openPerson(fio);}
+function pickSuggestApt(num){
+  hideSuggest();
+  if(objTypeOf(num)==='kv')jumpTo(num);
+  else{const r=ownerRecOfCad(cadOfNum(num));if(r)openPerson(r.fio);else alert('Объект '+num+' — собственник не найден (загрузи базу ЕГРН)');}
+}
+function hideSuggest(){const b=document.getElementById('sugBox');if(b){b.classList.remove('show');b.innerHTML='';}}
+
+/* ---------- режим приватности / быстрая блокировка ---------- */
+function togglePrivacy(){
+  const on=!document.body.classList.contains('privacy');
+  document.body.classList.toggle('privacy',on);
+  document.getElementById('privBtn').classList.toggle('on',on);
+  try{localStorage.setItem('actualka_priv',on?'1':'0');}catch(e){}
+}
+function applyPrivacy(){
+  let on=false;try{on=localStorage.getItem('actualka_priv')==='1';}catch(e){}
+  document.body.classList.toggle('privacy',on);
+  const b=document.getElementById('privBtn');if(b)b.classList.toggle('on',on);
+}
+function lockNow(){
+  hideSuggest();closeModal();closeCell();closePerson();closeLink();closeReport();
+  if(cloud&&window.firebase&&firebase.auth&&firebase.auth().currentUser){
+    localStorage.removeItem('actualka_seen');
+    firebase.auth().signOut();
+  }else{
+    const g=document.getElementById('authGate');if(g)g.classList.add('show');
+  }
+}
+
+/* ---------- wire up ---------- */
+document.getElementById('q').addEventListener('input',e=>{state.q=e.target.value;render();renderSuggest();});
+document.getElementById('q').addEventListener('focus',renderSuggest);
+document.addEventListener('click',e=>{if(!e.target.closest('.search'))hideSuggest();});
+document.getElementById('personOverlay').addEventListener('click',e=>{if(e.target.id==='personOverlay')closePerson()});
+document.getElementById('linkOverlay').addEventListener('click',e=>{if(e.target.id==='linkOverlay')closeLink()});
+document.getElementById('linkQ').addEventListener('input',fillLink);
+document.getElementById('fPay').addEventListener('change',e=>{state.pay=e.target.value;render()});
+document.getElementById('fState').addEventListener('change',e=>{state.objState=e.target.value;render()});
+document.getElementById('fSort').addEventListener('change',e=>{state.sort=e.target.value;render()});
+document.getElementById('overlay').addEventListener('click',e=>{if(e.target.id==='overlay')closeModal()});
+document.getElementById('reportOverlay').addEventListener('click',e=>{if(e.target.id==='reportOverlay')closeReport()});
+document.getElementById('cellOverlay').addEventListener('click',e=>{if(e.target.id==='cellOverlay')closeCell()});
+document.addEventListener('mousemove',e=>{if(state.view==='schema'&&e.target.closest&&e.target.closest('.schemaWrap'))schemaTip(e);else if(!e.target.closest||!e.target.closest('.brick'))document.getElementById('schemaTip').style.display='none';});
+document.getElementById('viewSchema').addEventListener('mouseleave',()=>{document.getElementById('schemaTip').style.display='none';});
+window.addEventListener('resize',()=>{if(state.view==='schema')fitSchema();});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeModal();closeReport();closeCell();closePerson();closeLink();hideSuggest();}});
+
+setJkLabel();
+applyPrivacy();
+loadAuxLocal();
+buildStateFilter();
+loadEgrnFromStorage();
+initStore();
+</script>
+</body>
+</html>
