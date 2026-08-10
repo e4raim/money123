@@ -1,0 +1,1903 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Рабочая панель</title>
+<style>
+:root{
+  --paper:#F3F1EC;--card:#FFFFFF;--ink:#23211E;--ink-soft:#6E6A62;--line:#E6E2D9;
+  --brass:#9A7B34;--brass-tint:#F2EAD6;
+  --ok:#2F8F5B;--think:#C79218;--no:#C24A3E;--base:#8A867E;
+  --serif:Georgia,"Times New Roman",serif;
+  --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  --shadow:0 1px 2px rgba(30,28,24,.05),0 6px 18px rgba(30,28,24,.06);
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--paper);color:var(--ink);font-family:var(--sans);-webkit-font-smoothing:antialiased;padding-bottom:90px}
+a{color:inherit}
+
+header{position:sticky;top:0;z-index:40;background:rgba(243,241,236,.86);backdrop-filter:saturate(1.4) blur(12px);border-bottom:1px solid var(--line);padding:14px 18px 12px}
+.bar-top{display:flex;align-items:center;gap:12px;max-width:1240px;margin:0 auto}
+.search{flex:1;position:relative;min-width:0}
+.search input{width:100%;border:1px solid var(--line);background:#fff;border-radius:12px;padding:11px 14px 11px 38px;font-size:15px;color:var(--ink);outline:none}
+.search input:focus{border-color:var(--brass);box-shadow:0 0 0 3px var(--brass-tint)}
+.search svg{position:absolute;left:12px;top:50%;transform:translateY(-50%);width:17px;height:17px;stroke:var(--ink-soft);fill:none;stroke-width:2}
+.btn-add{border:none;background:var(--brass);color:#fff;font-weight:600;font-size:15px;padding:11px 16px;border-radius:12px;cursor:pointer;white-space:nowrap;display:inline-flex;align-items:center;gap:7px;transition:filter .15s}
+.btn-add:hover{filter:brightness(1.07)}
+.btn-add .plus{font-size:19px;line-height:1;margin-top:-1px}
+
+.filters{max-width:1240px;margin:12px auto 0;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.chip{border:1px solid var(--line);background:#fff;color:var(--ink-soft);padding:7px 13px;border-radius:999px;font-size:13.5px;font-weight:500;cursor:pointer;display:inline-flex;align-items:center;gap:7px;transition:.12s}
+.chip .dot{width:8px;height:8px;border-radius:50%;background:var(--base)}
+.chip .cnt{font-variant-numeric:tabular-nums;color:var(--ink-soft);font-weight:600;font-size:12px}
+.chip[data-k="works"] .dot{background:var(--ok)}
+.chip[data-k="thinking"] .dot{background:var(--think)}
+.chip[data-k="refusal"] .dot{background:var(--no)}
+.chip[data-k="base"] .dot{background:var(--base)}
+.chip.active{border-color:var(--ink);color:var(--ink)}
+.chip.active .cnt{color:var(--ink)}
+.chip.warn{border-style:dashed;border-color:#D8B98F;color:#9a6d2b}
+.chip.warn.active{background:var(--brass-tint);border-color:var(--brass);color:#8a6120}
+.spacer{flex:1;min-width:12px}
+select.mini{border:1px solid var(--line);background:#fff;color:var(--ink);border-radius:10px;padding:8px 30px 8px 12px;font-size:13.5px;font-family:var(--sans);cursor:pointer;outline:none;appearance:none;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 10 10'><path d='M1 3l4 4 4-4' stroke='%236E6A62' stroke-width='1.6' fill='none'/></svg>");background-repeat:no-repeat;background-position:right 11px center}
+select.mini:focus{border-color:var(--brass)}
+
+.cloud-note{max-width:1240px;margin:12px auto 0;font-size:12.5px;color:var(--ink-soft);background:var(--brass-tint);border:1px solid #E7D9B4;border-radius:10px;padding:8px 12px;display:flex;gap:8px;align-items:center}
+.cloud-note b{color:#8a6d2b}
+.cloud-note.live{background:#E7F3EC;border-color:#CBE6D5}
+.cloud-note.live b{color:var(--ok)}
+
+main{max-width:1240px;margin:0 auto;padding:18px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(258px,1fr));gap:18px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;overflow:hidden;cursor:pointer;box-shadow:var(--shadow);transition:transform .16s ease,box-shadow .16s ease;display:flex;flex-direction:column}
+.card:hover{transform:translateY(-3px);box-shadow:0 2px 4px rgba(30,28,24,.06),0 14px 30px rgba(30,28,24,.11)}
+.card.incomplete{border-color:#E3CBA0}
+.thumb{position:relative;aspect-ratio:16/10;background:#EDEAE2;overflow:hidden}
+.thumb img{width:100%;height:100%;object-fit:cover;display:block}
+.thumb .placeholder{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#C3BFB4}
+.thumb .placeholder svg{width:44px;height:44px;stroke:currentColor;fill:none;stroke-width:1.4}
+.pill{position:absolute;top:10px;left:10px;font-size:11.5px;font-weight:600;color:#fff;padding:4px 9px;border-radius:999px;letter-spacing:.2px;box-shadow:0 1px 4px rgba(0,0,0,.2)}
+.pill.works{background:var(--ok)} .pill.thinking{background:var(--think)} .pill.refusal{background:var(--no)} .pill.base{background:var(--base)}
+.card.closed .thumb img,.card.closed .thumb .placeholder{filter:grayscale(1);opacity:.5}
+.card.closed .body{opacity:.55}
+.card.closed{border-color:#DAD6CC}
+.sold-overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;z-index:3}
+.sold-overlay span{background:rgba(192,74,62,.94);color:#fff;font-weight:800;font-size:19px;letter-spacing:3px;padding:6px 18px;border-radius:8px;transform:rotate(-8deg);box-shadow:0 4px 14px rgba(0,0,0,.3)}
+.deal-badge{position:absolute;bottom:10px;left:10px;background:rgba(35,33,30,.72);color:#fff;font-size:10.5px;font-weight:700;padding:3px 8px;border-radius:999px;letter-spacing:.3px}
+.deal-badge.rent{background:rgba(47,111,143,.85)}
+.pay-badge{position:absolute;top:10px;right:10px;background:rgba(35,33,30,.82);color:#F2EAD6;font-size:11px;font-weight:700;padding:4px 8px;border-radius:999px;letter-spacing:.3px}
+.todo-badge{position:absolute;bottom:10px;right:10px;background:rgba(154,109,43,.92);color:#fff;font-size:10.5px;font-weight:700;padding:3px 8px;border-radius:999px;letter-spacing:.3px}
+.body{padding:12px 14px 14px;display:flex;flex-direction:column;gap:5px;flex:1}
+.title{font-family:var(--serif);font-size:18px;font-weight:700;line-height:1.15}
+.metr{font-size:13px;color:var(--ink-soft);font-weight:600}
+.price{font-size:16px;font-weight:700;color:var(--ink);margin-top:1px}
+.ppm{font-size:12px;color:var(--brass);font-weight:600}
+.row{display:flex;align-items:center;gap:6px;font-size:12.5px;color:var(--ink-soft)}
+.row .k{color:#A8A296}
+.owner{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:6px;padding-top:9px;border-top:1px solid var(--line)}
+.owner .who{min-width:0}
+.owner .name{font-size:13.5px;font-weight:600;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.owner .ph{font-size:12px;color:var(--ink-soft)}
+.call{flex:none;width:34px;height:34px;border-radius:10px;background:var(--brass-tint);color:var(--brass);display:flex;align-items:center;justify-content:center;text-decoration:none}
+.call svg{width:16px;height:16px;fill:currentColor}
+.next{font-size:12px;color:var(--brass);font-weight:600;margin-top:4px;display:flex;gap:5px;align-items:baseline}
+.next .k{color:#B8AC8A}
+
+.empty{text-align:center;padding:70px 20px;color:var(--ink-soft)}
+.empty .big{font-family:var(--serif);font-size:22px;color:var(--ink);margin-bottom:8px}
+.empty button{margin-top:16px}
+
+.tools{max-width:1240px;margin:26px auto 0;display:flex;gap:10px;flex-wrap:wrap;justify-content:center;font-size:13px;color:var(--ink-soft)}
+.tools button{border:1px solid var(--line);background:#fff;color:var(--ink-soft);border-radius:10px;padding:8px 14px;font-size:13px;cursor:pointer;font-family:var(--sans)}
+.tools button:hover{border-color:var(--brass);color:var(--brass)}
+
+.overlay{position:fixed;inset:0;background:rgba(30,28,24,.42);backdrop-filter:blur(3px);display:none;align-items:flex-start;justify-content:center;z-index:60;padding:24px 16px;overflow-y:auto}
+.overlay.show{display:flex}
+.modal{background:var(--paper);width:100%;max-width:560px;border-radius:20px;box-shadow:0 20px 60px rgba(0,0,0,.28);overflow:hidden;animation:pop .18s ease}
+@keyframes pop{from{opacity:0;transform:translateY(10px) scale(.98)}to{opacity:1;transform:none}}
+.modal-head{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--paper);z-index:2}
+.modal-head h2{margin:0;font-family:var(--serif);font-size:19px}
+.x{border:none;background:none;font-size:24px;color:var(--ink-soft);cursor:pointer;line-height:1;padding:2px 6px}
+.modal-body{padding:18px 20px 4px}
+.photo-drop{aspect-ratio:16/10;border:1.5px dashed #CFC9BC;border-radius:14px;background:#fff;display:flex;align-items:center;justify-content:center;text-align:center;color:var(--ink-soft);cursor:pointer;overflow:hidden;position:relative;margin-bottom:16px;transition:.15s}
+.photo-drop:hover{border-color:var(--brass);color:var(--brass)}
+.photo-drop img{width:100%;height:100%;object-fit:cover}
+.photo-drop .hint{padding:16px;font-size:13.5px;line-height:1.5}
+.photo-drop .hint b{display:block;font-size:15px;color:var(--ink);margin-bottom:3px}
+.photo-clear{position:absolute;top:8px;right:8px;background:rgba(35,33,30,.75);color:#fff;border:none;width:28px;height:28px;border-radius:50%;font-size:16px;cursor:pointer;display:none}
+.photo-drop.has .photo-clear{display:block}
+label.f{display:block;margin-bottom:13px}
+label.f .lb{font-size:12.5px;font-weight:600;color:var(--ink-soft);margin-bottom:5px;display:block}
+.f input,.f select,.f textarea{width:100%;border:1px solid var(--line);background:#fff;border-radius:10px;padding:11px 12px;font-size:15px;color:var(--ink);font-family:var(--sans);outline:none}
+.f textarea{resize:vertical;min-height:64px;line-height:1.45}
+.f input:focus,.f select:focus,.f textarea:focus{border-color:var(--brass);box-shadow:0 0 0 3px var(--brass-tint)}
+.f select{appearance:none;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 10 10'><path d='M1 3l4 4 4-4' stroke='%236E6A62' stroke-width='1.6' fill='none'/></svg>");background-repeat:no-repeat;background-position:right 12px center}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.links-sec{margin-bottom:13px}
+.links-sec .lb{font-size:12.5px;font-weight:600;color:var(--ink-soft);margin-bottom:6px;display:block}
+.link-row{display:grid;grid-template-columns:1fr 1.5fr auto;gap:8px;margin-bottom:8px}
+.link-row input{border:1px solid var(--line);background:#fff;border-radius:10px;padding:10px 11px;font-size:14px;font-family:var(--sans);outline:none;min-width:0}
+.link-row input:focus{border-color:var(--brass);box-shadow:0 0 0 3px var(--brass-tint)}
+.link-row .rm{border:1px solid var(--line);background:#fff;color:var(--no);border-radius:10px;width:40px;cursor:pointer;font-size:17px}
+.add-link{border:1px dashed #CFC9BC;background:#fff;color:var(--brass);border-radius:10px;padding:10px;width:100%;cursor:pointer;font-size:14px;font-weight:600;font-family:var(--sans)}
+.add-link:hover{border-color:var(--brass)}
+@media (max-width:480px){.link-row{grid-template-columns:1fr auto}.link-row .ol-url{grid-column:1/-1}}
+.modal-foot{display:flex;gap:10px;padding:14px 20px 20px;position:sticky;bottom:0;background:var(--paper);border-top:1px solid var(--line)}
+.cadline{font-size:11px;color:#B0AB9F;font-family:ui-monospace,Menlo,monospace;margin-top:-1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#egrnStatus{font-size:12.5px;color:var(--ink-soft)}
+#egrnStatus.egrn-ok{color:var(--ok);font-weight:600}
+.egrn-result{margin-bottom:13px}
+.egrn-result:empty{margin:0}
+.egrn-hint{font-size:12.5px;color:var(--ink-soft);padding:9px 11px;background:#fff;border:1px dashed var(--line);border-radius:10px}
+.egrn-card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin-bottom:8px}
+.egrn-top{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
+.egrn-fio{font-size:14px;font-weight:700;color:var(--ink)}
+.egrn-meta{font-size:12px;color:var(--ink-soft);margin-top:2px}
+.egrn-fill{flex:none;border:none;background:var(--brass);color:#fff;border-radius:9px;padding:8px 12px;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--sans)}
+.egrn-fill:hover{filter:brightness(1.07)}
+.egrn-others{margin-top:8px;padding-top:8px;border-top:1px dashed var(--line);font-size:11.5px;color:var(--ink-soft);line-height:1.45}
+.modal-foot .save{flex:1;background:var(--brass);color:#fff;border:none;border-radius:12px;padding:13px;font-size:15.5px;font-weight:600;cursor:pointer}
+.modal-foot .save:hover{filter:brightness(1.07)}
+.modal-foot .del{border:1px solid #E7C9C4;background:#fff;color:var(--no);border-radius:12px;padding:13px 16px;font-size:14px;cursor:pointer}
+.modal-foot .del:hover{background:#FBEEEC}
+@media (max-width:480px){.two{grid-template-columns:1fr}.btn-add span.t{display:none}.btn-add{padding:11px 13px}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+.rep-check{display:flex;align-items:center;gap:10px;padding:11px 12px;border:1px solid var(--line);background:#fff;border-radius:10px;margin-bottom:8px;cursor:pointer;font-size:14.5px}
+.rep-check input{width:18px;height:18px;accent-color:var(--brass);flex:none}
+.rep-period{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:6px 0 4px}
+#reportOutput{background:#fff;border:1px solid var(--line);border-radius:12px;padding:20px 22px;color:var(--ink);line-height:1.5}
+#reportOutput h1{font-family:var(--serif);font-size:22px;margin:0 0 4px}
+#reportOutput .rsub{color:var(--ink-soft);font-size:13px;margin-bottom:16px}
+#reportOutput h2{font-family:var(--serif);font-size:16px;margin:18px 0 8px;padding-bottom:5px;border-bottom:1px solid var(--line)}
+#reportOutput table{width:100%;border-collapse:collapse;font-size:13px;margin-top:4px}
+#reportOutput th,#reportOutput td{text-align:left;padding:6px 8px;border-bottom:1px solid #F0EDE5;vertical-align:top}
+#reportOutput th{color:var(--ink-soft);font-weight:600;font-size:11.5px;text-transform:uppercase;letter-spacing:.3px}
+#reportOutput .stat{display:inline-block;margin:2px 14px 2px 0;font-size:14px}
+#reportOutput .stat b{font-size:18px;font-family:var(--serif)}
+@media print{
+  body>*{display:none!important}
+  #reportOverlay{display:block!important;position:static!important;background:#fff!important;padding:0!important}
+  #reportOverlay .modal-head,#reportOverlay .modal-foot,#reportOverlay .rep-controls{display:none!important}
+  #reportOverlay .modal{max-width:none!important;box-shadow:none!important;background:#fff!important}
+  #reportOutput{border:none!important;padding:0!important}
+}
+.tabs{max-width:1240px;margin:12px auto 0;display:flex;gap:6px}
+.tab{border:1px solid var(--line);background:#fff;color:var(--ink-soft);border-radius:12px;padding:9px 18px;font-size:14px;font-weight:600;cursor:pointer;font-family:var(--sans)}
+.tab.active{color:#fff;background:var(--brass);border-color:var(--brass)}
+.schema-head{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:14px}
+.twr{border:1px solid var(--line);background:#fff;color:var(--ink-soft);padding:8px 14px;border-radius:999px;font-size:13.5px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:8px}
+.twr .sw{width:13px;height:13px;border-radius:3px;border:1px solid rgba(0,0,0,.15)}
+.twr.w .sw{background:#EEECE6} .twr.b .sw{background:#2C2A28} .twr.g .sw{background:#C9A24B}
+.twr.active{border-color:var(--ink);color:var(--ink);box-shadow:0 0 0 1px var(--ink)}
+.legend{display:flex;gap:12px;flex-wrap:wrap;font-size:12px;color:var(--ink-soft);margin-left:auto}
+.legend span{display:inline-flex;align-items:center;gap:5px}
+.legend i{width:11px;height:11px;border-radius:3px;display:inline-block}
+/* --- дом тремя башнями --- */
+.schemaWrap{--cw:22px;--ch:13px;--gap:3px;display:flex;justify-content:center;align-items:flex-end;gap:14px;padding:6px 0 4px}
+.gutter{display:flex;flex-direction:column;gap:var(--gap);padding-bottom:36px}
+.gutter .g{height:var(--ch);display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--ink-soft);width:24px;font-variant-numeric:tabular-nums}
+.bld{display:flex;flex-direction:column;align-items:center}
+.bld-roof{position:relative;height:20px;width:70%;color:#B7B1A3}
+.bld.b .bld-roof{color:#5c5851}.bld.g .bld-roof{color:#B8912F}
+.bld-roof .cap{position:absolute;left:0;right:0;bottom:0;height:12px;border-radius:7px 7px 0 0;background:currentColor;opacity:.9}
+.bld-roof .spire{position:absolute;left:50%;bottom:11px;transform:translateX(-50%);width:2px;height:11px;background:currentColor}
+.bld.g .bld-roof .spire{height:18px;bottom:11px}
+.bld-body{position:relative;border:1px solid;border-bottom:none;border-radius:9px 9px 0 0;padding:7px 7px 0;overflow:hidden;box-shadow:0 10px 30px rgba(30,28,24,.14)}
+.bld.w .bld-body{background:linear-gradient(180deg,#F9F7F2,#E7E3DA);border-color:#D8D3C7}
+.bld.b .bld-body{background:linear-gradient(180deg,#35332F,#232120);border-color:#141312}
+.bld.g .bld-body{background:linear-gradient(180deg,#ECDBAE,#D6BB77);border-color:#C6A648}
+.floors{display:flex;flex-direction:column;gap:var(--gap)}
+.frow{display:flex;gap:var(--gap);height:var(--ch);justify-content:center}
+.frow.sect{box-shadow:inset 0 2px 0 -1px rgba(154,123,52,.45)}
+.brick{width:var(--cw);height:var(--ch);border-radius:2px;cursor:pointer;transition:transform .08s;position:relative}
+.bld.w .brick.e{background:rgba(120,110,90,.16)} .bld.b .brick.e{background:rgba(255,255,255,.09)} .bld.g .brick.e{background:rgba(90,60,10,.16)}
+.brick.void{background:transparent!important;pointer-events:none;box-shadow:none;cursor:default}
+.brick.noted{background:rgba(154,123,52,.32)!important;box-shadow:inset 0 0 0 1px rgba(154,123,52,.85)}
+.brick.noobj{opacity:.35}
+.brick.kin{box-shadow:0 0 0 1.5px #fff,0 0 0 3.5px var(--brass)!important;z-index:4}
+.port{margin-top:14px;border-top:1px solid var(--line);padding-top:11px}
+.port-h{display:flex;justify-content:space-between;align-items:center;margin-bottom:7px}
+.port-h b{font-size:13.5px}
+.pbadge{background:var(--brass);color:#fff;font-size:11px;font-weight:700;padding:3px 10px;border-radius:999px}
+.pobj{display:flex;align-items:center;gap:9px;padding:8px 0;border-bottom:1px solid #F2EFE8;font-size:13.5px;cursor:pointer}
+.pobj:hover{background:#FBFAF7}
+.pobj.cur{cursor:default;background:var(--brass-tint);border-radius:8px;padding-left:8px;padding-right:8px}
+.pobj .pi{width:22px;text-align:center;flex:none}
+.pobj .pm{flex:1;font-weight:600;line-height:1.25}
+.pobj .pm small{display:block;font-weight:400;color:var(--ink-soft);font-size:11.5px}
+.pobj .ptag{font-size:11px;font-weight:700;color:var(--brass)}
+.pobj .pgo{color:#C7C2B6;font-size:16px}
+.pextra{margin-top:9px;font-size:12px;color:var(--ink-soft);background:#FBFAF7;border:1px dashed var(--line);border-radius:9px;padding:8px 10px;line-height:1.5}
+.auth-gate{position:fixed;inset:0;z-index:200;background:var(--paper);display:none;align-items:center;justify-content:center;padding:24px}
+.auth-gate.show{display:flex}
+.auth-box{width:100%;max-width:340px;background:#fff;border:1px solid var(--line);border-radius:18px;padding:32px 24px 26px;box-shadow:0 18px 50px rgba(30,28,24,.14)}
+.auth-box input{width:100%;border:1px solid var(--line);border-radius:11px;padding:13px 14px;font-size:16px;font-family:var(--sans);outline:none;margin-bottom:10px;background:#fff;color:var(--ink)}
+.auth-box input:focus{border-color:var(--brass);box-shadow:0 0 0 3px var(--brass-tint)}
+.auth-box button{width:100%;border:none;background:var(--brass);color:#fff;border-radius:11px;padding:13px;font-size:15.5px;font-weight:600;cursor:pointer;font-family:var(--sans);margin-top:4px}
+.auth-box button:hover{filter:brightness(1.07)}
+#authErr{font-size:13px;text-align:center;margin-top:11px;min-height:17px;color:var(--no)}
+.auth-foot{font-size:11.5px;color:var(--ink-soft);text-align:center;margin-top:16px;line-height:1.5}
+:root{--fam:#7B5EA7;--fam-tint:#EFEAF7}
+.sug-box{position:absolute;top:calc(100% + 6px);left:0;right:0;background:#fff;border:1px solid var(--line);border-radius:14px;box-shadow:0 14px 40px rgba(30,28,24,.16);z-index:90;display:none;max-height:60vh;overflow-y:auto;padding:6px}
+.sug-box.show{display:block}
+.sg-h{font-size:10.5px;font-weight:700;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.4px;padding:8px 10px 4px}
+.sg-row{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:9px;cursor:pointer;font-size:14px}
+.sg-row:hover{background:var(--brass-tint)}
+.sg-ic{width:22px;text-align:center;flex:none}
+.sg-m{flex:1;min-width:0;font-weight:600;line-height:1.3}
+.sg-m small{display:block;font-weight:400;color:var(--ink-soft);font-size:11.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pers-top{background:#FBFAF7;border:1px solid var(--line);border-radius:12px;padding:13px 15px}
+.pers-name{font-family:var(--serif);font-size:18px;font-weight:700;line-height:1.2}
+.pers-sub{font-size:12.5px;color:var(--ink-soft);margin-top:3px}
+.fixmark{display:block;font-size:11px;color:var(--brass);margin-top:6px;font-weight:600}
+.sec{margin-top:15px;border-top:1px solid var(--line);padding-top:12px}
+.sec-h{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;gap:8px}
+.sec-h b{font-size:13.5px}
+.empty2{font-size:12.5px;color:var(--ink-soft);padding:5px 0}
+.mem{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid #F2EFE8;font-size:13.5px}
+.mem .av{width:30px;height:30px;border-radius:50%;background:var(--fam-tint);color:var(--fam);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:11.5px;flex:none}
+.mem .in{flex:1;min-width:0;line-height:1.3;cursor:pointer}
+.mem .in small{display:block;color:var(--ink-soft);font-size:11.5px}
+.mem .rm{border:none;background:none;color:#C7C2B6;font-size:18px;cursor:pointer;padding:2px 6px}
+.mem .rm:hover{color:var(--no)}
+.addbtn{width:100%;border:1px dashed #CFC9BC;background:#fff;color:var(--brass);border-radius:10px;padding:10px;font-size:13.5px;font-weight:600;cursor:pointer;font-family:var(--sans);margin-top:9px}
+.addbtn:hover{border-color:var(--brass)}
+.noteline{font-size:13px;padding:8px 10px;background:#FBFAF7;border:1px solid var(--line);border-radius:9px;margin-bottom:6px;cursor:pointer;line-height:1.4}
+.noteline:hover{border-color:var(--brass)}
+.noteline b{color:var(--brass);margin-right:5px}
+.lrow{padding:10px 12px;border:1px solid var(--line);border-radius:10px;margin-bottom:7px;cursor:pointer;font-size:13.5px}
+.lrow:hover{border-color:var(--brass);background:var(--brass-tint)}
+.lrow small{display:block;color:var(--ink-soft);font-size:11.5px;margin-top:2px}
+/* --- режим приватности: скрывает персональные данные --- */
+body.privacy .pii,
+body.privacy .owner .name,
+body.privacy .owner .ph,
+body.privacy .pers-name,
+body.privacy .pers-sub,
+body.privacy .mem .in,
+body.privacy .lrow{filter:blur(5.5px);user-select:none;pointer-events:auto}
+body.privacy .pii:active,
+body.privacy .owner .name:active,
+body.privacy .pers-name:active{filter:none}
+.privbtn{border:1px solid var(--line);background:#fff;color:var(--ink-soft);border-radius:11px;width:42px;height:42px;flex:none;cursor:pointer;font-size:17px;display:flex;align-items:center;justify-content:center}
+.privbtn.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.floatlock{position:fixed;right:16px;bottom:16px;z-index:70;width:52px;height:52px;border-radius:50%;border:none;background:var(--ink);color:#fff;font-size:20px;cursor:pointer;box-shadow:0 6px 20px rgba(30,28,24,.3)}
+.floatlock:active{transform:scale(.93)}
+/* --- вкладка База --- */
+.db-bar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+.db-bar input{flex:1;min-width:220px;border:1px solid var(--line);border-radius:11px;padding:11px 13px;font-size:15px;font-family:var(--sans);outline:none;background:#fff;color:var(--ink)}
+.db-bar input:focus{border-color:var(--brass);box-shadow:0 0 0 3px var(--brass-tint)}
+.db-count{font-size:12.5px;color:var(--ink-soft);margin-bottom:9px}
+.db-table{background:#fff;border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.db-head,.db-row{display:grid;grid-template-columns:110px 58px 44px 1fr 76px;gap:8px;padding:9px 13px;align-items:center;font-size:13.5px}
+.db-head{background:#FBFAF7;border-bottom:1px solid var(--line);font-size:10.5px;font-weight:700;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.3px;position:sticky;top:0;z-index:2}
+.db-row{border-bottom:1px solid #F4F1EA;cursor:pointer}
+.db-row:hover{background:var(--brass-tint)}
+.db-num{font-weight:700;white-space:nowrap}
+.db-fio{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.db-fio i{color:#C7C2B6}
+.db-cad{font-family:ui-monospace,Menlo,monospace;font-size:11px;color:var(--ink-soft);text-align:right}
+@media(max-width:640px){.db-head,.db-row{grid-template-columns:92px 46px 1fr}.db-head span:nth-child(3),.db-row span:nth-child(3),.db-head span:nth-child(5),.db-row span:nth-child(5){display:none}}
+/* --- вкладка Настройки --- */
+.settings{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px;align-items:start}
+.st-card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:16px 18px;box-shadow:var(--shadow)}
+.st-h{font-family:var(--serif);font-size:16px;font-weight:700;margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.st-tag{font-family:var(--sans);font-size:10px;font-weight:700;color:var(--brass);background:var(--brass-tint);padding:3px 8px;border-radius:999px;letter-spacing:.2px}
+.st-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 0;border-bottom:1px solid #F4F1EA}
+.st-row:last-of-type{border-bottom:none}
+.st-l b{font-size:14px;display:block}
+.st-l small{display:block;font-size:11.5px;color:var(--ink-soft);margin-top:2px;line-height:1.4}
+.st-note{font-size:12.5px;color:var(--ink-soft);line-height:1.5;margin-bottom:10px}
+.st-btn{width:100%;border:1px solid var(--line);background:#fff;color:var(--ink);border-radius:10px;padding:11px;font-size:14px;cursor:pointer;font-family:var(--sans);margin-top:8px}
+.st-btn:hover{border-color:var(--brass);color:var(--brass)}
+.st-btn.danger{color:var(--no);border-color:#EBD3CF}
+.st-btn.danger:hover{background:#FBEEEC;color:var(--no)}
+.tgl{width:46px;height:27px;border-radius:999px;border:none;background:#DAD6CC;cursor:pointer;position:relative;flex:none;transition:.15s}
+.tgl i{position:absolute;top:3px;left:3px;width:21px;height:21px;border-radius:50%;background:#fff;transition:.15s;box-shadow:0 1px 3px rgba(0,0,0,.2)}
+.tgl.on{background:var(--ok)}
+.tgl.on i{left:22px}
+body.guest .btn-add,body.guest .empty button,body.guest .modal-foot .save,body.guest .modal-foot .del{display:none!important}
+body.guest .f input,body.guest .f select,body.guest .f textarea,body.guest .photo-drop{pointer-events:none;opacity:.75}
+.brick.works{background:var(--ok)} .brick.thinking{background:var(--think)} .brick.refusal{background:var(--no)} .brick.base{background:#8f9aa8} .brick.closed{background:#6f6b64}
+.brick:hover{transform:scale(1.55);z-index:6;outline:2px solid var(--brass);border-radius:2px}
+.brick.multi::after{content:"";position:absolute;top:1px;right:1px;width:4px;height:4px;border-radius:50%;background:#fff;box-shadow:0 0 0 1px rgba(0,0,0,.35)}
+.bld-base{border:1px solid;border-top-width:3px;border-radius:0 0 10px 10px;padding:7px 12px;text-align:center;font-size:11px;font-weight:700;letter-spacing:.3px;min-width:80%}
+.bld.w .bld-base{background:#EDEAE2;border-color:#D8D3C7;color:#4a463f}
+.bld.b .bld-base{background:#2B2A28;border-color:#141312;color:#EDE7D9}
+.bld.g .bld-base{background:#D6BB77;border-color:#C6A648;color:#3a2f12}
+.bld-base small{display:block;font-weight:500;font-size:9.5px;opacity:.8;margin-top:1px}
+#schemaTip{position:fixed;z-index:80;pointer-events:none;background:rgba(35,33,30,.96);color:#fff;font-size:12px;padding:7px 10px;border-radius:9px;box-shadow:0 6px 20px rgba(0,0,0,.3);display:none;max-width:220px;line-height:1.35}
+#schemaTip b{color:#F2EAD6}
+#schemaTip .st-st{display:inline-block;margin-top:3px;font-size:11px;opacity:.9}
+.zoombar{display:flex;gap:6px;align-items:center;justify-content:center;margin-top:10px;font-size:12.5px;color:var(--ink-soft)}
+.zoombar button{border:1px solid var(--line);background:#fff;border-radius:8px;padding:5px 12px;cursor:pointer;font-family:var(--sans);font-size:13px}
+.zoombar button.on{border-color:var(--brass);color:var(--brass);font-weight:700}
+.cell-info .ci-row{display:flex;justify-content:space-between;gap:10px;font-size:13.5px;padding:7px 0;border-bottom:1px solid var(--line)}
+.cell-info .ci-row span{color:var(--ink-soft)}
+.qedit{margin-top:14px}
+.qedit .lb{font-size:12px;font-weight:600;color:var(--ink-soft);margin:8px 0 4px;display:block}
+.qedit input,.qedit textarea{width:100%;border:1px solid var(--line);border-radius:9px;padding:10px 11px;font-size:14.5px;font-family:var(--sans);outline:none;background:#fff;color:var(--ink)}
+.qedit textarea{min-height:58px;resize:vertical;line-height:1.4}
+.qedit input:focus,.qedit textarea:focus{border-color:var(--brass);box-shadow:0 0 0 3px var(--brass-tint)}
+.qedit .egrn-meta{min-height:15px;margin-top:4px}
+.nb-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:6px}
+.nb{border:1px solid var(--line);border-radius:8px;padding:7px 4px;text-align:center;font-size:10.5px;color:var(--ink-soft);line-height:1.3}
+.nb b{display:block;font-size:13px;color:var(--ink);font-variant-numeric:tabular-nums}
+.nb.occ{background:var(--brass-tint);border-color:#E3D3A8}
+.nb.mid{background:#2B2A28;color:#F2EAD6;border-color:#2B2A28}
+.nb.mid b{color:#fff}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="bar-top">
+    <div class="search">
+      <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <input id="q" type="search" placeholder="Поиск: ФИО, № квартиры, кадастр, телефон…" autocomplete="off">
+      <div id="sugBox" class="sug-box"></div>
+    </div>
+    <button class="privbtn" id="privBtn" onclick="togglePrivacy()" title="Скрыть персональные данные">👁</button>
+    <button class="privbtn" onclick="lockNow()" title="Быстро заблокировать">🔒</button>
+    <button class="btn-add" onclick="openModal()"><span class="plus">+</span><span class="t">Добавить объект</span></button>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" id="tabActualka" onclick="switchView('actualka')">Актуалка</button>
+    <button class="tab" id="tabDb" onclick="switchView('db')">База</button>
+    <button class="tab" id="tabSchema" onclick="switchView('schema')">Схема дома</button>
+    <button class="tab" id="tabSettings" onclick="switchView('settings')">Настройки</button>
+  </div>
+
+  <div class="filters" id="statusChips"></div>
+  <div class="filters" id="filtersRow2" style="margin-top:8px">
+    <select class="mini" id="fDeal" onchange="onDealFilter()">
+      <option value="all">Продажа + аренда</option>
+      <option value="sale">Только продажа</option>
+      <option value="rent">Только аренда</option>
+    </select>
+    <select class="mini" id="fState"></select>
+    <select class="mini" id="fPay">
+      <option value="all">Оплата — любая</option>
+      <option value="yes">Платит</option>
+      <option value="split">Делится с агентом</option>
+      <option value="low">Мало платит</option>
+      <option value="no">Не платит</option>
+    </select>
+    <span class="spacer"></span>
+    <select class="mini" id="fSort">
+      <option value="new">Сначала новые</option>
+      <option value="area_desc">Метраж: большие → меньшие</option>
+      <option value="area_asc">Метраж: меньшие → большие</option>
+      <option value="price_desc">Дороже → дешевле</option>
+      <option value="price_asc">Дешевле → дороже</option>
+      <option value="ppm_desc">Метр: дорогой → дешёвый</option>
+      <option value="ppm_asc">Метр: дешёвый → дорогой</option>
+      <option value="contact">По дате контакта</option>
+    </select>
+  </div>
+
+  <div id="cloudNote" class="cloud-note"></div>
+</header>
+
+<main>
+  <div id="viewActualka">
+  <div class="grid" id="grid"></div>
+  <div class="tools">
+    <button onclick="document.getElementById('egrnFile').click()">🗄 Загрузить базу ЕГРН</button>
+    <span id="egrnStatus">база ЕГРН не загружена</span>
+    <span style="flex-basis:100%;height:0"></span>
+    <button onclick="openReport()">📄 Отчёт</button>
+    <button onclick="exportJSON()">⭳ Сохранить резервную копию</button>
+    <button onclick="document.getElementById('importFile').click()">⭱ Загрузить копию</button>
+  </div>
+  </div>
+  <div id="viewSchema" style="display:none"></div>
+  <div id="viewDb" style="display:none"></div>
+  <div id="viewSettings" style="display:none"></div>
+</main>
+<input type="file" id="cfgFile" accept="application/json" hidden onchange="loadComplexFile(this)">
+<input type="file" id="egrnFile" accept=".xlsx,.xls,.csv" hidden onchange="loadEgrn(this)">
+<input type="file" id="importFile" accept="application/json" hidden onchange="importJSON(this)">
+<button class="floatlock" onclick="lockNow()" title="Заблокировать">🔒</button>
+<div id="schemaTip"></div>
+
+<div class="overlay" id="overlay">
+  <div class="modal" id="modal">
+    <div class="modal-head">
+      <h2 id="mTitle">Новый объект</h2>
+      <button class="x" onclick="closeModal()">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="photo-drop" id="photoDrop" onclick="pickPhoto()">
+        <input type="file" id="photoInput" accept="image/*" hidden onchange="onPhotoFile(this.files[0])">
+        <div class="hint" id="photoHint"><b>Фото квартиры</b>Нажми, чтобы выбрать · или вставь скриншот (Ctrl/⌘+V)</div>
+        <img id="photoPreview" style="display:none">
+        <button class="photo-clear" id="photoClear" onclick="clearPhoto(event)">×</button>
+      </div>
+
+      <div class="two">
+        <label class="f"><span class="lb">Квартира</span><input id="fld_apartment" placeholder="№ 214, кв. …"></label>
+        <label class="f"><span class="lb">Метраж, м²</span><input id="fld_area" inputmode="decimal" placeholder="72"></label>
+      </div>
+      <label class="f"><span class="lb">Кадастровый номер <span style="color:var(--brass);font-weight:700">— автопоиск в базе</span></span><input id="fld_cadastral" placeholder="кадастр · или № объекта / ФИО" oninput="egrnLookupDebounced()"></label>
+      <div id="egrnResult" class="egrn-result"></div>
+      <div class="two">
+        <label class="f"><span class="lb">Цена</span><input id="fld_price" placeholder="120 000 000 ₽"></label>
+        <label class="f"><span class="lb">Доля</span><input id="fld_share" placeholder="1/1"></label>
+      </div>
+
+      <div class="two">
+        <label class="f"><span class="lb">Собственник (ФИО)</span><input id="fld_ownerName" placeholder="Иванов Иван"></label>
+        <label class="f"><span class="lb">Телефон</span><input id="fld_ownerPhone" placeholder="+7 ___ ___-__-__"></label>
+      </div>
+
+      <div class="two">
+        <label class="f"><span class="lb">Кто ведёт сейчас</span><input id="fld_currentAgent" placeholder="Агентство / агент"></label>
+        <label class="f"><span class="lb">Ссылка на объявление</span><input id="fld_listingUrl" placeholder="cian / avito / …"></label>
+      </div>
+
+      <div class="links-sec">
+        <span class="lb">Ссылки других агентов (дубли)</span>
+        <div id="otherLinks"></div>
+        <button type="button" class="add-link" onclick="addOtherRow()">+ Добавить ссылку</button>
+      </div>
+
+      <div class="two">
+        <label class="f"><span class="lb">Тип сделки</span>
+          <select id="fld_dealType">
+            <option value="sale">Продажа</option>
+            <option value="rent">Аренда</option>
+            <option value="both">Продажа + аренда</option>
+          </select>
+        </label>
+        <label class="f"><span class="lb">Состояние объекта</span>
+          <select id="fld_objState" onchange="onStateFieldChange()">
+            <option value="active">В работе</option>
+            <option value="sold">Продано</option>
+            <option value="rented">Сдано</option>
+            <option value="withdrawn">Снято с продажи</option>
+          </select>
+        </label>
+      </div>
+      <div class="two" id="closeDatesRow">
+        <label class="f"><span class="lb">Дата закрытия (прод./сдачи)</span><input id="fld_closedDate" type="date"></label>
+        <label class="f"><span class="lb">Договор аренды до</span><input id="fld_leaseEnd" type="date"></label>
+      </div>
+
+      <label class="f"><span class="lb">Статус</span>
+        <select id="fld_dealStatus">
+          <option value="base">Не общались</option>
+          <option value="thinking">Думает</option>
+          <option value="works">Работает</option>
+          <option value="refusal">Отказ</option>
+        </select>
+      </label>
+
+      <div class="two">
+        <label class="f"><span class="lb">Оплата нам</span>
+          <select id="fld_willPay">
+            <option value="unknown">— не выяснено</option>
+            <option value="yes">Платит</option>
+            <option value="split">Делится с агентом</option>
+            <option value="low">Мало платит</option>
+            <option value="no">Не платит</option>
+          </select>
+        </label>
+        <label class="f"><span class="lb">Эксклюзив у другого?</span>
+          <select id="fld_exclusive">
+            <option value="unknown">— не выяснено</option>
+            <option value="no">Нет</option>
+            <option value="yes">Да</option>
+          </select>
+        </label>
+      </div>
+
+      <div class="two">
+        <label class="f"><span class="lb">Последний контакт</span><input id="fld_lastContact" type="date"></label>
+        <label class="f"><span class="lb">Когда перезвонить</span><input id="fld_nextDate" type="date"></label>
+      </div>
+      <label class="f"><span class="lb">Следующий шаг</span><input id="fld_nextStep" placeholder="Скинуть покупателя, дожать по комиссии…"></label>
+      <label class="f"><span class="lb">Заметки</span><textarea id="fld_notes" placeholder="Возражения, характер, торг, детали…"></textarea></label>
+    </div>
+    <div class="modal-foot">
+      <button class="del" id="delBtn" onclick="delCurrent()" style="display:none">Удалить</button>
+      <button class="save" onclick="saveCard()">Сохранить</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="reportOverlay">
+  <div class="modal" style="max-width:700px">
+    <div class="modal-head">
+      <h2>Отчёт по актуалке</h2>
+      <button class="x" onclick="closeReport()">×</button>
+    </div>
+    <div class="modal-body rep-controls">
+      <label class="rep-check"><input type="checkbox" id="rc_stats" checked> Сводка по статусам и состояниям</label>
+      <label class="rep-check"><input type="checkbox" id="rc_sale" checked> Активные в продаже</label>
+      <label class="rep-check"><input type="checkbox" id="rc_rent" checked> Активные в аренде</label>
+      <label class="rep-check"><input type="checkbox" id="rc_sold" checked> Проданные</label>
+      <label class="rep-check"><input type="checkbox" id="rc_rented" checked> Сданные</label>
+      <label class="rep-check"><input type="checkbox" id="rc_call"> Кому перезвонить (по дате)</label>
+      <label class="rep-check"><input type="checkbox" id="rc_incomplete"> Недозаполненные</label>
+      <div style="font-size:12.5px;font-weight:600;color:var(--ink-soft);margin:12px 0 2px">Период для проданных/сданных (по дате закрытия, необязательно):</div>
+      <div class="rep-period">
+        <label class="f" style="margin:0"><span class="lb">С</span><input id="rc_from" type="date"></label>
+        <label class="f" style="margin:0"><span class="lb">По</span><input id="rc_to" type="date"></label>
+      </div>
+      <div id="reportOutput" style="margin-top:16px"></div>
+    </div>
+    <div class="modal-foot">
+      <button class="del" style="color:var(--ink-soft);border-color:var(--line)" onclick="closeReport()">Закрыть</button>
+      <button class="save" onclick="generateReport()">Сформировать</button>
+      <button class="save" style="background:#4a4a48;flex:none" onclick="window.print()">Печать / PDF</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="cellOverlay">
+  <div class="modal" style="max-width:460px">
+    <div class="modal-head">
+      <h2 id="cellTitle">Квартира</h2>
+      <button class="x" onclick="closeCell()">×</button>
+    </div>
+    <div class="modal-body" id="cellBody"></div>
+    <div class="modal-foot" id="cellFoot"></div>
+  </div>
+</div>
+
+<div class="overlay" id="personOverlay">
+  <div class="modal" style="max-width:480px">
+    <div class="modal-head"><h2 id="personTitle">Собственник</h2><button class="x" onclick="closePerson()">×</button></div>
+    <div class="modal-body" id="personBody"></div>
+    <div class="modal-foot" id="personFoot"></div>
+  </div>
+</div>
+
+<div class="overlay" id="linkOverlay">
+  <div class="modal" style="max-width:440px">
+    <div class="modal-head"><h2>Кого связать</h2><button class="x" onclick="closeLink()">×</button></div>
+    <div class="modal-body">
+      <input id="linkQ" placeholder="Поиск: ФИО, № квартиры, телефон…" style="width:100%;border:1px solid var(--line);border-radius:10px;padding:11px 12px;font-size:15px;font-family:var(--sans);outline:none">
+      <div id="linkCount" style="font-size:11.5px;color:var(--ink-soft);margin:9px 0 6px"></div>
+      <div id="linkList"></div>
+    </div>
+    <div class="modal-foot"><button class="del" style="flex:1;color:var(--ink-soft);border-color:var(--line)" onclick="closeLink()">Отмена</button></div>
+  </div>
+</div>
+
+<div class="auth-gate show" id="authGate">
+  <div class="auth-box">
+    <input id="authEmail" type="email" autocomplete="username" placeholder="Почта" onkeydown="if(event.key==='Enter')document.getElementById('authPass').focus()">
+    <input id="authPass" type="password" autocomplete="current-password" placeholder="Пароль" onkeydown="if(event.key==='Enter')doLogin()">
+    <button onclick="doLogin()">Войти</button>
+    <div id="authErr"></div>
+  </div>
+</div>
+
+<!-- Firebase SDK — работает только если вставлен конфиг; если не загрузится, приложение уходит в локальный режим -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+<script>
+/* ============================================================
+   FIREBASE — вставь свой конфиг сюда, чтобы включить облако.
+   Пока поля пустые — работает локально + резервные копии.
+   ============================================================ */
+const FIREBASE_CONFIG = { apiKey:"AIzaSyAe2prvX263zrbliZQzO5WEfytekEU0raM", authDomain:"diff-1822e.firebaseapp.com", databaseURL:"https://diff-1822e-default-rtdb.firebaseio.com", projectId:"diff-1822e" };
+/* Гостевой доступ (только просмотр актуалки, без схемы/базы/настроек).
+   Вставь сюда UID гостевого пользователя из Firebase → Authentication → Users. */
+const GUEST_UIDS = [];
+let isGuest=false;
+/* ============================================================ */
+
+let HYDE_PREFIX="", HYDE_OBJ={}, COMPLEX=null;
+const STATUS = {
+  works:   {label:"Работает"},
+  thinking:{label:"Думает"},
+  refusal: {label:"Отказ"},
+  base:    {label:"Не общались"}
+};
+const PAY = {yes:"платит", split:"делится с агентом", low:"мало платит", no:"не платит", unknown:""};
+const CLOSED = ['sold','rented','withdrawn'];
+const STATE_LABEL = {active:"В работе", sold:"Продано", rented:"Сдано", withdrawn:"Снято"};
+function dealOf(o){return o.dealType||'sale'}
+function stateOf(o){return o.objState||'active'}
+
+let items = [];
+let cloud=false, dbRef=null, editingId=null, pendingPhoto=null;
+const state = {q:"", status:"all", pay:"all", sort:"new", dealType:"all", objState:"all", view:"actualka"};
+
+/* ---------- ЖК label ---------- */
+function jkName(){return localStorage.getItem('actualka_jk')||(COMPLEX&&COMPLEX.name)||''}
+function setJkLabel(){const el=document.getElementById('jkLabel');if(el)el.textContent='ЖК '+jkName();}
+function renameJK(){
+  const v=prompt('Название ЖК для этой актуалки:', jkName());
+  if(v!==null && v.trim()){localStorage.setItem('actualka_jk',v.trim());setJkLabel();}
+}
+
+/* ---------- storage + вход ---------- */
+function configured(){return FIREBASE_CONFIG.apiKey && FIREBASE_CONFIG.databaseURL}
+function initStore(){
+  const note=document.getElementById('cloudNote');
+  if(configured() && window.firebase && firebase.auth){
+    try{
+      if(!firebase.apps.length) firebase.initializeApp(FIREBASE_CONFIG);
+      if(localStorage.getItem('actualka_noremember')==='1'){
+        try{firebase.auth().setPersistence(firebase.auth.Auth.Persistence.SESSION);}catch(e){}
+      }
+      firebase.auth().onAuthStateChanged(u=>{
+        if(u&&idleExpired()){forceLogout('Сессия истекла — войди заново');return;}
+        u?startCloud(u):showGate();
+      });
+      return;
+    }catch(e){cloud=false;console.error(e);}
+  }
+  note.className="cloud-note";
+  note.innerHTML='<b>Локальный режим.</b> Данные в этом браузере. Регулярно жми «Сохранить резервную копию».';
+  hideGate(); loadLocal(); render();
+}
+function startCloud(user){
+  hideGate();
+  isGuest=GUEST_UIDS.includes(user.uid);
+  dbRef=firebase.database().ref('actualka');
+  cloud=true;
+  dbRef.off();
+  dbRef.on('value',s=>{const v=s.val()||{};items=Object.keys(v).map(k=>({...v[k],id:k}));render();if(state.view==='schema')renderSchema();if(!isGuest)offerMigration();},
+    err=>{const n=document.getElementById('cloudNote');n.className='cloud-note';n.innerHTML='<b>Нет доступа к базе.</b> Проверь правила Firebase.';console.error(err);});
+  claimSession(user);
+  if(!isGuest)startAux();
+  armIdle();
+  applyGuestUI();
+  const note=document.getElementById('cloudNote');
+  note.className="cloud-note live";
+  note.innerHTML=`<b>● Облако подключено</b>${isGuest?' · только просмотр':''} — ${esc(user.email||'')} · <a href="#" onclick="doLogout();return false" style="color:var(--ok);font-weight:600">выйти</a>`;
+}
+function applyGuestUI(){
+  document.body.classList.toggle('guest',isGuest);
+  if(!isGuest)return;
+  const tDb=document.getElementById('tabDb'),tSc=document.getElementById('tabSchema'),tSt=document.getElementById('tabSettings');
+  [tDb,tSc,tSt].forEach(b=>{if(b)b.style.display='none';});
+  if(state.view!=='actualka')switchView('actualka');
+}
+
+/* ---------- одна сессия на аккаунт ---------- */
+const SESSION_ID=(function(){
+  let id=null;
+  try{id=localStorage.getItem('actualka_dev');}catch(e){}
+  if(!id){id=Math.random().toString(36).slice(2)+Date.now().toString(36);try{localStorage.setItem('actualka_dev',id);}catch(e){}}
+  return id;
+})();
+let sessRef=null;
+function claimSession(user){
+  try{
+    sessRef=firebase.database().ref('sessions/'+user.uid);
+    sessRef.set({id:SESSION_ID,ts:Date.now(),ua:(navigator.userAgent||'').slice(0,90)});
+    sessRef.on('value',s=>{
+      const v=s.val();
+      if(v&&v.id&&v.id!==SESSION_ID) forceLogout('Вход выполнен на другом устройстве');
+    });
+  }catch(e){console.error(e);}
+}
+function forceLogout(msg){
+  try{if(sessRef){sessRef.off();sessRef=null;}}catch(e){}
+  clearTimeout(_idleT);
+  localStorage.removeItem('actualka_seen');
+  firebase.auth().signOut().finally(()=>{
+    showGate();
+    const err=document.getElementById('authErr');
+    if(err){err.style.color='var(--brass)';err.textContent=msg;}
+  });
+}
+
+/* ---------- выход по бездействию (30 мин) ---------- */
+function idleMins(){let v=parseInt(localStorage.getItem('actualka_idle')||'60');return (v>0&&v<=720)?v:60;}
+Object.defineProperty(window,'IDLE_MS',{get:()=>idleMins()*60*1000});
+let _idleT=null,_lastTouch=0,_idleArmed=false;
+function armIdle(){
+  if(_idleArmed)return;
+  _idleArmed=true;
+  touchIdle(true);
+  ['click','keydown','touchstart','scroll','mousemove'].forEach(ev=>
+    document.addEventListener(ev,()=>touchIdle(),{passive:true}));
+}
+function touchIdle(force){
+  if(!cloud)return;
+  const now=Date.now();
+  if(!force&&now-_lastTouch<20000)return;   /* пишем не чаще раза в 20 сек */
+  _lastTouch=now;
+  try{localStorage.setItem('actualka_seen',String(now));}catch(e){}
+  clearTimeout(_idleT);
+  _idleT=setTimeout(()=>forceLogout('Сессия закрыта по бездействию'),IDLE_MS);
+}
+function idleExpired(){
+  const t=parseInt(localStorage.getItem('actualka_seen')||'0');
+  return t>0 && (Date.now()-t)>IDLE_MS;
+}
+
+/* ---------- перенос старых локальных карточек в облако ---------- */
+let _migAsked=false;
+function offerMigration(){
+  if(_migAsked||!cloud)return;
+  _migAsked=true;
+  let local=[];
+  try{local=JSON.parse(localStorage.getItem('actualka')||'[]')}catch(e){}
+  if(!local.length)return;
+  const have=new Set(items.map(o=>o.apartment).filter(Boolean));
+  const add=local.filter(o=>!o.apartment||!have.has(o.apartment));
+  if(!add.length)return;
+  if(confirm(`В памяти этого браузера нашлось ${add.length} карточек, которых нет в облаке.\nПеренести их в облако?`)){
+    add.forEach(o=>{o.id=o.id||genId();o.createdAt=o.createdAt||Date.now();upsert(o);});
+  }
+}
+function showGate(){
+  cloud=false; items=[]; if(dbRef){dbRef.off();dbRef=null;}
+  const g=document.getElementById('authGate');if(g)g.classList.add('show');
+  const gr=document.getElementById('grid');if(gr)gr.innerHTML='';
+}
+function hideGate(){const g=document.getElementById('authGate');if(g)g.classList.remove('show');}
+function doLogin(){
+  const em=(document.getElementById('authEmail').value||'').trim();
+  const pw=document.getElementById('authPass').value||'';
+  const err=document.getElementById('authErr');
+  if(!em||!pw){err.textContent='Введи почту и пароль';return;}
+  err.style.color='var(--ink-soft)';err.textContent='Проверяю…';
+  firebase.auth().signInWithEmailAndPassword(em,pw)
+    .then(()=>{err.textContent='';document.getElementById('authPass').value='';})
+    .catch(ex=>{
+      err.style.color='var(--no)';
+      const m={'auth/invalid-email':'Неверный формат почты','auth/user-not-found':'Пользователь не найден','auth/wrong-password':'Неверный пароль','auth/invalid-credential':'Неверная почта или пароль','auth/too-many-requests':'Слишком много попыток — подожди пару минут','auth/network-request-failed':'Нет связи (возможно, VPN)','auth/operation-not-allowed':'В Firebase не включён вход по паролю'};
+      err.textContent=m[ex.code]||('Ошибка: '+ex.code);
+    });
+}
+function doLogout(){if(confirm('Выйти из аккаунта?')){localStorage.removeItem('actualka_seen');if(sessRef){try{sessRef.off();sessRef.remove();}catch(e){}sessRef=null;}firebase.auth().signOut();}}
+function loadLocal(){try{items=JSON.parse(localStorage.getItem('actualka')||'[]')}catch(e){items=[]}}
+function saveLocal(){localStorage.setItem('actualka',JSON.stringify(items))}
+function upsert(item){
+  if(cloud){dbRef.child(item.id).set(strip(item));}
+  else{const i=items.findIndex(x=>x.id===item.id);if(i>=0)items[i]=item;else items.push(item);saveLocal();render();}
+}
+function removeItem(id){if(cloud){dbRef.child(id).remove();}else{items=items.filter(x=>x.id!==id);saveLocal();render();}}
+function strip(o){const c={...o};delete c.id;return c;}
+function genId(){return 'o'+Date.now().toString(36)+Math.random().toString(36).slice(2,6)}
+
+/* ---------- helpers ---------- */
+function num(v){return parseFloat(String(v==null?'':v).replace(/[^\d.,]/g,'').replace(',','.'))||0}
+function ppm(o){const a=num(o.area),p=num(o.price);return a>0&&p>0?p/a:0}
+function jq(s){return String(s==null?'':s).replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/"/g,'&quot;').replace(/</g,'&lt;');}
+function esc(s){return (s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
+function fmtDate(d){if(!d)return'';const[y,m,day]=d.split('-');return`${day}.${m}`}
+function fmtDateY(d){if(!d)return'';const[y,m,day]=d.split('-');return`${day}.${m}.${y.slice(2)}`}
+function fmtMoney(v){const n=num(v);if(!n)return esc(v||'');return n.toLocaleString('ru-RU')+' ₽'}
+function isIncomplete(o){return !o.ownerPhone || !num(o.price) || !num(o.area) || !o.listingUrl}
+
+/* ---------- render ---------- */
+function filtered(){
+  let out=items.slice();
+  const q=state.q.trim().toLowerCase();
+  if(q) out=out.filter(o=>[o.apartment,o.cadastral,o.ownerName,o.ownerPhone,o.currentAgent,o.notes]
+      .filter(Boolean).join(' ').toLowerCase().includes(q));
+  if(state.status==='incomplete') out=out.filter(isIncomplete);
+  else if(state.status!=='all') out=out.filter(o=>(o.dealStatus||'base')===state.status);
+  if(state.pay!=='all') out=out.filter(o=>(o.willPay||'unknown')===state.pay);
+  if(state.dealType==='sale') out=out.filter(o=>dealOf(o)==='sale'||dealOf(o)==='both');
+  else if(state.dealType==='rent') out=out.filter(o=>dealOf(o)==='rent'||dealOf(o)==='both');
+  if(state.objState==='active') out=out.filter(o=>stateOf(o)==='active');
+  else if(state.objState==='closed') out=out.filter(o=>CLOSED.includes(stateOf(o)));
+  else if(state.objState!=='all') out=out.filter(o=>stateOf(o)===state.objState);
+
+  const s=state.sort, low=1e18;
+  out.sort((a,b)=>{
+    if(s==='area_desc') return num(b.area)-num(a.area);
+    if(s==='area_asc')  return (num(a.area)||low)-(num(b.area)||low);
+    if(s==='price_desc')return num(b.price)-num(a.price);
+    if(s==='price_asc') return (num(a.price)||low)-(num(b.price)||low);
+    if(s==='ppm_desc')  return ppm(b)-ppm(a);
+    if(s==='ppm_asc')   return (ppm(a)||low)-(ppm(b)||low);
+    if(s==='contact')   return (b.lastContact||'').localeCompare(a.lastContact||'');
+    return (b.createdAt||0)-(a.createdAt||0);
+  });
+  return out;
+}
+
+function render(){
+  setJkLabel(); buildChips();
+  const grid=document.getElementById('grid');
+  const list=filtered();
+  if(!items.length){
+    grid.innerHTML=`<div class="empty" style="grid-column:1/-1"><div class="big">Пока пусто</div>
+      Добавь первый объект — квартиру, которую ведёт другой агент и которую хочешь забрать.
+      <div><button class="btn-add" onclick="openModal()"><span class="plus">+</span> Добавить объект</button></div></div>`;
+    return;
+  }
+  if(!list.length){grid.innerHTML=`<div class="empty" style="grid-column:1/-1"><div class="big">Ничего не найдено</div>Сбрось фильтры или поиск.</div>`;return;}
+
+  grid.innerHTML=list.map(o=>{
+    const st=STATUS[o.dealStatus||'base'];
+    const pay=PAY[o.willPay||'unknown'];
+    const phoneClean=(o.ownerPhone||'').replace(/[^\d+]/g,'');
+    const perM=ppm(o);
+    const closed=CLOSED.includes(stateOf(o));
+    const overlayTxt=stateOf(o)==='sold'?'ПРОДАНО':stateOf(o)==='rented'?'СДАНО':stateOf(o)==='withdrawn'?'СНЯТО':'';
+    const dl=dealOf(o), dealTxt=dl==='rent'?'Аренда':dl==='both'?'Прод.+Аренда':'Продажа';
+    return `<div class="card ${isIncomplete(o)?'incomplete':''} ${closed?'closed':''}" onclick="openModal('${o.id}')">
+      <div class="thumb">
+        ${o.photo?`<img src="${o.photo}" alt="">`:`<div class="placeholder"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="8.5" cy="10" r="1.5"/><path d="M4 17l5-4 3 2 4-4 4 4"/></svg></div>`}
+        <span class="pill ${o.dealStatus||'base'}">${st.label}</span>
+        ${o.willPay==='yes'&&!closed?`<span class="pay-badge">₽ ПЛАТИТ</span>`:''}
+        ${isIncomplete(o)&&!closed?`<span class="todo-badge">не дозаполнено</span>`:''}
+        <span class="deal-badge ${dl==='rent'?'rent':''}">${dealTxt}</span>
+        ${overlayTxt?`<div class="sold-overlay"><span>${overlayTxt}</span></div>`:''}
+      </div>
+      <div class="body">
+        <div class="title">${esc(o.apartment)||'Без номера'}</div>
+        ${num(o.area)?`<div class="metr">${esc(o.area)} м²${o.share&&o.share!=='1/1'?` · доля ${esc(o.share)}`:''}</div>`:(o.share&&o.share!=='1/1'?`<div class="metr">доля ${esc(o.share)}</div>`:'')}
+        ${o.cadastral?`<div class="cadline">${esc(o.cadastral)}</div>`:''}
+        ${num(o.price)?`<div class="price">${fmtMoney(o.price)}</div>`:(o.price?`<div class="price">${esc(o.price)}</div>`:'')}
+        ${perM?`<div class="ppm">${Math.round(perM).toLocaleString('ru-RU')} ₽/м²</div>`:''}
+        ${(dl!=='sale')&&o.leaseEnd?`<div class="row"><span class="k">Договор до:</span> ${fmtDateY(o.leaseEnd)}</div>`:''}
+        ${o.currentAgent?`<div class="row"><span class="k">Ведёт:</span> ${esc(o.currentAgent)}</div>`:''}
+        ${(o.otherListings&&o.otherListings.filter(x=>x&&x.url).length)?`<div class="row"><span class="k">Ещё продают:</span> ${o.otherListings.filter(x=>x&&x.url).length} агент(ов)</div>`:''}
+        ${pay&&o.willPay!=='unknown'?`<div class="row"><span class="k">Оплата:</span> ${pay}</div>`:''}
+        <div class="owner">
+          <div class="who">
+            <div class="name">${esc(o.ownerName)||'—'}</div>
+            ${o.ownerPhone?`<div class="ph">${esc(o.ownerPhone)}</div>`:''}
+          </div>
+          ${phoneClean?`<a class="call" href="tel:${phoneClean}" onclick="event.stopPropagation()" aria-label="Позвонить"><svg viewBox="0 0 24 24"><path d="M6.6 10.8c1.4 2.8 3.8 5.2 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.1.4 2.3.6 3.6.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1C10.6 21 3 13.4 3 4c0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.2.2 2.4.6 3.6.1.4 0 .8-.3 1z"/></svg></a>`:''}
+        </div>
+        ${o.nextStep?`<div class="next"><span class="k">Дальше:</span> ${esc(o.nextStep)}${o.nextDate?` · ${fmtDate(o.nextDate)}`:''}</div>`:''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function buildChips(){
+  const counts={all:items.length,works:0,thinking:0,refusal:0,base:0,incomplete:0};
+  items.forEach(o=>{counts[o.dealStatus||'base']++;if(isIncomplete(o))counts.incomplete++;});
+  const defs=[['all','Все'],['works','Работает'],['thinking','Думает'],['refusal','Отказ'],['base','Не общались']];
+  let html=defs.map(([k,lab])=>`<button class="chip ${state.status===k?'active':''}" data-k="${k}" onclick="setStatus('${k}')">${k!=='all'?'<span class="dot"></span>':''}${lab}<span class="cnt">${counts[k]}</span></button>`).join('');
+  html+=`<button class="chip warn ${state.status==='incomplete'?'active':''}" onclick="setStatus('incomplete')">Не дозаполнено<span class="cnt">${counts.incomplete}</span></button>`;
+  document.getElementById('statusChips').innerHTML=html;
+}
+function setStatus(k){state.status=(state.status===k&&k==='incomplete')?'all':k;render()}
+
+/* ---------- фильтры сделка/состояние ---------- */
+function stateFilterOptions(){
+  const d=state.dealType;
+  if(d==='sale') return [['all','Все объекты'],['active','В продаже'],['sold','Продано']];
+  if(d==='rent') return [['all','Все объекты'],['active','В аренде'],['rented','Сдано']];
+  return [['all','Все состояния'],['active','Активные'],['closed','Закрытые']];
+}
+function buildStateFilter(){
+  const sel=document.getElementById('fState');if(!sel)return;
+  const opts=stateFilterOptions();
+  if(!opts.some(o=>o[0]===state.objState)) state.objState='all';
+  sel.innerHTML=opts.map(([v,l])=>`<option value="${v}" ${state.objState===v?'selected':''}>${l}</option>`).join('');
+}
+function onDealFilter(){state.dealType=document.getElementById('fDeal').value;state.objState='all';buildStateFilter();render();}
+function onStateFieldChange(){
+  const s=document.getElementById('fld_objState').value, cd=document.getElementById('fld_closedDate');
+  if((s==='sold'||s==='rented')&&!cd.value) cd.value=new Date().toISOString().slice(0,10);
+}
+
+/* ---------- отчёт ---------- */
+function openReport(){document.getElementById('reportOutput').innerHTML='';document.getElementById('reportOverlay').classList.add('show');}
+function closeReport(){document.getElementById('reportOverlay').classList.remove('show');}
+function inPeriod(o){
+  const from=document.getElementById('rc_from').value, to=document.getElementById('rc_to').value;
+  if(!from&&!to) return true;
+  const d=o.closedDate||''; if(!d) return false;
+  if(from&&d<from) return false; if(to&&d>to) return false; return true;
+}
+function rowTable(list,cols){
+  if(!list.length) return '<div style="color:var(--ink-soft);font-size:13px">— нет</div>';
+  const head=cols.map(c=>`<th>${c[0]}</th>`).join('');
+  const body=list.map(o=>'<tr>'+cols.map(c=>`<td>${esc(String(c[1](o)||'—'))}</td>`).join('')+'</tr>').join('');
+  return `<table><thead><tr>${head}</tr></thead><tbody>${body}</tbody></table>`;
+}
+function generateReport(){
+  const out=document.getElementById('reportOutput'), get=id=>document.getElementById(id).checked;
+  const now=new Date().toLocaleDateString('ru-RU');
+  let h=`<h1>Актуалка — ${esc(jkName())}</h1><div class="rsub">Сформировано ${now} · всего объектов: ${items.length}</div>`;
+  if(get('rc_stats')){
+    const cs={works:0,thinking:0,refusal:0,base:0};items.forEach(o=>cs[o.dealStatus||'base']++);
+    const active=items.filter(o=>stateOf(o)==='active').length,sold=items.filter(o=>stateOf(o)==='sold').length,rented=items.filter(o=>stateOf(o)==='rented').length;
+    h+=`<h2>Сводка</h2><div>
+      <span class="stat"><b>${cs.works}</b> работает</span><span class="stat"><b>${cs.thinking}</b> думает</span>
+      <span class="stat"><b>${cs.refusal}</b> отказ</span><span class="stat"><b>${cs.base}</b> не общались</span></div>
+      <div style="margin-top:8px"><span class="stat"><b>${active}</b> в работе</span><span class="stat"><b>${sold}</b> продано</span><span class="stat"><b>${rented}</b> сдано</span></div>`;
+  }
+  const cP=[['Кв.',o=>o.apartment],['Метраж',o=>o.area?o.area+' м²':''],['Цена',o=>o.price],['Собственник',o=>o.ownerName],['Телефон',o=>o.ownerPhone],['Статус',o=>(STATUS[o.dealStatus||'base']||{}).label]];
+  if(get('rc_sale')){const l=items.filter(o=>(dealOf(o)==='sale'||dealOf(o)==='both')&&stateOf(o)==='active');h+=`<h2>В продаже (${l.length})</h2>`+rowTable(l,cP);}
+  if(get('rc_rent')){const l=items.filter(o=>(dealOf(o)==='rent'||dealOf(o)==='both')&&stateOf(o)==='active');h+=`<h2>В аренде (${l.length})</h2>`+rowTable(l,cP.concat([['Договор до',o=>fmtDateY(o.leaseEnd)]]));}
+  if(get('rc_sold')){const l=items.filter(o=>stateOf(o)==='sold'&&inPeriod(o));h+=`<h2>Проданные (${l.length})</h2>`+rowTable(l,cP.concat([['Закрыто',o=>fmtDateY(o.closedDate)]]));}
+  if(get('rc_rented')){const l=items.filter(o=>stateOf(o)==='rented'&&inPeriod(o));h+=`<h2>Сданные (${l.length})</h2>`+rowTable(l,cP.concat([['Закрыто',o=>fmtDateY(o.closedDate)]]));}
+  if(get('rc_call')){const l=items.filter(o=>o.nextDate).sort((a,b)=>(a.nextDate||'').localeCompare(b.nextDate||''));h+=`<h2>Перезвонить (${l.length})</h2>`+rowTable(l,[['Дата',o=>fmtDateY(o.nextDate)],['Кв.',o=>o.apartment],['Собственник',o=>o.ownerName],['Телефон',o=>o.ownerPhone],['Шаг',o=>o.nextStep]]);}
+  if(get('rc_incomplete')){const l=items.filter(isIncomplete);h+=`<h2>Недозаполненные (${l.length})</h2>`+rowTable(l,cP);}
+  out.innerHTML=h;
+  out.scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+/* ---------- modal ---------- */
+function openModal(id){
+  editingId=id||null; pendingPhoto=null;
+  const o=id?items.find(x=>x.id===id):{};
+  document.getElementById('mTitle').textContent=id?'Редактировать объект':'Новый объект';
+  document.getElementById('delBtn').style.display=id?'block':'none';
+  const set=(f,v)=>document.getElementById('fld_'+f).value=v||'';
+  set('apartment',o.apartment);set('area',o.area);set('price',o.price);set('cadastral',o.cadastral);set('share',o.share);
+  set('ownerName',o.ownerName);set('ownerPhone',o.ownerPhone);
+  set('currentAgent',o.currentAgent);set('listingUrl',o.listingUrl);
+  set('dealStatus',o.dealStatus||'base');set('willPay',o.willPay||'unknown');set('exclusive',o.exclusive||'unknown');
+  set('dealType',o.dealType||'sale');set('objState',o.objState||'active');set('closedDate',o.closedDate);set('leaseEnd',o.leaseEnd);
+  set('lastContact',o.lastContact);set('nextDate',o.nextDate);set('nextStep',o.nextStep);set('notes',o.notes);
+  renderOtherLinks(o.otherListings||[]);
+  document.getElementById('egrnResult').innerHTML='';
+  if(o.cadastral) egrnLookup();
+  setPhotoPreview(o.photo||null);
+  document.getElementById('overlay').classList.add('show');
+}
+function closeModal(){document.getElementById('overlay').classList.remove('show')}
+function saveCard(){
+  if(isGuest){alert('Гостевой доступ — только просмотр');return;}
+  const g=f=>document.getElementById('fld_'+f).value.trim();
+  const existing=editingId?items.find(x=>x.id===editingId):null;
+  const item={
+    id:editingId||genId(),
+    apartment:g('apartment'),area:g('area'),price:g('price'),cadastral:g('cadastral'),share:g('share'),
+    ownerName:g('ownerName'),ownerPhone:g('ownerPhone'),
+    currentAgent:g('currentAgent'),listingUrl:g('listingUrl'),
+    dealStatus:g('dealStatus'),willPay:g('willPay'),exclusive:g('exclusive'),
+    dealType:g('dealType'),objState:g('objState'),closedDate:g('closedDate'),leaseEnd:g('leaseEnd'),
+    lastContact:g('lastContact'),nextDate:g('nextDate'),nextStep:g('nextStep'),notes:g('notes'),
+    otherListings:collectOtherLinks(),
+    photo:pendingPhoto!==null?pendingPhoto:(existing?existing.photo:null),
+    createdAt:existing?existing.createdAt:Date.now()
+  };
+  if(!item.apartment && !item.ownerName && !item.listingUrl){alert('Заполни хотя бы квартиру, ФИО или ссылку на объявление');return;}
+  upsert(item); closeModal(); if(state.view==='schema')renderSchema();
+}
+function delCurrent(){if(isGuest)return;if(editingId&&confirm('Удалить объект без возможности вернуть?')){removeItem(editingId);closeModal();if(state.view==='schema')renderSchema();}}
+
+/* ---------- ссылки других агентов ---------- */
+function renderOtherLinks(list){
+  const box=document.getElementById('otherLinks');box.innerHTML='';
+  (list||[]).forEach(l=>addOtherRow(l.label,l.url));
+}
+function addOtherRow(label='',url=''){
+  const box=document.getElementById('otherLinks');
+  const row=document.createElement('div');row.className='link-row';
+  const a=v=>String(v||'').replace(/"/g,'&quot;');
+  row.innerHTML=`<input class="ol-label" placeholder="Агентство" value="${a(label)}">
+    <input class="ol-url" placeholder="ссылка на объявление" value="${a(url)}">
+    <button type="button" class="rm" onclick="this.parentNode.remove()">×</button>`;
+  box.appendChild(row);
+}
+function collectOtherLinks(){
+  return [...document.querySelectorAll('#otherLinks .link-row')].map(r=>({
+    label:r.querySelector('.ol-label').value.trim(),
+    url:r.querySelector('.ol-url').value.trim()
+  })).filter(x=>x.url||x.label);
+}
+
+/* ---------- photo ---------- */
+function pickPhoto(){document.getElementById('photoInput').click()}
+function onPhotoFile(file){if(file)compress(file,d=>{pendingPhoto=d;setPhotoPreview(d)})}
+function clearPhoto(e){e.stopPropagation();pendingPhoto="";setPhotoPreview(null)}
+function setPhotoPreview(src){
+  const drop=document.getElementById('photoDrop'),img=document.getElementById('photoPreview'),hint=document.getElementById('photoHint');
+  if(src){img.src=src;img.style.display='block';hint.style.display='none';drop.classList.add('has');}
+  else{img.style.display='none';img.src='';hint.style.display='block';drop.classList.remove('has');}
+}
+function compress(file,cb){
+  const r=new FileReader();
+  r.onload=e=>{const img=new Image();img.onload=()=>{
+    const max=1000;let{width,height}=img;
+    if(width>max){height=Math.round(height*max/width);width=max;}
+    const c=document.createElement('canvas');c.width=width;c.height=height;
+    c.getContext('2d').drawImage(img,0,0,width,height);
+    cb(c.toDataURL('image/jpeg',0.72));
+  };img.src=e.target.result;};
+  r.readAsDataURL(file);
+}
+document.addEventListener('paste',e=>{
+  if(!document.getElementById('overlay').classList.contains('show'))return;
+  const it=[...(e.clipboardData||{}).items||[]].find(i=>i.type.startsWith('image/'));
+  if(it){const f=it.getAsFile();if(f)onPhotoFile(f);}
+});
+
+/* ---------- backup ---------- */
+function exportJSON(){
+  const blob=new Blob([JSON.stringify(items,null,2)],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);
+  a.download='aktualka-'+jkName()+'-'+new Date().toISOString().slice(0,10)+'.json';a.click();
+}
+function importJSON(input){
+  const f=input.files[0];if(!f)return;
+  const r=new FileReader();
+  r.onload=e=>{try{
+    const arr=JSON.parse(e.target.result);if(!Array.isArray(arr))throw 0;
+    if(!confirm(`В файле ${arr.length} объектов. Добавить их к текущему списку?`)){input.value='';return;}
+    arr.forEach(o=>{o.id=o.id||genId();o.createdAt=o.createdAt||Date.now();upsert(o);});
+    if(!cloud)render();
+  }catch(err){alert('Не получилось прочитать файл.')}
+  input.value='';};
+  r.readAsText(f);
+}
+
+/* ---------- база ЕГРН (только локально, в браузере) ---------- */
+let egrn={rows:[],byCad:{},byOwner:{}}, egrnMatches=[], egrnTimer=null;
+function normFio(s){return (s||'').toString().trim().toUpperCase().replace(/\s+/g,' ')}
+function shortType(t){t=(t||'').toString();if(/кварт/i.test(t))return '🏠 кв';if(/машином/i.test(t))return '🚗 мм';if(/кладов/i.test(t))return '📦 клад';if(/помещ/i.test(t))return 'помещ';return t.replace(/^\d+\s*-\s*/,'')||'объект';}
+function buildEgrnIndex(){
+  egrn.byCad={};egrn.byOwner={};
+  egrn.rows.forEach(r=>{
+    if(r.cad){(egrn.byCad[r.cad]=egrn.byCad[r.cad]||[]).push(r);}
+    const k=normFio(r.fio);if(k){(egrn.byOwner[k]=egrn.byOwner[k]||[]).push(r);}
+  });
+}
+function updateEgrnStatus(){
+  const el=document.getElementById('egrnStatus');if(!el)return;
+  if(egrn.rows.length){el.textContent='база ЕГРН: '+egrn.rows.length+' записей (локально)';el.className='egrn-ok';}
+  else{el.textContent='база ЕГРН не загружена';el.className='';}
+}
+function loadEgrnFromStorage(){
+  try{const raw=localStorage.getItem('actualka_egrn');if(raw){const o=JSON.parse(raw);egrn.rows=o.rows||[];buildEgrnIndex();}}catch(e){}
+  updateEgrnStatus();
+}
+function colFinder(headers){
+  const H=(headers||[]).map(h=>(h==null?'':h).toString().toLowerCase());
+  const find=(...keys)=>{for(let i=0;i<H.length;i++){if(keys.some(k=>H[i].includes(k)))return i;}return -1;};
+  return {cad:find('кадастровый № объекта','кадастровый номер','кадастр'),fio:find('фио правооблад','фио'),
+    phone:find('телефон'),area:find('площадь'),share:find('доли','доля'),type:find('вид он','тип объект','тип'),
+    addr:find('адрес объект','адрес'),email:find('email','почта'),birth:find('дата рожд')};
+}
+function rowsFromAoa(aoa){
+  let hi=aoa.findIndex(r=>r&&r.some(c=>/кадастров/i.test((c==null?'':c).toString())));
+  if(hi<0)hi=aoa.findIndex(r=>r&&r.some(c=>/фио правооблад/i.test((c==null?'':c).toString())));
+  if(hi<0)hi=0;
+  const cols=colFinder(aoa[hi]),out=[],g=(row,i)=>i>=0&&row[i]!=null?row[i].toString().trim():'';
+  for(let i=hi+1;i<aoa.length;i++){
+    const row=aoa[i];if(!row)continue;
+    const cad=g(row,cols.cad),fio=g(row,cols.fio);
+    if(!cad&&!fio)continue;
+    out.push({cad,fio,phone:g(row,cols.phone),area:g(row,cols.area),share:g(row,cols.share),type:g(row,cols.type),addr:g(row,cols.addr),email:g(row,cols.email),birth:g(row,cols.birth)});
+  }
+  return out;
+}
+function parseEgrnWb(wb){
+  const nm=wb.SheetNames.find(n=>/данн/i.test(n))||wb.SheetNames.find(n=>{const a=XLSX.utils.sheet_to_json(wb.Sheets[n],{header:1,defval:''}).slice(0,6);return a.some(r=>r.some(c=>/фио правооблад/i.test((c||'').toString())));})||wb.SheetNames[0];
+  return rowsFromAoa(XLSX.utils.sheet_to_json(wb.Sheets[nm],{header:1,defval:''}));
+}
+function parseEgrnCsv(text){
+  const lines=text.split(/\r?\n/).filter(l=>l.trim());if(!lines.length)return[];
+  const delim=(lines[0].match(/;/g)||[]).length>(lines[0].match(/,/g)||[]).length?';':',';
+  const split=l=>{const out=[];let cur='',q=false;for(const ch of l){if(ch==='"')q=!q;else if(ch===delim&&!q){out.push(cur);cur='';}else cur+=ch;}out.push(cur);return out.map(s=>s.trim());};
+  return rowsFromAoa(lines.map(split));
+}
+function loadEgrn(input){
+  const f=input.files[0];if(!f)return;
+  const name=f.name.toLowerCase(),reader=new FileReader();
+  reader.onload=e=>{
+    try{
+      let rows;
+      if(name.endsWith('.csv'))rows=parseEgrnCsv(e.target.result);
+      else{if(!window.XLSX){alert('Не загрузилась библиотека чтения Excel — проверь интернет и обнови страницу.');return;}rows=parseEgrnWb(XLSX.read(new Uint8Array(e.target.result),{type:'array'}));}
+      if(!rows.length){alert('Не нашёл данные. Нужен лист «Данные» с колонками: кадастровый №, ФИО, телефон, площадь.');input.value='';return;}
+      egrn.rows=rows;buildEgrnIndex();
+      try{localStorage.setItem('actualka_egrn',JSON.stringify({rows,loadedAt:Date.now(),count:rows.length}));}
+      catch(err){alert('База прочитана ('+rows.length+'), но не поместилась в память браузера. Работает в этой сессии.');}
+      updateEgrnStatus();
+      if(state.view==='settings')renderSettings();
+      if(state.view==='db')renderDbRows();
+      alert('База загружена: '+rows.length+' записей.\nХранится только в этом браузере, на GitHub не уходит.');
+    }catch(err){console.error(err);alert('Не смог прочитать файл: '+err.message);}
+    input.value='';
+  };
+  if(name.endsWith('.csv'))reader.readAsText(f,'utf-8');else reader.readAsArrayBuffer(f);
+}
+function ownerOtherObjects(fio,exceptCad){return (egrn.byOwner[normFio(fio)]||[]).filter(r=>r.cad!==exceptCad);}
+function egrnLookupDebounced(){clearTimeout(egrnTimer);egrnTimer=setTimeout(egrnLookup,250);}
+function egrnLookup(){
+  const box=document.getElementById('egrnResult');
+  const q=document.getElementById('fld_cadastral').value.trim();
+  if(!egrn.rows.length){box.innerHTML=q?'<div class="egrn-hint">База ЕГРН не загружена — кнопка «Загрузить базу ЕГРН» внизу страницы.</div>':'';return;}
+  if(q.length<3){box.innerHTML='';return;}
+  const ql=q.toLowerCase();
+  let matched=egrn.byCad[q];
+  if(!matched){matched=egrn.rows.filter(r=>r.cad.toLowerCase().includes(ql)||r.addr.toLowerCase().includes(ql)||normFio(r.fio).toLowerCase().includes(ql)).slice(0,12);}
+  egrnMatches=matched;
+  if(!matched.length){box.innerHTML='<div class="egrn-hint">Ничего не найдено в базе.</div>';return;}
+  box.innerHTML=matched.map((r,idx)=>{
+    const others=ownerOtherObjects(r.fio,r.cad);
+    return `<div class="egrn-card">
+      <div class="egrn-top">
+        <div>
+          <div class="egrn-fio">${esc(r.fio)}</div>
+          <div class="egrn-meta">${esc(r.cad)}${r.area?` · ${esc(r.area)} м²`:''}${r.share&&r.share!=='1/1'?` · доля ${esc(r.share)}`:''} · ${esc(shortType(r.type))}</div>
+          ${r.phone?`<div class="egrn-meta">☎ ${esc(r.phone)}</div>`:''}
+        </div>
+        <button type="button" class="egrn-fill" onclick="fillFromEgrn(${idx})">Заполнить</button>
+      </div>
+      ${others.length?`<div class="egrn-others"><b>Ещё у собственника (${others.length}):</b> ${others.slice(0,14).map(o=>shortType(o.type)+' '+(o.area?o.area+'м² ':'')+o.cad).join('; ')}${others.length>14?' …':''}</div>`:''}
+    </div>`;
+  }).join('');
+}
+function fillFromEgrn(idx){
+  const r=egrnMatches[idx];if(!r)return;
+  const set=(f,v)=>{const el=document.getElementById('fld_'+f);if(el&&v)el.value=v;};
+  set('cadastral',r.cad);set('ownerName',r.fio);set('ownerPhone',r.phone);set('area',r.area);set('share',r.share);
+  const co=(egrn.byCad[r.cad]||[]).filter(x=>x.fio!==r.fio);
+  const others=ownerOtherObjects(r.fio,r.cad);
+  const info=[];
+  if(co.length)info.push('Сособственники: '+co.map(c=>c.fio+(c.share?` (${c.share})`:'')).join(', '));
+  if(others.length)info.push('Ещё объектов: '+others.slice(0,14).map(o=>shortType(o.type)+' '+(o.area?o.area+'м² ':'')+o.cad).join('; '));
+  const notesEl=document.getElementById('fld_notes'),marker='[ЕГРН] ';
+  if(info.length){
+    const cleaned=(notesEl.value||'').split('\n').filter(l=>!l.startsWith(marker)).join('\n').trim();
+    notesEl.value=(cleaned?cleaned+'\n':'')+info.map(l=>marker+l).join('\n');
+  }
+  egrnLookup();
+}
+
+/* ---------- схема дома (шахматка) ---------- */
+let TOWERS=[], FLOORS=41, MINFLOOR=2;
+function applyComplex(c){
+  COMPLEX=c||null;
+  if(!c){TOWERS=[];HYDE_OBJ={};HYDE_PREFIX="";HYDE_BY_NUM={};return;}
+  HYDE_PREFIX=c.prefix||"";
+  HYDE_OBJ=c.objects||{};
+  FLOORS=c.floors||41; MINFLOOR=c.minFloor||2;
+  TOWERS=(c.towers||[]).map(t=>({k:t.k,ru:t.ru,name:t.en,en:t.en,cls:t.cls,max:t.max,rules:t.rules||[]}));
+  HYDE_BY_NUM={};
+  Object.keys(HYDE_OBJ).forEach(suf=>{HYDE_BY_NUM[HYDE_OBJ[suf][0]]=suf;});
+  if(c.name){try{localStorage.setItem('actualka_jk',c.name);}catch(e){}}
+}
+function hasComplex(){return !!(COMPLEX&&TOWERS.length)}
+let curTower=1;
+function towerOf(k){return TOWERS.find(t=>t.k===k)}
+function maxPos(k){const t=towerOf(k);return t?t.max:0}
+function posCount(k,f){
+  const t=towerOf(k); if(!t||f<MINFLOOR) return 0;
+  for(const r of (t.rules||[])) if(f>=r[0]&&f<=r[1]) return r[2];
+  return t.max;
+}
+function aptExists(k,f,p){return p>=1&&p<=posCount(k,f)}
+function decodeApt(a){const d=(a||'').toString().replace(/\D/g,'');if(d.length<3)return null;const k=+d[0],f=+d.slice(1,3),p=+d.slice(3)||1;if(k<1||k>3||f<1||f>FLOORS)return null;return{k,f,p};}
+function encodeApt(k,f,p){return `${k}${String(f).padStart(2,'0')}${p}`}
+let schemaInfo={};
+/* --- таблица объектов комплекса: кадастр ↔ номер --- */
+let HYDE_BY_NUM={};
+function objTypeOf(num){const u=(num||'').toUpperCase();
+  if(u.includes('М'))return 'mm'; if(u.includes('К'))return 'kl'; if(u.includes('Н'))return 'com'; return 'kv';}
+function typeLabel(t){return {mm:'машино-место',kl:'кладовая',com:'коммерция',kv:'квартира'}[t]||t}
+function typeIcon(t){return {mm:'🚗',kl:'📦',com:'🏢',kv:'🏠'}[t]||'•'}
+function cadOfNum(num){const s=HYDE_BY_NUM[(num||'').toUpperCase()];return s?HYDE_PREFIX+s:''}
+function objOfCad(cad){
+  if(!cad)return null;
+  const suf=cad.split(':').pop(),v=HYDE_OBJ[suf];
+  if(!v)return null;
+  return {num:v[0],area:v[1],floor:v[2],type:objTypeOf(v[0]),cad:HYDE_PREFIX+suf};
+}
+function objOfNum(num){return objOfCad(cadOfNum(num))}
+function isFlat(t){return /кварт/i.test((t||'').toString())}
+function cadOfApt(num){
+  const auto=cadOfNum(num);if(auto)return auto;
+  const ni=schemaInfo[num];if(ni&&ni.cad)return ni.cad;
+  const c=items.find(o=>o.apartment===num&&o.cadastral);return c?c.cadastral:'';
+}
+function aptOfCad(cad){
+  const o=objOfCad(cad);if(o)return o.num;
+  const k=Object.keys(schemaInfo).find(a=>schemaInfo[a].cad===cad);if(k)return k;
+  const it=items.find(o=>o.cadastral===cad&&o.apartment);return it?it.apartment:'';
+}
+function cadKey(cad){return (cad||'').split(':').pop()}
+function ownerRecOfCad(cad){
+  if(!cad)return null;
+  const base=(egrn.byCad[cad]||[])[0];
+  const fix=ownerFix[cadKey(cad)];
+  if(!fix)return base||null;
+  return Object.assign({cad,fio:'',phone:'',share:''},base||{},fix);
+}
+function ownerOfApt(num){const r=ownerRecOfCad(cadOfApt(num));return r?r.fio:''}
+function ownerObjects(fio){
+  if(!fio)return [];
+  const key=normFio(fio);
+  const out=(egrn.byOwner[key]||[]).slice();
+  /* объекты, переписанные вручную на этого человека */
+  Object.keys(ownerFix).forEach(k=>{
+    const f=ownerFix[k];
+    if(f&&normFio(f.fio)===key&&!out.some(r=>cadKey(r.cad)===k))
+      out.push(Object.assign({cad:HYDE_PREFIX+k},f));
+  });
+  /* объекты, переписанные с этого человека на другого */
+  return out.filter(r=>{const f=ownerFix[cadKey(r.cad)];return !f||normFio(f.fio)===key;});
+}
+/* ---------- семьи / группы ---------- */
+function groupOf(fio){const k=normFio(fio);return groups.find(g=>g.members.some(m=>normFio(m)===k))}
+function groupMembers(fio){const g=groupOf(fio);return g?g.members:[fio]}
+function linkPeople(a,b,name){
+  let g=groupOf(a)||groupOf(b);
+  if(!g){g={id:'g'+Date.now().toString(36),name:name||('Семья '+(a.split(' ')[0]||'')),members:[]};groups.push(g);}
+  [a,b].forEach(x=>{if(!g.members.some(m=>normFio(m)===normFio(x)))g.members.push(x);});
+  saveGroups();
+}
+function unlinkPerson(fio){
+  const g=groupOf(fio);if(!g)return;
+  g.members=g.members.filter(m=>normFio(m)!==normFio(fio));
+  if(g.members.length<2)groups=groups.filter(x=>x!==g);
+  saveGroups();
+}
+function renameGroup(fio){
+  const g=groupOf(fio);if(!g)return;
+  const v=prompt('Название группы:',g.name);
+  if(v&&v.trim()){g.name=v.trim();saveGroups();}
+}
+function familyApts(fio){
+  const out=new Set();
+  groupMembers(fio).forEach(m=>ownerObjects(m).forEach(r=>{
+    const a=aptOfCad(r.cad);if(a&&objTypeOf(a)==='kv')out.add(a);
+  }));
+  return out;
+}
+function kinApts(fio,exceptApt){
+  const s=familyApts(fio);s.delete(exceptApt);return s;
+}
+/* ---------- доп. слои в облаке: заметки, семьи, правки собственников ---------- */
+let groups=[], ownerFix={}, auxRef=null;
+function startAux(){
+  let localSchema={};
+  try{localSchema=JSON.parse(localStorage.getItem('actualka_schema')||'{}')||{}}catch(e){}
+  let auxFirst=true;
+  auxRef=firebase.database().ref('aux');
+  auxRef.off();
+  auxRef.on('value',s=>{
+    const v=s.val()||{};
+    applyComplex(v.complex||null);
+    schemaInfo=v.schema||{};
+    groups=Array.isArray(v.groups)?v.groups:(v.groups?Object.values(v.groups):[]);
+    ownerFix=v.owners||{};
+    /* первый заход: поднимаем заметки с устройства в облако, ничего не теряя */
+    if(auxFirst){
+      auxFirst=false;
+      const add=Object.keys(localSchema).filter(k=>!schemaInfo[k]);
+      if(add.length){
+        add.forEach(k=>{schemaInfo[k]=localSchema[k];});
+        auxRef.child('schema').set(schemaInfo);
+        console.log('перенесено заметок в облако:',add.length);
+      }
+    }
+    if(state.view==='schema')renderSchema();
+    if(state.view==='db')renderDb();
+    if(state.view==='settings')renderSettings();
+    if(_cell)refreshCellIfOpen();
+  });
+}
+function refreshCellIfOpen(){
+  const ov=document.getElementById('cellOverlay');
+  if(ov&&ov.classList.contains('show')&&_cell)openCell(_cell.k,_cell.f,_cell.p);
+}
+function pushAux(child,val){
+  if(cloud&&auxRef){auxRef.child(child).set(val);}
+  else{
+    if(child==='schema')saveSchemaInfo();
+    else localStorage.setItem('actualka_'+child,JSON.stringify(val));
+  }
+}
+function saveGroups(){pushAux('groups',groups)}
+function saveOwnerFix(){pushAux('owners',ownerFix)}
+function saveSchemaInfo(){
+  if(cloud&&auxRef){auxRef.child('schema').set(schemaInfo);return;}
+  try{localStorage.setItem('actualka_schema',JSON.stringify(schemaInfo));}catch(e){}
+}
+function loadAuxLocal(){
+  try{const c=JSON.parse(localStorage.getItem('actualka_complex')||'null');if(c)applyComplex(c);}catch(e){}
+  try{schemaInfo=JSON.parse(localStorage.getItem('actualka_schema')||'{}')||{}}catch(e){schemaInfo={}}
+  try{groups=JSON.parse(localStorage.getItem('actualka_groups')||'[]')||[]}catch(e){groups=[]}
+  try{ownerFix=JSON.parse(localStorage.getItem('actualka_owners')||'{}')||{}}catch(e){ownerFix={}}
+}
+function schemaIndex(){
+  const map={},owners={};
+  items.forEach(o=>{const d=decodeApt(o.apartment);if(d)map[`${d.k}-${d.f}-${d.p}`]=o;
+    const nm=(o.ownerName||'').trim().toUpperCase();if(nm)(owners[nm]=owners[nm]||[]).push(o);});
+  const multi={};Object.keys(owners).forEach(nm=>{if(owners[nm].length>1)owners[nm].forEach(o=>{const d=decodeApt(o.apartment);if(d)multi[`${d.k}-${d.f}-${d.p}`]=nm;});});
+  return {map,owners,multi};
+}
+function switchView(v){
+  if(isGuest&&v!=='actualka')v='actualka';
+  state.view=v;
+  [['actualka','tabActualka'],['db','tabDb'],['schema','tabSchema'],['settings','tabSettings']]
+    .forEach(([k,id])=>{const b=document.getElementById(id);if(b)b.classList.toggle('active',v===k);});
+  document.getElementById('viewActualka').style.display=v==='actualka'?'':'none';
+  document.getElementById('viewSchema').style.display=v==='schema'?'':'none';
+  document.getElementById('viewDb').style.display=v==='db'?'':'none';
+  document.getElementById('viewSettings').style.display=v==='settings'?'':'none';
+  const act=v==='actualka';
+  document.getElementById('statusChips').style.display=act?'':'none';
+  document.getElementById('filtersRow2').style.display=act?'':'none';
+  if(v==='schema')renderSchema();
+  if(v==='db')renderDb();
+  if(v==='settings')renderSettings();
+}
+
+/* ---------- вкладка «База» ---------- */
+const dbState={q:'',type:'all',sort:'num',limit:400};
+function dbRows(){
+  let rows=Object.keys(HYDE_OBJ).map(suf=>{
+    const v=HYDE_OBJ[suf],num=v[0],cad=HYDE_PREFIX+suf;
+    const rec=ownerRecOfCad(cad);
+    return {num,area:v[1],floor:v[2],cad,type:objTypeOf(num),fio:rec?rec.fio:'',phone:rec?rec.phone:'',note:(schemaInfo[num]||{}).note||''};
+  });
+  if(dbState.type!=='all')rows=rows.filter(r=>r.type===dbState.type);
+  const q=dbState.q.trim().toLowerCase();
+  if(q)rows=rows.filter(r=>r.num.toLowerCase().includes(q)||r.cad.includes(q)||r.fio.toLowerCase().includes(q)||(r.phone||'').replace(/\D/g,'').includes(q.replace(/\D/g,''))&&q.replace(/\D/g,'').length>2||r.note.toLowerCase().includes(q));
+  const s=dbState.sort;
+  rows.sort((a,b)=>{
+    if(s==='area')return b.area-a.area;
+    if(s==='area_asc')return a.area-b.area;
+    if(s==='fio')return (a.fio||'я').localeCompare(b.fio||'я','ru');
+    if(s==='floor')return b.floor-a.floor;
+    return a.num.localeCompare(b.num,'ru',{numeric:true});
+  });
+  return rows;
+}
+function renderDb(){
+  if(!hasComplex()){
+    document.getElementById('viewDb').innerHTML='<div class="empty"><div class="big">База не настроена</div>Загрузи конфигурацию комплекса в «Настройках».<div><button class="btn-add" onclick="switchView(\'settings\')">Открыть настройки</button></div></div>';
+    return;
+  }
+  const cnt={kv:0,mm:0,kl:0,com:0};
+  Object.keys(HYDE_OBJ).forEach(s=>{cnt[objTypeOf(HYDE_OBJ[s][0])]++});
+  document.getElementById('viewDb').innerHTML=`
+    <div class="db-bar">
+      <input id="dbQ" placeholder="Поиск: № квартиры, ФИО, кадастр, телефон, заметка…" value="${esc(dbState.q)}">
+      <select class="mini" id="dbType">
+        <option value="all" ${dbState.type==='all'?'selected':''}>Все (${Object.keys(HYDE_OBJ).length})</option>
+        <option value="kv" ${dbState.type==='kv'?'selected':''}>🏠 Квартиры (${cnt.kv})</option>
+        <option value="mm" ${dbState.type==='mm'?'selected':''}>🚗 Машино-места (${cnt.mm})</option>
+        <option value="kl" ${dbState.type==='kl'?'selected':''}>📦 Кладовые (${cnt.kl})</option>
+        <option value="com" ${dbState.type==='com'?'selected':''}>🏢 Коммерция (${cnt.com})</option>
+      </select>
+      <select class="mini" id="dbSort">
+        <option value="num" ${dbState.sort==='num'?'selected':''}>По номеру</option>
+        <option value="area" ${dbState.sort==='area'?'selected':''}>Метраж ↓</option>
+        <option value="area_asc" ${dbState.sort==='area_asc'?'selected':''}>Метраж ↑</option>
+        <option value="floor" ${dbState.sort==='floor'?'selected':''}>По этажу</option>
+        <option value="fio" ${dbState.sort==='fio'?'selected':''}>По ФИО</option>
+      </select>
+    </div>
+    <div class="db-count" id="dbCount"></div>
+    <div class="db-table" id="dbTable"></div>
+    <div id="dbMore"></div>`;
+  const q=document.getElementById('dbQ');
+  let t=null;
+  q.addEventListener('input',()=>{clearTimeout(t);t=setTimeout(()=>{dbState.q=q.value;dbState.limit=400;renderDbRows();},160);});
+  document.getElementById('dbType').addEventListener('change',e=>{dbState.type=e.target.value;dbState.limit=400;renderDbRows();});
+  document.getElementById('dbSort').addEventListener('change',e=>{dbState.sort=e.target.value;renderDbRows();});
+  renderDbRows();
+}
+function renderDbRows(){
+  const rows=dbRows(),shown=rows.slice(0,dbState.limit);
+  const cEl=document.getElementById('dbCount');if(!cEl)return;
+  cEl.innerHTML=`Найдено: <b>${rows.length}</b>${rows.length>shown.length?` · показано ${shown.length}`:''}${egrn.rows.length?'':' · <span style="color:var(--brass)">база ЕГРН не загружена — ФИО не показаны</span>'}`;
+  document.getElementById('dbTable').innerHTML=
+    `<div class="db-head"><span>Объект</span><span>м²</span><span>Эт.</span><span>Собственник</span><span>Кадастр</span></div>`+
+    (shown.length?shown.map(r=>`<div class="db-row" onclick="dbOpen('${r.num}')">
+        <span class="db-num">${typeIcon(r.type)} ${r.num}</span>
+        <span>${r.area}</span>
+        <span>${r.floor}</span>
+        <span class="db-fio pii">${esc(r.fio)||'<i>—</i>'}${r.note?' <span class="db-note">📝</span>':''}</span>
+        <span class="db-cad">${r.cad.split(':').pop()}</span>
+      </div>`).join('')
+     :'<div style="padding:24px;text-align:center;color:var(--ink-soft);font-size:13.5px">Ничего не найдено</div>');
+  document.getElementById('dbMore').innerHTML=rows.length>shown.length
+    ?`<button class="addbtn" style="max-width:300px;margin:14px auto;display:block" onclick="dbState.limit+=600;renderDbRows()">Показать ещё</button>`:'';
+}
+function dbOpen(num){
+  const rec=ownerRecOfCad(cadOfNum(num));
+  if(objTypeOf(num)==='kv')jumpTo(num);
+  else if(rec)openPerson(rec.fio);
+  else alert('Объект '+num+' — собственник не найден');
+}
+
+/* ---------- вкладка «Настройки» ---------- */
+function renderSettings(){
+  const priv=document.body.classList.contains('privacy');
+  const noRemember=localStorage.getItem('actualka_noremember')==='1';
+  document.getElementById('viewSettings').innerHTML=`
+    <div class="settings">
+      <div class="st-card">
+        <div class="st-h">Безопасность</div>
+        <div class="st-row"><div class="st-l"><b>Режим инкогнито</b><small>Скрывает ФИО и телефоны. Нажать и удерживать — подсмотреть.</small></div>
+          <button class="tgl ${priv?'on':''}" onclick="togglePrivacy();renderSettings()"><i></i></button></div>
+        <div class="st-row"><div class="st-l"><b>Автоблокировка</b><small>Выход при бездействии</small></div>
+          <select class="mini" onchange="localStorage.setItem('actualka_idle',this.value);touchIdle(true);renderSettings()">
+            ${[5,15,30,60,120].map(m=>`<option value="${m}" ${idleMins()===m?'selected':''}>${m>=60?(m/60)+' ч':m+' мин'}</option>`).join('')}
+          </select></div>
+        <div class="st-row"><div class="st-l"><b>Не запоминать вход</b><small>Спрашивать пароль при каждом открытии</small></div>
+          <button class="tgl ${noRemember?'on':''}" onclick="toggleRemember();renderSettings()"><i></i></button></div>
+        <button class="st-btn danger" onclick="lockNow()">🔒 Заблокировать сейчас</button>
+      </div>
+
+      <div class="st-card">
+        <div class="st-h">Конфигурация комплекса <span class="st-tag">в облаке</span></div>
+        <div class="st-note">${hasComplex()
+          ? `Загружена: объектов <b>${Object.keys(HYDE_OBJ).length}</b>, корпусов <b>${TOWERS.length}</b>, этажей <b>${FLOORS}</b>.`
+          : '<span style="color:var(--brass)">Не загружена — схема и база пустые. Загрузи файл конфигурации (разово).</span>'}</div>
+        <button class="st-btn" onclick="document.getElementById('cfgFile').click()">🏗 ${hasComplex()?'Заменить конфигурацию':'Загрузить конфигурацию'}</button>
+        ${hasComplex()?'<button class="st-btn" onclick="exportComplex()">⭳ Сохранить конфигурацию в файл</button>':''}
+      </div>
+
+      <div class="st-card">
+        <div class="st-h">База ЕГРН <span class="st-tag">только на этом устройстве</span></div>
+        <div class="st-note">${egrn.rows.length?`Загружено записей: <b>${egrn.rows.length}</b>`:'Не загружена — ФИО и телефоны не отображаются.'}</div>
+        <button class="st-btn" onclick="document.getElementById('egrnFile').click()">🗄 ${egrn.rows.length?'Заменить базу':'Загрузить базу'}</button>
+      </div>
+
+      <div class="st-card">
+        <div class="st-h">Данные</div>
+        <div class="st-note">${cloud?'Облако подключено — карточки, заметки и семьи синхронизируются.':'Локальный режим — данные только в этом браузере.'}</div>
+        <button class="st-btn" onclick="exportJSON()">⭳ Сохранить резервную копию</button>
+        <button class="st-btn" onclick="document.getElementById('importFile').click()">⭱ Загрузить копию</button>
+        <button class="st-btn" onclick="openReport()">📄 Сформировать отчёт</button>
+      </div>
+
+      <div class="st-card">
+        <div class="st-h">Комплекс</div>
+        <div class="st-note">Объектов в схеме: <b>${Object.keys(HYDE_OBJ).length}</b> · карточек в актуалке: <b>${items.length}</b> · заметок: <b>${Object.keys(schemaInfo).length}</b> · семей: <b>${groups.length}</b></div>
+        <button class="st-btn" onclick="renameJK();renderSettings()">Изменить название ЖК</button>
+        ${cloud?`<button class="st-btn danger" onclick="doLogout()">Выйти из аккаунта</button>`:''}
+      </div>
+    </div>`;
+}
+function toggleRemember(){
+  const on=localStorage.getItem('actualka_noremember')==='1';
+  const next=!on;
+  localStorage.setItem('actualka_noremember',next?'1':'0');
+  if(window.firebase&&firebase.auth){
+    try{firebase.auth().setPersistence(next?firebase.auth.Auth.Persistence.SESSION:firebase.auth.Auth.Persistence.LOCAL);}catch(e){}
+  }
+}
+let _sidx=null, zoomMode='fit', _cell=null, _kinFio=null;
+function setZoom(m){zoomMode=m;renderSchema();}
+function fitSchema(){
+  const wrap=document.querySelector('.schemaWrap');if(!wrap)return;
+  let ch;
+  if(zoomMode==='fit'){
+    const top=wrap.getBoundingClientRect().top;
+    const avail=Math.max(320, window.innerHeight - top - 88);
+    ch=Math.max(13, Math.min(24, Math.floor(avail/(FLOORS-1))-1));
+  } else ch=zoomMode;
+  wrap.style.setProperty('--ch',ch+'px');
+  wrap.style.setProperty('--cw',(ch*1.7).toFixed(1)+'px');
+}
+function renderSchema(){
+  if(!hasComplex()){
+    document.getElementById('viewSchema').innerHTML='<div class="empty"><div class="big">Схема не настроена</div>Загрузи конфигурацию комплекса в «Настройках» — она хранится в облаке, не в файле сайта.<div><button class="btn-add" onclick="switchView(\'settings\')">Открыть настройки</button></div></div>';
+    return;
+  }
+  const box=document.getElementById('viewSchema'),idx=schemaIndex();
+  const _kin=(_cell&&_kinFio)?kinApts(_kinFio,encodeApt(_cell.k,_cell.f,_cell.p)):new Set();
+  _sidx=idx;
+  const legend=`<div class="legend">
+    <span><i style="background:var(--ok)"></i>работает</span><span><i style="background:var(--think)"></i>думает</span>
+    <span><i style="background:var(--no)"></i>отказ</span><span><i style="background:#8f9aa8"></i>не общались</span>
+    <span><i style="background:#6f6b64"></i>продано/сдано</span><span><i style="background:#fff;box-shadow:0 0 0 1.5px rgba(0,0,0,.3)"></i>неск. квартир</span></div>`;
+  const gutter=()=>{let g='';for(let f=FLOORS;f>=2;f--)g+=`<div class="g">${f}</div>`;return `<div class="gutter">${g}</div>`;};
+  const tower=t=>{
+    const cols=maxPos(t.k);let floors='';let cnt=0;
+    for(let f=FLOORS;f>=2;f--){
+      let cells='';
+      for(let p=1;p<=cols;p++){
+        if(!aptExists(t.k,f,p)){cells+=`<div class="brick void"></div>`;continue;}
+        const key=`${t.k}-${f}-${p}`,o=idx.map[key];
+        const num=encodeApt(t.k,f,p);
+        const kinCls=_kin.has(num)?'kin':'';
+        const noObj=cadOfNum(num)?'':'noobj';
+        if(o){const cls=CLOSED.includes(stateOf(o))?'closed':(o.dealStatus||'base');cnt++;
+          cells+=`<div class="brick ${cls} ${idx.multi[key]?'multi':''} ${kinCls}" data-k="${t.k}" data-f="${f}" data-p="${p}" onclick="openCell(${t.k},${f},${p})"></div>`;}
+        else {const ni=schemaInfo[num];const nc=ni&&(ni.note||ni.cad)?'noted':'e';
+          cells+=`<div class="brick ${nc} ${kinCls} ${noObj}" data-k="${t.k}" data-f="${f}" data-p="${p}" onclick="openCell(${t.k},${f},${p})"></div>`;}
+      }
+      floors+=`<div class="frow ${f%10===0?'sect':''}">${cells}</div>`;
+    }
+    return `<div class="bld ${t.cls}">
+      <div class="bld-roof"><span class="spire"></span><span class="cap"></span></div>
+      <div class="bld-body"><div class="floors">${floors}</div></div>
+      <div class="bld-base">${t.ru} · лобби<small>${t.name} · ${cnt} в базе</small></div>
+    </div>`;
+  };
+  box.innerHTML=`<div class="schema-head">${legend}</div>
+    <div class="schemaWrap">${gutter()}${TOWERS.map(tower).join('')}${gutter()}</div>
+    <div class="zoombar">
+      <span>Масштаб:</span>
+      <button onclick="setZoom('fit')" class="${zoomMode==='fit'?'on':''}">по экрану</button>
+      <button onclick="setZoom(20)" class="${zoomMode===20?'on':''}">норма</button>
+      <button onclick="setZoom(28)" class="${zoomMode===28?'on':''}">крупнее</button>
+    </div>`;
+  fitSchema();
+}
+function schemaTip(e){
+  const b=e.target.closest('.brick');const tip=document.getElementById('schemaTip');
+  if(!b||!_sidx){tip.style.display='none';return;}
+  const k=+b.dataset.k,f=+b.dataset.f,p=+b.dataset.p,num=encodeApt(k,f,p),o=_sidx.map[`${k}-${f}-${p}`];
+  let html=`<b>${num}</b> · ${TOWERS[k-1].ru}, ${f} эт.`;
+  if(o){
+    html+=`<br>${esc(o.ownerName||'без ФИО')}`;
+    if(o.area)html+=` · ${esc(o.area)} м²`;
+    html+=`<span class="st-st"><br>${(STATUS[o.dealStatus||'base']||{}).label} · ${STATE_LABEL[stateOf(o)]}</span>`;
+    const oth=_sidx.owners[(o.ownerName||'').trim().toUpperCase()]||[];
+    if(oth.length>1)html+=`<br>◦ у собственника ${oth.length} кв.`;
+  } else {
+    const ni=schemaInfo[num], fo=ownerOfApt(num), ob=objOfNum(num);
+    if(ob)html+=`<br>${ob.area} м²`;
+    if(fo)html+=`<br>${esc(fo)}`;
+    if(ni&&ni.note)html+=`<br>📝 ${esc(ni.note)}`;
+    if(!fo&&!ni&&!ob)html+='<br>нет данных';
+  }
+  tip.innerHTML=html;tip.style.display='block';
+  const x=Math.min(e.clientX+14,window.innerWidth-230),y=Math.min(e.clientY+14,window.innerHeight-90);
+  tip.style.left=x+'px';tip.style.top=y+'px';
+}
+function cardAt(k,f,p){return items.find(o=>{const d=decodeApt(o.apartment);return d&&d.k===k&&d.f===f&&d.p===p;});}
+function openCell(k,f,p){
+  k=+k;_cell={k,f,p};const idx=schemaIndex();_sidx=idx;const key=`${k}-${f}-${p}`,o=idx.map[key],num=encodeApt(k,f,p);
+  const obj=objOfNum(num), cad=cadOfApt(num), rec=ownerRecOfCad(cad);
+  _kinFio=rec?rec.fio:null;
+  const nb=(nk,nf,np,label)=>{if(nf<1||nf>FLOORS||np<1||!aptExists(nk,nf,np))return `<div class="nb"><span>${label}</span><b>—</b><div>нет кв.</div></div>`;
+    const no=idx.map[`${nk}-${nf}-${np}`],nn=encodeApt(nk,nf,np),fo=ownerOfApt(nn);
+    return `<div class="nb ${no?'occ':''}"><span>${label}</span><b>${nn}</b><div>${no?esc((no.ownerName||'занята').split(' ')[0]):(fo?esc(fo.split(' ')[0]):'—')}</div></div>`;};
+
+  let info=`<div class="cell-info">
+      <div class="ci-row"><span>Квартира</span><b>${num}</b></div>
+      ${obj?`<div class="ci-row"><span>Метраж (реестр)</span><b>${obj.area} м²</b></div>`:''}
+      ${cad?`<div class="ci-row"><span>Кадастр</span><b style="font-size:11px">${esc(cad)}</b></div>`:'<div class="ci-row"><span>Кадастр</span><b style="color:var(--ink-soft)">нет в реестре</b></div>'}
+      ${rec?`<div class="ci-row"><span>Собственник</span><b class="pii">${esc(rec.fio)}</b></div>
+             ${rec.phone?`<div class="ci-row"><span>Телефон</span><b class="pii">${esc(rec.phone)}</b></div>`:''}
+             ${rec.share&&rec.share!=='1/1'?`<div class="ci-row"><span>Доля</span><b>${esc(rec.share)}</b></div>`:''}`
+           :(cad?`<div class="ci-row"><span>Собственник</span><b style="color:var(--ink-soft)">${egrn.rows.length?'нет в базе ЕГРН':'загрузи базу ЕГРН'}</b></div>`:'')}
+      ${o?`<div class="ci-row"><span>В актуалке</span><b>${(STATUS[o.dealStatus||'base']||{}).label} · ${STATE_LABEL[stateOf(o)]}</b></div>`:''}
+    </div>`;
+
+  /* --- портфель собственника --- */
+  let port='';
+  if(rec){
+    const all=ownerObjects(rec.fio).map(r=>({rec:r,o:objOfCad(r.cad)}));
+    const flats=all.filter(x=>x.o&&x.o.type==='kv');
+    const rest=all.filter(x=>!x.o||x.o.type!=='kv');
+    const cnt={};rest.forEach(x=>{const t=x.o?x.o.type:'?';cnt[t]=(cnt[t]||0)+1});
+    const co=(egrn.byCad[cad]||[]).filter(x=>x.fio!==rec.fio);
+    port=`<div class="port">
+      <div class="port-h"><b>Портфель собственника</b>${flats.length>1?`<span class="pbadge">инвестор · ${flats.length} кв.</span>`:''}</div>
+      ${flats.map(x=>{const cur=x.o.num===num;
+        return `<div class="pobj ${cur?'cur':''}" ${cur?'':`onclick="jumpTo('${x.o.num}')"`}>
+          <span class="pi">🏠</span>
+          <span class="pm">${x.o.num}<small>${x.o.area} м² · ${x.o.floor} эт.</small></span>
+          ${cur?'<span class="ptag">эта</span>':'<span class="pgo">→</span>'}
+        </div>`;}).join('')}
+      ${Object.keys(cnt).length?`<div class="pextra">Прочее: ${Object.entries(cnt).map(([t,n])=>`${typeIcon(t)} ${typeLabel(t)} — ${n}`).join(' · ')}<br><span style="opacity:.75">${rest.map(x=>x.o?x.o.num:'—').join(', ')}</span></div>`:''}
+      ${co.length?`<div class="pextra" style="border-color:#E3CBA0;color:#8a6d2b">Долевая собственность: <span class="pii">${co.map(c=>esc(c.fio)+(c.share?` (${c.share})`:'')).join(', ')}</span></div>`:''}
+    </div>`;
+  }
+
+  const ni=schemaInfo[num]||{};
+  const qedit=`<div class="qedit">
+      <div style="font-size:11.5px;color:var(--brass);font-weight:700;letter-spacing:.3px;text-transform:uppercase">Заметка по квартире</div>
+      <textarea id="cellNote" placeholder="живут собственники · ремонт, через год продают · сдают в аренду…">${esc(ni.note||'')}</textarea>
+    </div>`;
+  const body=`${info}${port}${qedit}
+    <div style="font-size:12.5px;font-weight:600;color:var(--ink-soft);margin-top:14px;margin-bottom:2px">Соседние квартиры</div>
+    <div class="nb-grid">
+      <div class="nb" style="visibility:hidden"></div>${nb(k,f+1,p,'этаж выше')}<div class="nb" style="visibility:hidden"></div>
+      ${nb(k,f,p-1,'слева')}<div class="nb mid"><span>эта</span><b>${num}</b></div>${nb(k,f,p+1,'справа')}
+      <div class="nb" style="visibility:hidden"></div>${nb(k,f-1,p,'этаж ниже')}<div class="nb" style="visibility:hidden"></div>
+    </div>`;
+  document.getElementById('cellTitle').textContent='Квартира '+num;
+  document.getElementById('cellBody').innerHTML=body;
+  document.getElementById('cellFoot').innerHTML=`<button class="del" style="color:var(--ink-soft);border-color:var(--line)" onclick="closeCell()">Закрыть</button><button class="save" onclick="quickSave()">Сохранить заметку</button><button class="save" style="background:#4a4a48;flex:none" onclick="cellToCard()">Карточка</button>`;
+  document.getElementById('cellOverlay').classList.add('show');
+  renderSchema();
+}
+function jumpTo(numStr){
+  const d=decodeApt(numStr);if(!d)return;
+  if(state.view!=='schema')switchView('schema');
+  openCell(d.k,d.f,d.p);
+}
+/* ---------- карточка человека ---------- */
+let _person=null;
+function openPerson(fio){
+  _person=fio;
+  const objs=ownerObjects(fio);
+  const rec=objs[0]||{fio,phone:'',share:''};
+  const flats=objs.map(r=>({r,o:objOfCad(r.cad)})).filter(x=>x.o&&x.o.type==='kv');
+  const rest=objs.map(r=>({r,o:objOfCad(r.cad)})).filter(x=>!x.o||x.o.type!=='kv');
+  const g=groupOf(fio);
+  const fam=g?g.members.filter(m=>normFio(m)!==normFio(fio)):[];
+  const phones=[...new Set(groupMembers(fio).map(m=>{const o=ownerObjects(m)[0];return o&&o.phone?m+': '+o.phone:null;}).filter(Boolean))];
+
+  /* заметки по всем его квартирам */
+  const notes=[];
+  flats.forEach(x=>{const ni=schemaInfo[x.o.num];if(ni&&ni.note)notes.push({num:x.o.num,note:ni.note});});
+  /* карточки актуалки по его квартирам */
+  const cards=flats.map(x=>items.find(o=>o.apartment===x.o.num)).filter(Boolean);
+
+  let famTotal=0;groupMembers(fio).forEach(m=>{famTotal+=ownerObjects(m).filter(r=>{const o=objOfCad(r.cad);return o&&o.type==='kv';}).length;});
+
+  const h=`
+    <div class="pers-top">
+      <div class="pers-name">${esc(fio)}</div>
+      <div class="pers-sub">${rec.phone?'☎ '+esc(rec.phone):'телефон не указан'}${rec.share&&rec.share!=='1/1'?' · доля '+esc(rec.share):''}</div>
+      ${flats.length>1?`<span class="pbadge" style="margin-top:7px;display:inline-block">инвестор · ${flats.length} кв.</span>`:''}
+      ${ownerFix[cadKey(rec.cad||'')]?'<span class="fixmark">данные скорректированы вручную</span>':''}
+    </div>
+
+    <div class="sec">
+      <div class="sec-h"><b>Квартиры (${flats.length})</b></div>
+      ${flats.length?flats.map(x=>{
+        const card=items.find(o=>o.apartment===x.o.num);
+        const st=card?(STATUS[card.dealStatus||'base']||{}).label:'';
+        return `<div class="pobj" onclick="closePerson();jumpTo('${x.o.num}')">
+          <span class="pi">🏠</span>
+          <span class="pm">${x.o.num}<small>${x.o.area} м² · ${x.o.floor} эт.${st?' · '+st:''}</small></span>
+          <span class="pgo">→</span></div>`;}).join(''):'<div class="empty2">нет квартир в базе</div>'}
+      ${rest.length?`<div class="pextra">Прочее: ${rest.map(x=>x.o?typeIcon(x.o.type)+' '+x.o.num:'—').join(', ')}</div>`:''}
+    </div>
+
+    <div class="sec">
+      <div class="sec-h"><b>Семья / связанные лица</b>
+        ${g?`<span class="pbadge" style="background:var(--fam)" onclick="renameGroup('${jq(fio)}');openPerson('${jq(fio)}')">${esc(g.name)} · ${famTotal} кв.</span>`:'<span class="pbadge" style="background:var(--base)">не связан</span>'}</div>
+      ${fam.length?fam.map(m=>{
+        const mo=ownerObjects(m),mf=mo.filter(r=>{const o=objOfCad(r.cad);return o&&o.type==='kv';});
+        return `<div class="mem">
+          <div class="av">${esc((m.split(' ')[0]||' ')[0]+((m.split(' ')[1]||' ')[0]||''))}</div>
+          <div class="in" onclick="openPerson('${jq(m)}')">${esc(m)}<small>${mf.length} кв. · ${mf.map(r=>objOfCad(r.cad).num).join(', ')||'—'}</small></div>
+          <button class="rm" title="убрать из группы" onclick="unlinkPerson('${jq(m)}');openPerson('${jq(fio)}')">×</button>
+        </div>`;}).join(''):'<div class="empty2">пока ни с кем не связан</div>'}
+      <button class="addbtn" onclick="openLink('${jq(fio)}')">+ Связать с человеком</button>
+      ${phones.length>1?`<div class="pextra">Телефоны группы:<br>${phones.map(esc).join('<br>')}</div>`:''}
+    </div>
+
+    ${notes.length?`<div class="sec">
+      <div class="sec-h"><b>Заметки по квартирам</b></div>
+      ${notes.map(n=>`<div class="noteline" onclick="closePerson();jumpTo('${n.num}')"><b>${n.num}</b> ${esc(n.note)}</div>`).join('')}
+    </div>`:''}
+
+    ${cards.length?`<div class="sec">
+      <div class="sec-h"><b>В актуалке (${cards.length})</b></div>
+      ${cards.map(c=>`<div class="noteline" onclick="closePerson();openModal('${c.id}')"><b>${esc(c.apartment)}</b> ${(STATUS[c.dealStatus||'base']||{}).label} · ${STATE_LABEL[stateOf(c)]}${c.price?' · '+esc(c.price):''}</div>`).join('')}
+    </div>`:''}`;
+
+  document.getElementById('personTitle').textContent='Собственник';
+  document.getElementById('personBody').innerHTML=h;
+  document.getElementById('personFoot').innerHTML=`<button class="del" style="color:var(--ink-soft);border-color:var(--line)" onclick="closePerson()">Закрыть</button><button class="save" onclick="editOwner('${jq(fio)}')">Изменить данные</button>`;
+  document.getElementById('personOverlay').classList.add('show');
+}
+function closePerson(){document.getElementById('personOverlay').classList.remove('show')}
+
+/* --- правка данных собственника --- */
+function editOwner(fio){
+  const objs=ownerObjects(fio);
+  if(!objs.length){alert('Нет объектов для правки');return;}
+  const list=objs.map((r,i)=>{const o=objOfCad(r.cad);return `${i+1}. ${o?o.num:r.cad}`;}).join('\n');
+  const pick=objs.length===1?'1':prompt('Какой объект правим?\n'+list+'\n\nНомер строки:','1');
+  if(!pick)return;
+  const idx=parseInt(pick)-1;const r=objs[idx];if(!r)return;
+  const o=objOfCad(r.cad),key=cadKey(r.cad),cur=ownerFix[key]||{};
+  const nf=prompt('ФИО собственника'+(o?' ('+o.num+')':'')+':',cur.fio||r.fio||'');
+  if(nf===null)return;
+  const np=prompt('Телефон:',cur.phone||r.phone||'');
+  if(np===null)return;
+  const nn=prompt('Комментарий (например: продал в марте 2026):',cur.note||'');
+  if(nn===null)return;
+  if(!nf.trim()){delete ownerFix[key];}
+  else ownerFix[key]={fio:nf.trim().toUpperCase(),phone:(np||'').trim(),note:(nn||'').trim(),ts:Date.now()};
+  saveOwnerFix();
+  if(state.view==='schema')renderSchema();
+  openPerson(nf.trim()?nf.trim().toUpperCase():fio);
+}
+
+/* --- выбор человека для связи --- */
+let _linkFor=null;
+function openLink(fio){
+  _linkFor=fio;
+  document.getElementById('linkQ').value='';
+  fillLink();
+  document.getElementById('linkOverlay').classList.add('show');
+  setTimeout(()=>document.getElementById('linkQ').focus(),60);
+}
+function closeLink(){document.getElementById('linkOverlay').classList.remove('show')}
+function allOwners(){
+  const set=new Map();
+  Object.keys(egrn.byOwner||{}).forEach(k=>{const r=egrn.byOwner[k][0];if(r&&r.fio)set.set(normFio(r.fio),r.fio);});
+  Object.values(ownerFix).forEach(f=>{if(f&&f.fio)set.set(normFio(f.fio),f.fio);});
+  return [...set.values()];
+}
+function fillLink(){
+  const fio=_linkFor,q=(document.getElementById('linkQ').value||'').trim().toLowerCase();
+  const mem=groupMembers(fio).map(normFio);
+  let list=allOwners().filter(f=>!mem.includes(normFio(f)));
+  if(q)list=list.filter(f=>{
+    const objs=ownerObjects(f),ph=(objs[0]||{}).phone||'';
+    return f.toLowerCase().includes(q)
+      || objs.some(r=>{const o=objOfCad(r.cad);return o&&o.num.toLowerCase().includes(q);})
+      || (q.replace(/\D/g,'').length>2&&ph.replace(/\D/g,'').includes(q.replace(/\D/g,'')));
+  });
+  list=list.slice(0,40);
+  document.getElementById('linkCount').textContent=q?`найдено: ${list.length}`:`всего: ${allOwners().length-mem.length}`;
+  document.getElementById('linkList').innerHTML=list.length?list.map(f=>{
+    const objs=ownerObjects(f),fl=objs.map(r=>objOfCad(r.cad)).filter(o=>o&&o.type==='kv');
+    const same=f.split(' ')[0]===fio.split(' ')[0];
+    return `<div class="lrow" onclick="linkPeople('${jq(fio)}','${jq(f)}');closeLink();openPerson('${jq(fio)}')">
+      ${esc(f)}${same?' <span style="color:var(--fam);font-size:11px">· однофамилец</span>':''}
+      <small>${fl.length} кв.${fl.length?' · '+fl.map(o=>o.num).join(', '):''}</small></div>`;}).join('')
+    :'<div class="empty2">никого не найдено</div>';
+}
+function quickSave(){
+  if(!_cell)return;const {k,f,p}=_cell,num=encodeApt(k,f,p);
+  const cad=cadOfApt(num);
+  const note=document.getElementById('cellNote').value;
+  if(!note.trim()) delete schemaInfo[num];
+  else schemaInfo[num]={cad,note,ts:Date.now()};
+  saveSchemaInfo();renderSchema();openCell(k,f,p);
+}
+function cellToCard(){
+  if(!_cell)return;const {k,f,p}=_cell,num=encodeApt(k,f,p),ex=cardAt(k,f,p);
+  closeCell();
+  if(ex){openModal(ex.id);return;}
+  openModalForApt(num);
+  const cad=cadOfApt(num),obj=objOfNum(num);
+  if(cad){document.getElementById('fld_cadastral').value=cad;egrnLookup();}
+  if(obj&&!document.getElementById('fld_area').value)document.getElementById('fld_area').value=obj.area;
+  const rec=ownerRecOfCad(cad);
+  if(rec){
+    const setIf=(id,v)=>{const el=document.getElementById(id);if(el&&!el.value&&v)el.value=v;};
+    setIf('fld_ownerName',rec.fio);setIf('fld_ownerPhone',rec.phone);setIf('fld_share',rec.share);
+  }
+  const ni=schemaInfo[num];
+  if(ni&&ni.note){const n=document.getElementById('fld_notes');if(n&&!n.value)n.value=ni.note;}
+}
+function closeCell(){document.getElementById('cellOverlay').classList.remove('show');}
+function openModalForApt(num){openModal();document.getElementById('fld_apartment').value=num;}
+
+/* ---------- глобальный поиск-подсказка ---------- */
+function globalSuggest(q){
+  q=(q||'').trim().toLowerCase();
+  if(q.length<2)return null;
+  const digits=q.replace(/\D/g,'');
+  const out={people:[],apts:[],groups:[]};
+  /* люди */
+  allOwners().forEach(f=>{
+    if(out.people.length>=6)return;
+    const objs=ownerObjects(f),ph=(objs[0]||{}).phone||'';
+    const hit=f.toLowerCase().includes(q)||(digits.length>2&&ph.replace(/\D/g,'').includes(digits));
+    if(hit)out.people.push({fio:f,objs});
+  });
+  /* квартиры и объекты */
+  Object.keys(HYDE_OBJ).forEach(suf=>{
+    if(out.apts.length>=6)return;
+    const v=HYDE_OBJ[suf],num=v[0];
+    if(num.toLowerCase().includes(q)||suf.includes(q)||(HYDE_PREFIX+suf).includes(q))
+      out.apts.push({num,area:v[1],floor:v[2],cad:HYDE_PREFIX+suf});
+  });
+  /* группы */
+  groups.forEach(g=>{if(out.groups.length<4&&(g.name||'').toLowerCase().includes(q))out.groups.push(g);});
+  return out;
+}
+function renderSuggest(){
+  const box=document.getElementById('sugBox');if(!box)return;
+  const q=document.getElementById('q').value;
+  const r=globalSuggest(q);
+  if(!r||(!r.people.length&&!r.apts.length&&!r.groups.length)){box.classList.remove('show');box.innerHTML='';return;}
+  let h='';
+  if(r.people.length){
+    h+='<div class="sg-h">Собственники</div>';
+    h+=r.people.map(p=>{
+      const fl=p.objs.map(x=>objOfCad(x.cad)).filter(o=>o&&o.type==='kv');
+      const g=groupOf(p.fio);
+      return `<div class="sg-row" onclick="pickSuggestPerson('${jq(p.fio)}')">
+        <span class="sg-ic">👤</span><span class="sg-m pii">${esc(p.fio)}
+        <small>${fl.length} кв.${fl.length?' · '+fl.map(o=>o.num).join(', '):''}${g?' · '+esc(g.name):''}</small></span></div>`;}).join('');
+  }
+  if(r.apts.length){
+    h+='<div class="sg-h">Объекты</div>';
+    h+=r.apts.map(a=>{
+      const own=ownerRecOfCad(a.cad),ni=schemaInfo[a.num];
+      return `<div class="sg-row" onclick="pickSuggestApt('${a.num}')">
+        <span class="sg-ic">${typeIcon(objTypeOf(a.num))}</span><span class="sg-m">${a.num}
+        <small>${a.area} м² · ${a.floor} эт.${own?' · '+esc(own.fio):''}${ni&&ni.note?' · 📝':''}</small></span></div>`;}).join('');
+  }
+  if(r.groups.length){
+    h+='<div class="sg-h">Семьи</div>';
+    h+=r.groups.map(g=>`<div class="sg-row" onclick="pickSuggestPerson('${jq(g.members[0])}')">
+      <span class="sg-ic">👪</span><span class="sg-m">${esc(g.name)}<small>${g.members.length} чел.</small></span></div>`).join('');
+  }
+  box.innerHTML=h;box.classList.add('show');
+}
+function pickSuggestPerson(fio){hideSuggest();openPerson(fio);}
+function pickSuggestApt(num){
+  hideSuggest();
+  if(objTypeOf(num)==='kv')jumpTo(num);
+  else{const r=ownerRecOfCad(cadOfNum(num));if(r)openPerson(r.fio);else alert('Объект '+num+' — собственник не найден (загрузи базу ЕГРН)');}
+}
+function hideSuggest(){const b=document.getElementById('sugBox');if(b){b.classList.remove('show');b.innerHTML='';}}
+
+/* ---------- конфигурация комплекса ---------- */
+function loadComplexFile(input){
+  const f=input.files[0];if(!f)return;
+  const r=new FileReader();
+  r.onload=e=>{
+    try{
+      const c=JSON.parse(e.target.result);
+      if(!c||!c.objects||!c.towers)throw new Error('в файле нет объектов или корпусов');
+      const n=Object.keys(c.objects).length;
+      if(!confirm(`Конфигурация: ${n} объектов, ${c.towers.length} корпуса.\nЗагрузить в облако?`)){input.value='';return;}
+      if(cloud&&auxRef){auxRef.child('complex').set(c).then(()=>alert('Конфигурация загружена в облако.'));}
+      else{applyComplex(c);try{localStorage.setItem('actualka_complex',JSON.stringify(c));}catch(err){}
+        alert('Загружено локально (облако не подключено).');renderSettings();}
+    }catch(err){alert('Не удалось прочитать файл: '+err.message);}
+    input.value='';
+  };
+  r.readAsText(f,'utf-8');
+}
+function exportComplex(){
+  if(!COMPLEX)return;
+  const blob=new Blob([JSON.stringify(COMPLEX)],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);
+  a.download='complex-config.json';a.click();
+}
+
+/* ---------- режим приватности / быстрая блокировка ---------- */
+function togglePrivacy(){
+  const on=!document.body.classList.contains('privacy');
+  document.body.classList.toggle('privacy',on);
+  document.getElementById('privBtn').classList.toggle('on',on);
+  try{localStorage.setItem('actualka_priv',on?'1':'0');}catch(e){}
+}
+function applyPrivacy(){
+  let on=false;try{on=localStorage.getItem('actualka_priv')==='1';}catch(e){}
+  document.body.classList.toggle('privacy',on);
+  const b=document.getElementById('privBtn');if(b)b.classList.toggle('on',on);
+}
+function lockNow(){
+  hideSuggest();closeModal();closeCell();closePerson();closeLink();closeReport();
+  if(cloud&&window.firebase&&firebase.auth&&firebase.auth().currentUser){
+    localStorage.removeItem('actualka_seen');
+    firebase.auth().signOut();
+  }else{
+    const g=document.getElementById('authGate');if(g)g.classList.add('show');
+  }
+}
+
+/* ---------- wire up ---------- */
+document.getElementById('q').addEventListener('input',e=>{state.q=e.target.value;render();renderSuggest();});
+document.getElementById('q').addEventListener('focus',renderSuggest);
+document.addEventListener('click',e=>{if(!e.target.closest('.search'))hideSuggest();});
+document.getElementById('personOverlay').addEventListener('click',e=>{if(e.target.id==='personOverlay')closePerson()});
+document.getElementById('linkOverlay').addEventListener('click',e=>{if(e.target.id==='linkOverlay')closeLink()});
+document.getElementById('linkQ').addEventListener('input',fillLink);
+document.getElementById('fPay').addEventListener('change',e=>{state.pay=e.target.value;render()});
+document.getElementById('fState').addEventListener('change',e=>{state.objState=e.target.value;render()});
+document.getElementById('fSort').addEventListener('change',e=>{state.sort=e.target.value;render()});
+document.getElementById('overlay').addEventListener('click',e=>{if(e.target.id==='overlay')closeModal()});
+document.getElementById('reportOverlay').addEventListener('click',e=>{if(e.target.id==='reportOverlay')closeReport()});
+document.getElementById('cellOverlay').addEventListener('click',e=>{if(e.target.id==='cellOverlay')closeCell()});
+document.addEventListener('mousemove',e=>{if(state.view==='schema'&&e.target.closest&&e.target.closest('.schemaWrap'))schemaTip(e);else if(!e.target.closest||!e.target.closest('.brick'))document.getElementById('schemaTip').style.display='none';});
+document.getElementById('viewSchema').addEventListener('mouseleave',()=>{document.getElementById('schemaTip').style.display='none';});
+window.addEventListener('resize',()=>{if(state.view==='schema')fitSchema();});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeModal();closeReport();closeCell();closePerson();closeLink();hideSuggest();}});
+
+setJkLabel();
+applyPrivacy();
+loadAuxLocal();
+buildStateFilter();
+loadEgrnFromStorage();
+initStore();
+</script>
+</body>
+</html>
