@@ -171,11 +171,18 @@ label.f .lb{font-size:12.5px;font-weight:600;color:var(--ink-soft);margin-bottom
 #reportOutput th{color:var(--ink-soft);font-weight:600;font-size:11.5px;text-transform:uppercase;letter-spacing:.3px}
 #reportOutput .stat{display:inline-block;margin:2px 14px 2px 0;font-size:14px}
 #reportOutput .stat b{font-size:18px;font-family:var(--serif)}
+.exp-card{display:flex;gap:16px;padding:16px 0;border-bottom:1px solid #F0EDE5}
+.exp-card img{width:180px;height:130px;object-fit:cover;border-radius:12px;flex:none;background:#EDEAE2}
+.exp-card .ph{width:180px;height:130px;border-radius:12px;flex:none;background:#EDEAE2;display:flex;align-items:center;justify-content:center;color:#C3BFB4}
+.exp-card h3{font-family:var(--serif);font-size:20px;margin:0 0 6px}
+.exp-card .exp-meta{font-size:14px;color:var(--ink-soft);margin-bottom:4px}
+.exp-card .exp-price{font-size:17px;font-weight:700}
 @media print{
   body>*{display:none!important}
-  #reportOverlay{display:block!important;position:static!important;background:#fff!important;padding:0!important}
-  #reportOverlay .modal-head,#reportOverlay .modal-foot,#reportOverlay .rep-controls{display:none!important}
-  #reportOverlay .modal{max-width:none!important;box-shadow:none!important;background:#fff!important}
+  #reportOverlay,#exportOverlay{display:block!important;position:static!important;background:#fff!important;padding:0!important}
+  #reportOverlay .modal-head,#reportOverlay .modal-foot,#reportOverlay .rep-controls,
+  #exportOverlay .modal-head,#exportOverlay .modal-foot{display:none!important}
+  #reportOverlay .modal,#exportOverlay .modal{max-width:none!important;box-shadow:none!important;background:#fff!important}
   #reportOutput{border:none!important;padding:0!important}
 }
 .tabs{max-width:1240px;margin:12px auto 0;display:flex;gap:6px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
@@ -287,6 +294,14 @@ body.privacy .pers-name:active{filter:none}
 .undo-toast.show{opacity:1;transform:translate(-50%,0);pointer-events:auto}
 .undo-toast button{border:none;background:none;color:var(--brass-tint);font-weight:700;font-size:14px;cursor:pointer;padding:6px 8px;border-radius:8px;flex:none}
 .undo-toast button:hover{background:rgba(255,255,255,.1)}
+.bulk-bar{position:fixed;left:50%;bottom:16px;transform:translate(-50%,120%);z-index:85;background:#fff;border:1px solid var(--line);box-shadow:0 12px 32px rgba(0,0,0,.18);border-radius:16px;padding:10px 14px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;max-width:calc(100vw - 24px);transition:.2s ease}
+.bulk-bar.show{transform:translate(-50%,0)}
+.bulk-bar #bulkCount{font-size:13px;font-weight:700;color:var(--ink);margin-right:2px;white-space:nowrap}
+.bulk-bar button{border:1px solid var(--line);background:#fff;color:var(--ink);border-radius:9px;padding:8px 12px;font-size:13px;cursor:pointer;font-family:var(--sans);white-space:nowrap}
+.bulk-bar button:hover{border-color:var(--brass);color:var(--brass)}
+.card.selectable{cursor:pointer}
+.sel-check{position:absolute;top:10px;left:10px;z-index:5;width:24px;height:24px;border-radius:50%;background:rgba(255,255,255,.9);border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.25);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:var(--brass)}
+.card.selected{outline:2.5px solid var(--brass);outline-offset:-2.5px}
 /* --- вкладка База --- */
 .db-bar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
 .db-bar input{flex:1;min-width:220px;border:1px solid var(--line);border-radius:11px;padding:11px 13px;font-size:15px;font-family:var(--sans);outline:none;background:#fff;color:var(--ink)}
@@ -413,9 +428,20 @@ body.guest .f input,body.guest .f select,body.guest .f textarea,body.guest .phot
     <span id="egrnStatus">база ЕГРН не загружена</span>
     <span style="flex-basis:100%;height:0"></span>
     <button onclick="openReport()">📄 Отчёт</button>
+    <button id="selectModeBtn" onclick="toggleSelectMode()">☑ Выбрать несколько</button>
     <button onclick="exportJSON()">⭳ Сохранить резервную копию</button>
     <button onclick="document.getElementById('importFile').click()">⭱ Загрузить копию</button>
   </div>
+  </div>
+  <div class="bulk-bar" id="bulkBar">
+    <span id="bulkCount"></span>
+    <select class="mini" id="bulkStatus"><option value="">Статус…</option><option value="works">Работает</option><option value="thinking">Думает</option><option value="refusal">Отказ</option><option value="base">Не общались</option></select>
+    <button onclick="bulkApplyStatus()">Применить</button>
+    <select class="mini" id="bulkPay"><option value="">Оплата…</option><option value="yes">Платит</option><option value="split">Делится с агентом</option><option value="low">Мало платит</option><option value="no">Не платит</option></select>
+    <button onclick="bulkApplyPay()">Применить</button>
+    <span class="spacer"></span>
+    <button onclick="bulkExport()">📄 Экспорт подборки</button>
+    <button onclick="toggleSelectMode()">Готово</button>
   </div>
   <div id="viewSchema" style="display:none"></div>
   <div id="viewDb" style="display:none"></div>
@@ -537,6 +563,7 @@ body.guest .f input,body.guest .f select,body.guest .f textarea,body.guest .phot
     </div>
     <div class="modal-foot">
       <button class="del" id="delBtn" onclick="delCurrent()" style="display:none">Удалить</button>
+      <button class="del" id="expBtn" style="color:var(--brass);border-color:#E7C9DB;display:none" onclick="openExport([editingId])">Экспорт клиенту</button>
       <button class="save" onclick="saveCard()">Сохранить</button>
     </div>
   </div>
@@ -567,6 +594,22 @@ body.guest .f input,body.guest .f select,body.guest .f textarea,body.guest .phot
       <button class="del" style="color:var(--ink-soft);border-color:var(--line)" onclick="closeReport()">Закрыть</button>
       <button class="save" onclick="generateReport()">Сформировать</button>
       <button class="save" style="background:#4a4a48;flex:none" onclick="window.print()">Печать / PDF</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="exportOverlay">
+  <div class="modal" style="max-width:700px">
+    <div class="modal-head">
+      <h2>Подборка для клиента</h2>
+      <button class="x" onclick="closeExport()">×</button>
+    </div>
+    <div class="modal-body">
+      <div id="exportOutput"></div>
+    </div>
+    <div class="modal-foot">
+      <button class="del" style="color:var(--ink-soft);border-color:var(--line)" onclick="closeExport()">Закрыть</button>
+      <button class="save" style="background:#4a4a48" onclick="window.print()">Печать / PDF</button>
     </div>
   </div>
 </div>
@@ -644,6 +687,7 @@ function stateOf(o){return o.objState||'active'}
 
 let items = [];
 let cloud=false, dbRef=null, editingId=null, pendingPhoto=null;
+let selectMode=false, selectedIds=new Set();
 const state = {q:"", status:"all", pay:"all", sort:"new", dealType:"all", objState:"all", view:"actualka"};
 
 /* ---------- ЖК label ---------- */
@@ -874,8 +918,43 @@ function filtered(){
   return out;
 }
 
+function cardClick(id){ selectMode?toggleSelect(id):openModal(id); }
+function toggleSelect(id){ selectedIds.has(id)?selectedIds.delete(id):selectedIds.add(id); render(); }
+function toggleSelectMode(){
+  if(isGuest)return;
+  selectMode=!selectMode;
+  if(!selectMode) selectedIds.clear();
+  render();
+}
+function bulkBackups(){
+  return [...selectedIds].map(id=>items.find(x=>x.id===id)).filter(Boolean)
+    .map(o=>typeof structuredClone==='function'?structuredClone(o):JSON.parse(JSON.stringify(o)));
+}
+function bulkApplyField(field,value,label){
+  if(isGuest||!selectedIds.size||!value)return;
+  const backups=bulkBackups();
+  backups.forEach(existing=>{
+    const next={...existing,[field]:value};
+    const histEntry=buildHistoryEntry(existing,next);
+    next.history=(existing.history||[]).concat(histEntry?[histEntry]:[]).slice(-30);
+    upsert(next);
+  });
+  showUndo(`${label}: ${backups.length}`,()=>{backups.forEach(b=>upsert(b));});
+  selectedIds.clear(); selectMode=false; render();
+}
+function bulkApplyStatus(){bulkApplyField('dealStatus',document.getElementById('bulkStatus').value,'Статус изменён у объектов');}
+function bulkApplyPay(){bulkApplyField('willPay',document.getElementById('bulkPay').value,'Оплата изменена у объектов');}
+function bulkExport(){ if(!selectedIds.size)return; openExport([...selectedIds]); }
+function renderBulkBar(){
+  const bar=document.getElementById('bulkBar');
+  const btn=document.getElementById('selectModeBtn');
+  if(!bar||!btn)return;
+  bar.classList.toggle('show',selectMode&&selectedIds.size>0);
+  btn.textContent=selectMode?'✕ Отменить выбор':'☑ Выбрать несколько';
+  document.getElementById('bulkCount').textContent='Выбрано: '+selectedIds.size;
+}
 function render(){
-  setJkLabel(); buildChips(); renderDash();
+  setJkLabel(); buildChips(); renderDash(); renderBulkBar();
   const grid=document.getElementById('grid');
   const list=filtered();
   if(!items.length){
@@ -894,8 +973,10 @@ function render(){
     const closed=CLOSED.includes(stateOf(o));
     const overlayTxt=stateOf(o)==='sold'?'ПРОДАНО':stateOf(o)==='rented'?'СДАНО':stateOf(o)==='withdrawn'?'СНЯТО':'';
     const dl=dealOf(o), dealTxt=dl==='rent'?'Аренда':dl==='both'?'Прод.+Аренда':'Продажа';
-    return `<div class="card ${isIncomplete(o)?'incomplete':''} ${closed?'closed':''}" onclick="openModal('${o.id}')">
+    const sel=selectedIds.has(o.id);
+    return `<div class="card ${isIncomplete(o)?'incomplete':''} ${closed?'closed':''} ${selectMode?'selectable':''} ${sel?'selected':''}" onclick="cardClick('${o.id}')">
       <div class="thumb">
+        ${selectMode?`<div class="sel-check">${sel?'✓':''}</div>`:''}
         ${o.photo?`<img src="${o.photo}" alt="">`:`<div class="placeholder"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="8.5" cy="10" r="1.5"/><path d="M4 17l5-4 3 2 4-4 4 4"/></svg></div>`}
         <span class="pill ${o.dealStatus||'base'}">${st.label}</span>
         ${o.willPay==='yes'&&!closed?`<span class="pay-badge">₽ ПЛАТИТ</span>`:''}
@@ -982,6 +1063,24 @@ function onStateFieldChange(){
 /* ---------- отчёт ---------- */
 function openReport(){document.getElementById('reportOutput').innerHTML='';document.getElementById('reportOverlay').classList.add('show');}
 function closeReport(){document.getElementById('reportOverlay').classList.remove('show');}
+
+/* ---------- клиентский экспорт (без персональных данных) ---------- */
+function openExport(ids){
+  const list=items.filter(o=>ids.includes(o.id));
+  if(!list.length){alert('Нечего экспортировать');return;}
+  const dl=o=>dealOf(o)==='rent'?'Аренда':dealOf(o)==='both'?'Продажа + аренда':'Продажа';
+  document.getElementById('exportOutput').innerHTML=list.map(o=>`
+    <div class="exp-card">
+      ${o.photo?`<img src="${o.photo}" alt="">`:`<div class="ph"><svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="8.5" cy="10" r="1.5"/><path d="M4 17l5-4 3 2 4-4 4 4"/></svg></div>`}
+      <div>
+        <h3>${esc(o.apartment)||'Объект'}</h3>
+        <div class="exp-meta">${num(o.area)?esc(o.area)+' м²':''}${o.share&&o.share!=='1/1'?' · доля '+esc(o.share):''} · ${dl(o)}</div>
+        ${num(o.price)?`<div class="exp-price">${fmtMoney(o.price)}${dealOf(o)==='rent'?' / мес.':''}</div>`:''}
+      </div>
+    </div>`).join('');
+  document.getElementById('exportOverlay').classList.add('show');
+}
+function closeExport(){document.getElementById('exportOverlay').classList.remove('show');}
 function inPeriod(o){
   const from=document.getElementById('rc_from').value, to=document.getElementById('rc_to').value;
   if(!from&&!to) return true;
@@ -1078,6 +1177,7 @@ function openModal(id){
   const o=id?items.find(x=>x.id===id):{};
   document.getElementById('mTitle').textContent=id?'Редактировать объект':'Новый объект';
   document.getElementById('delBtn').style.display=id?'block':'none';
+  document.getElementById('expBtn').style.display=id?'block':'none';
   const set=(f,v)=>document.getElementById('fld_'+f).value=v||'';
   set('apartment',o.apartment);set('area',o.area);set('price',o.price);set('cadastral',o.cadastral);set('share',o.share);set('commissionPct',o.commissionPct);
   set('ownerName',o.ownerName);set('ownerPhone',o.ownerPhone);
@@ -2069,6 +2169,7 @@ document.getElementById('fSort').addEventListener('change',e=>{state.sort=e.targ
 document.getElementById('overlay').addEventListener('click',e=>{if(e.target.id==='overlay')closeModal()});
 document.getElementById('modal').addEventListener('input',scheduleDraftSave);
 document.getElementById('reportOverlay').addEventListener('click',e=>{if(e.target.id==='reportOverlay')closeReport()});
+document.getElementById('exportOverlay').addEventListener('click',e=>{if(e.target.id==='exportOverlay')closeExport()});
 document.getElementById('cellOverlay').addEventListener('click',e=>{if(e.target.id==='cellOverlay')closeCell()});
 document.addEventListener('mousemove',e=>{if(state.view==='schema'&&e.target.closest&&e.target.closest('.schemaWrap'))schemaTip(e);else if(!e.target.closest||!e.target.closest('.brick'))document.getElementById('schemaTip').style.display='none';});
 document.getElementById('viewSchema').addEventListener('mouseleave',()=>{document.getElementById('schemaTip').style.display='none';});
