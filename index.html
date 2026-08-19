@@ -1768,8 +1768,9 @@ function toggleRemember(){
     try{firebase.auth().setPersistence(next?firebase.auth.Auth.Persistence.SESSION:firebase.auth.Auth.Persistence.LOCAL);}catch(e){}
   }
 }
-let _sidx=null, zoomMode='fit', _cell=null, _kinFio=null;
+let _sidx=null, zoomMode='fit', _cell=null, _kinFio=null, heatMode=false;
 function setZoom(m){zoomMode=m;renderSchema();}
+function toggleHeat(){heatMode=!heatMode;renderSchema();}
 function fitSchema(){
   const wrap=document.querySelector('.schemaWrap');if(!wrap)return;
   let ch;
@@ -1797,7 +1798,7 @@ function renderSchema(){
   const tower=t=>{
     const cols=maxPos(t.k);let floors='';let cnt=0;
     for(let f=FLOORS;f>=2;f--){
-      let cells='';
+      let cells='';let rowTotal=0,rowActive=0;
       for(let p=1;p<=cols;p++){
         if(!aptExists(t.k,f,p)){cells+=`<div class="brick void"></div>`;continue;}
         const key=`${t.k}-${f}-${p}`,o=idx.map[key];
@@ -1805,11 +1806,14 @@ function renderSchema(){
         const kinCls=_kin.has(num)?'kin':'';
         const noObj=cadOfNum(num)?'':'noobj';
         if(o){const cls=CLOSED.includes(stateOf(o))?'closed':(o.dealStatus||'base');cnt++;
+          rowTotal++; if(!CLOSED.includes(stateOf(o))&&(o.dealStatus==='works'||o.dealStatus==='thinking'))rowActive++;
           cells+=`<div class="brick ${cls} ${idx.multi[key]?'multi':''} ${kinCls}" data-k="${t.k}" data-f="${f}" data-p="${p}" onclick="openCell(${t.k},${f},${p})"></div>`;}
         else {const ni=schemaInfo[num];const nc=ni&&(ni.note||ni.cad)?'noted':'e';
           cells+=`<div class="brick ${nc} ${kinCls} ${noObj}" data-k="${t.k}" data-f="${f}" data-p="${p}" onclick="openCell(${t.k},${f},${p})"></div>`;}
       }
-      floors+=`<div class="frow ${f%10===0?'sect':''}">${cells}</div>`;
+      const density=rowTotal?rowActive/rowTotal:0;
+      const heatStyle=heatMode&&density>0?` style="box-shadow:0 0 0 3px rgba(156,27,76,${(0.15+density*0.45).toFixed(2)});border-radius:3px"`:'';
+      floors+=`<div class="frow ${f%10===0?'sect':''}"${heatStyle}>${cells}</div>`;
     }
     return `<div class="bld ${t.cls}">
       <div class="bld-roof"><span class="spire"></span><span class="cap"></span></div>
@@ -1824,6 +1828,8 @@ function renderSchema(){
       <button onclick="setZoom('fit')" class="${zoomMode==='fit'?'on':''}">по экрану</button>
       <button onclick="setZoom(20)" class="${zoomMode===20?'on':''}">норма</button>
       <button onclick="setZoom(28)" class="${zoomMode===28?'on':''}">крупнее</button>
+      <span style="width:1px;height:16px;background:var(--line);margin:0 4px"></span>
+      <button onclick="toggleHeat()" class="${heatMode?'on':''}">🔥 Активность по этажам</button>
     </div>`;
   fitSchema();
 }
