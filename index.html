@@ -156,7 +156,7 @@ label.f .lb{font-size:12.5px;font-weight:600;color:var(--ink-soft);margin-bottom
 .links-sec{margin-bottom:13px}
 .links-sec .lb{font-size:12.5px;font-weight:600;color:var(--ink-soft);margin-bottom:6px;display:block}
 .link-row{display:grid;grid-template-columns:1fr 1.5fr auto;gap:8px;margin-bottom:8px}
-.link-row input{border:1px solid var(--line);background:var(--card);border-radius:10px;padding:10px 11px;font-size:14px;font-family:var(--sans);outline:none;min-width:0}
+.link-row input{border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:10px;padding:10px 11px;font-size:14px;font-family:var(--sans);outline:none;min-width:0}
 .link-row input:focus{border-color:var(--brass);box-shadow:0 0 0 3px var(--brass-tint)}
 .link-row .rm{border:1px solid var(--line);background:var(--card);color:var(--no);border-radius:10px;width:40px;cursor:pointer;font-size:17px}
 .add-link{border:1px dashed #CFC9BC;background:var(--card);color:var(--brass);border-radius:10px;padding:10px;width:100%;cursor:pointer;font-size:14px;font-weight:600;font-family:var(--sans)}
@@ -534,7 +534,7 @@ body.guest .f input,body.guest .f select,body.guest .f textarea,body.guest .phot
 
       <div class="two">
         <label class="f"><span class="lb">Тип сделки</span>
-          <select id="fld_dealType">
+          <select id="fld_dealType" onchange="onStateFieldChange()">
             <option value="sale">Продажа</option>
             <option value="rent">Аренда</option>
             <option value="both">Продажа + аренда</option>
@@ -551,7 +551,7 @@ body.guest .f input,body.guest .f select,body.guest .f textarea,body.guest .phot
       </div>
       <div class="two" id="closeDatesRow">
         <label class="f"><span class="lb">Дата закрытия (прод./сдачи)</span><input id="fld_closedDate" type="date"></label>
-        <label class="f"><span class="lb">Договор аренды до</span><input id="fld_leaseEnd" type="date"></label>
+        <label class="f" id="leaseEndWrap"><span class="lb">Договор аренды до</span><input id="fld_leaseEnd" type="date"></label>
       </div>
       <div class="two" id="wonByUsRow">
         <label class="f"><span class="lb">Сделка наша?</span>
@@ -561,7 +561,7 @@ body.guest .f input,body.guest .f select,body.guest .f textarea,body.guest .phot
             <option value="no">Нет, закрыл другой агент/сам собственник</option>
           </select>
         </label>
-        <label class="f"><span class="lb">Сумма сделки <span style="color:var(--brass);font-weight:700">— реальная, если отличается от цены</span></span><input id="fld_dealSum" placeholder="фактическая сумма"></label>
+        <label class="f"><span class="lb" id="dealSumLabel">Сумма сделки <span style="color:var(--brass);font-weight:700">— реальная, если отличается от цены</span></span><input id="fld_dealSum" placeholder="фактическая сумма"></label>
       </div>
 
       <label class="f"><span class="lb">Статус</span>
@@ -1137,10 +1137,12 @@ function renderDeals(){
   const rows=sorted.map(o=>{
     const dl=dealOf(o)==='rent'?'Аренда':'Продажа';
     const wonLabel=o.wonByUs==='yes'?'<span style="color:var(--ok);font-weight:700">✓ наша</span>':o.wonByUs==='no'?'<span style="color:var(--ink-soft)">не наша</span>':'<span style="color:var(--brass)">не отмечено</span>';
+    const isRentDeal=stateOf(o)==='rented';
+    const suf=isRentDeal?' / мес.':'';
     const realSum=num(o.dealSum),adPrice=num(o.price);
-    const adNote=adPrice?` <span style="color:var(--ink-soft);font-size:12px">(в объявлении было ${fmtMoney(o.price)})</span>`:'';
+    const adNote=adPrice?` <span style="color:var(--ink-soft);font-size:12px">(в объявлении было ${fmtMoney(o.price)}${suf})</span>`:'';
     const amt=realSum
-      ? `${fmtMoney(o.dealSum)}${realSum!==adPrice?adNote:''}`
+      ? `${fmtMoney(o.dealSum)}${suf}${realSum!==adPrice?adNote:''}`
       : `<span style="color:var(--brass)">сумма сделки не указана</span>${adNote}`;
     return `<div class="lrow" onclick="openModal('${o.id}')">
       <b>${esc(o.apartment)||'Без номера'}</b> · ${dl} · ${stateOf(o)==='sold'?'Продано':'Сдано'}${o.closedDate?' · '+fmtDateY(o.closedDate):''}
@@ -1196,6 +1198,24 @@ function onDealFilter(){state.dealType=document.getElementById('fDeal').value;st
 function onStateFieldChange(){
   const s=document.getElementById('fld_objState').value, cd=document.getElementById('fld_closedDate');
   if((s==='sold'||s==='rented')&&!cd.value) cd.value=new Date().toISOString().slice(0,10);
+  updateDealFieldLabels();
+}
+function updateDealFieldLabels(){
+  const dt=document.getElementById('fld_dealType').value;
+  const st=document.getElementById('fld_objState').value;
+  const leaseWrap=document.getElementById('leaseEndWrap');
+  if(leaseWrap) leaseWrap.style.display=dt==='sale'?'none':'';
+  const isRent=st==='rented'||(st!=='sold'&&dt==='rent');
+  const lbl=document.getElementById('dealSumLabel'),inp=document.getElementById('fld_dealSum');
+  if(lbl&&inp){
+    if(isRent){
+      lbl.innerHTML='По какой цене сдали <span style="color:var(--brass);font-weight:700">— факт за месяц, если отличается от объявленной</span>';
+      inp.placeholder='фактическая цена аренды / мес.';
+    }else{
+      lbl.innerHTML='Сумма сделки <span style="color:var(--brass);font-weight:700">— реальная, если отличается от цены</span>';
+      inp.placeholder='фактическая сумма продажи';
+    }
+  }
 }
 
 /* ---------- отчёт ---------- */
@@ -1322,6 +1342,7 @@ function openModal(id){
   set('dealStatus',o.dealStatus||'base');set('willPay',o.willPay||'unknown');set('exclusive',o.exclusive||'unknown');
   set('dealType',o.dealType||'sale');set('objState',o.objState||'active');set('closedDate',o.closedDate);set('leaseEnd',o.leaseEnd);
   set('wonByUs',o.wonByUs);set('dealSum',o.dealSum);
+  updateDealFieldLabels();
   set('lastContact',o.lastContact);set('nextDate',o.nextDate);set('nextStep',o.nextStep);set('notes',o.notes);
   renderOtherLinks(o.otherListings||[]);
   document.getElementById('egrnResult').innerHTML='';
@@ -2189,7 +2210,7 @@ function quickSave(){
   const note=document.getElementById('cellNote').value;
   if(!note.trim()) delete schemaInfo[num];
   else schemaInfo[num]={cad,note,ts:Date.now()};
-  saveSchemaInfo();renderSchema();openCell(k,f,p);
+  saveSchemaInfo();renderSchema();closeCell();
 }
 function cellToCard(){
   if(!_cell)return;const {k,f,p}=_cell,num=encodeApt(k,f,p),ex=cardAt(k,f,p);
