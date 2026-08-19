@@ -563,7 +563,6 @@ body.guest .f input,body.guest .f select,body.guest .f textarea,body.guest .phot
     </div>
     <div class="modal-foot">
       <button class="del" id="delBtn" onclick="delCurrent()" style="display:none">Удалить</button>
-      <button class="del" id="expBtn" style="color:var(--brass);border-color:#E7C9DB;display:none" onclick="openExport([editingId])">Экспорт клиенту</button>
       <button class="save" onclick="saveCard()">Сохранить</button>
     </div>
   </div>
@@ -1199,7 +1198,6 @@ function openModal(id){
   const o=id?items.find(x=>x.id===id):{};
   document.getElementById('mTitle').textContent=id?'Редактировать объект':'Новый объект';
   document.getElementById('delBtn').style.display=id?'block':'none';
-  document.getElementById('expBtn').style.display=id?'block':'none';
   const set=(f,v)=>document.getElementById('fld_'+f).value=v||'';
   set('apartment',o.apartment);set('area',o.area);set('price',o.price);set('cadastral',o.cadastral);set('share',o.share);set('commissionPct',o.commissionPct);
   set('ownerName',o.ownerName);set('ownerPhone',o.ownerPhone);
