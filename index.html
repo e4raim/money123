@@ -277,6 +277,10 @@ body.privacy .pers-name:active{filter:none}
 .privbtn.on{background:var(--ink);color:#fff;border-color:var(--ink)}
 .floatlock{position:fixed;right:16px;bottom:16px;z-index:70;width:52px;height:52px;border-radius:50%;border:none;background:var(--ink);color:#fff;font-size:20px;cursor:pointer;box-shadow:0 6px 20px rgba(30,28,24,.3)}
 .floatlock:active{transform:scale(.93)}
+.undo-toast{position:fixed;left:50%;bottom:24px;transform:translate(-50%,16px);z-index:90;background:#23211E;color:#F2EAD6;padding:12px 12px 12px 18px;border-radius:14px;box-shadow:0 12px 32px rgba(0,0,0,.28);display:flex;align-items:center;gap:14px;font-size:14px;opacity:0;pointer-events:none;transition:.2s ease;max-width:calc(100vw - 32px)}
+.undo-toast.show{opacity:1;transform:translate(-50%,0);pointer-events:auto}
+.undo-toast button{border:none;background:none;color:var(--brass-tint);font-weight:700;font-size:14px;cursor:pointer;padding:6px 8px;border-radius:8px;flex:none}
+.undo-toast button:hover{background:rgba(255,255,255,.1)}
 /* --- вкладка База --- */
 .db-bar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
 .db-bar input{flex:1;min-width:220px;border:1px solid var(--line);border-radius:11px;padding:11px 13px;font-size:15px;font-family:var(--sans);outline:none;background:#fff;color:var(--ink)}
@@ -415,6 +419,7 @@ body.guest .f input,body.guest .f select,body.guest .f textarea,body.guest .phot
 <input type="file" id="importFile" accept="application/json" hidden onchange="importJSON(this)">
 <button class="floatlock" onclick="lockNow()" title="Заблокировать">🔒</button>
 <div id="schemaTip"></div>
+<div class="undo-toast" id="undoToast"><span id="undoMsg"></span><button onclick="doUndo()">Отменить</button></div>
 
 <div class="overlay" id="overlay">
   <div class="modal" id="modal">
@@ -791,6 +796,24 @@ function removeItem(id){if(cloud){dbRef.child(id).remove();}else{items=items.fil
 function strip(o){const c={...o};delete c.id;return c;}
 function genId(){return 'o'+Date.now().toString(36)+Math.random().toString(36).slice(2,6)}
 
+/* ---------- отмена последнего действия ---------- */
+let _undoAction=null, _undoTimer=null;
+function showUndo(msg,fn){
+  _undoAction=fn;
+  document.getElementById('undoMsg').textContent=msg;
+  const t=document.getElementById('undoToast');
+  t.classList.add('show');
+  clearTimeout(_undoTimer);
+  _undoTimer=setTimeout(hideUndo,8000);
+}
+function hideUndo(){document.getElementById('undoToast').classList.remove('show');_undoAction=null;clearTimeout(_undoTimer);}
+function doUndo(){
+  if(!_undoAction)return;
+  const fn=_undoAction;
+  hideUndo();
+  fn();
+}
+
 /* ---------- helpers ---------- */
 function num(v){return parseFloat(String(v==null?'':v).replace(/[^\d.,]/g,'').replace(',','.'))||0}
 function ppm(o){const a=num(o.area),p=num(o.price);return a>0&&p>0?p/a:0}
@@ -990,9 +1013,23 @@ function saveCard(){
     createdAt:existing?existing.createdAt:Date.now()
   };
   if(!item.apartment && !item.ownerName && !item.listingUrl){alert('Заполни хотя бы квартиру, ФИО или ссылку на объявление');return;}
+  const prevSnap=existing?(typeof structuredClone==='function'?structuredClone(existing):JSON.parse(JSON.stringify(existing))):null;
+  const newId=item.id;
   upsert(item); closeModal(); if(state.view==='schema')renderSchema();
+  if(prevSnap){
+    showUndo('Изменения сохранены',()=>{upsert(prevSnap);if(state.view==='schema')renderSchema();});
+  }else{
+    showUndo('Объект добавлен',()=>{removeItem(newId);if(state.view==='schema')renderSchema();});
+  }
 }
-function delCurrent(){if(isGuest)return;if(editingId&&confirm('Удалить объект без возможности вернуть?')){removeItem(editingId);closeModal();if(state.view==='schema')renderSchema();}}
+function delCurrent(){
+  if(isGuest)return;
+  if(!editingId||!confirm('Удалить объект?'))return;
+  const snap=items.find(x=>x.id===editingId);
+  const backup=snap?(typeof structuredClone==='function'?structuredClone(snap):JSON.parse(JSON.stringify(snap))):null;
+  removeItem(editingId); closeModal(); if(state.view==='schema')renderSchema();
+  if(backup) showUndo('Объект удалён',()=>{upsert(backup);if(state.view==='schema')renderSchema();});
+}
 
 /* ---------- ссылки других агентов ---------- */
 function renderOtherLinks(list){
