@@ -140,6 +140,7 @@ label.f .lb{font-size:12.5px;font-weight:600;color:var(--ink-soft);margin-bottom
 .egrn-result{margin-bottom:13px}
 .egrn-result:empty{margin:0}
 .egrn-hint{font-size:12.5px;color:var(--ink-soft);padding:9px 11px;background:#fff;border:1px dashed var(--line);border-radius:10px}
+.dup-warn{font-size:12.5px;color:#8E1642;background:#FBE7EF;border:1px solid #F0C4D6;border-radius:10px;padding:8px 11px;margin:-6px 0 13px}
 .egrn-card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin-bottom:8px}
 .egrn-top{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
 .egrn-fio{font-size:14px;font-weight:700;color:var(--ink)}
@@ -436,10 +437,11 @@ body.guest .f input,body.guest .f select,body.guest .f textarea,body.guest .phot
       </div>
 
       <div class="two">
-        <label class="f"><span class="lb">Квартира</span><input id="fld_apartment" placeholder="№ 214, кв. …"></label>
+        <label class="f"><span class="lb">Квартира</span><input id="fld_apartment" placeholder="№ 214, кв. …" oninput="checkDuplicate()"></label>
         <label class="f"><span class="lb">Метраж, м²</span><input id="fld_area" inputmode="decimal" placeholder="72"></label>
       </div>
-      <label class="f"><span class="lb">Кадастровый номер <span style="color:var(--brass);font-weight:700">— автопоиск в базе</span></span><input id="fld_cadastral" placeholder="кадастр · или № объекта / ФИО" oninput="egrnLookupDebounced()"></label>
+      <div id="dupWarning"></div>
+      <label class="f"><span class="lb">Кадастровый номер <span style="color:var(--brass);font-weight:700">— автопоиск в базе</span></span><input id="fld_cadastral" placeholder="кадастр · или № объекта / ФИО" oninput="egrnLookupDebounced();checkDuplicate()"></label>
       <div id="egrnResult" class="egrn-result"></div>
       <div class="two">
         <label class="f"><span class="lb">Цена</span><input id="fld_price" placeholder="120 000 000 ₽"></label>
@@ -824,6 +826,7 @@ function fmtDateY(d){if(!d)return'';const[y,m,day]=d.split('-');return`${day}.${
 function fmtMoney(v){const n=num(v);if(!n)return esc(v||'');return n.toLocaleString('ru-RU')+' ₽'}
 function isIncomplete(o){return !o.ownerPhone || !num(o.price) || !num(o.area) || !o.listingUrl}
 function isOverdue(o){return !!o.nextDate && o.nextDate<=todayStr() && !CLOSED.includes(stateOf(o))}
+function isStale(o){return !!o.lastContact && !CLOSED.includes(stateOf(o)) && (Date.now()-new Date(o.lastContact).getTime())>=30*86400000}
 function todayStr(){return new Date().toISOString().slice(0,10)}
 
 /* ---------- render ---------- */
@@ -834,6 +837,7 @@ function filtered(){
       .filter(Boolean).join(' ').toLowerCase().includes(q));
   if(state.status==='incomplete') out=out.filter(isIncomplete);
   else if(state.status==='overdue') out=out.filter(isOverdue);
+  else if(state.status==='stale') out=out.filter(isStale);
   else if(state.status!=='all') out=out.filter(o=>(o.dealStatus||'base')===state.status);
   if(state.pay!=='all') out=out.filter(o=>(o.willPay||'unknown')===state.pay);
   if(state.dealType==='sale') out=out.filter(o=>dealOf(o)==='sale'||dealOf(o)==='both');
@@ -909,15 +913,16 @@ function render(){
 }
 
 function buildChips(){
-  const counts={all:items.length,works:0,thinking:0,refusal:0,base:0,incomplete:0,overdue:0};
-  items.forEach(o=>{counts[o.dealStatus||'base']++;if(isIncomplete(o))counts.incomplete++;if(isOverdue(o))counts.overdue++;});
+  const counts={all:items.length,works:0,thinking:0,refusal:0,base:0,incomplete:0,overdue:0,stale:0};
+  items.forEach(o=>{counts[o.dealStatus||'base']++;if(isIncomplete(o))counts.incomplete++;if(isOverdue(o))counts.overdue++;if(isStale(o))counts.stale++;});
   const defs=[['all','Все'],['works','Работает'],['thinking','Думает'],['refusal','Отказ'],['base','Не общались']];
   let html=defs.map(([k,lab])=>`<button class="chip ${state.status===k?'active':''}" data-k="${k}" onclick="setStatus('${k}')">${k!=='all'?'<span class="dot"></span>':''}${lab}<span class="cnt">${counts[k]}</span></button>`).join('');
   if(counts.overdue) html+=`<button class="chip warn ${state.status==='overdue'?'active':''}" onclick="setStatus('overdue')">⏰ Просрочен звонок<span class="cnt">${counts.overdue}</span></button>`;
+  if(counts.stale) html+=`<button class="chip warn ${state.status==='stale'?'active':''}" onclick="setStatus('stale')">💤 Давно без контакта<span class="cnt">${counts.stale}</span></button>`;
   html+=`<button class="chip warn ${state.status==='incomplete'?'active':''}" onclick="setStatus('incomplete')">Не дозаполнено<span class="cnt">${counts.incomplete}</span></button>`;
   document.getElementById('statusChips').innerHTML=html;
 }
-function setStatus(k){state.status=(state.status===k&&(k==='incomplete'||k==='overdue'))?'all':k;render()}
+function setStatus(k){state.status=(state.status===k&&(k==='incomplete'||k==='overdue'||k==='stale'))?'all':k;render()}
 
 /* ---------- фильтры сделка/состояние ---------- */
 function stateFilterOptions(){
@@ -977,6 +982,28 @@ function generateReport(){
 }
 
 /* ---------- modal ---------- */
+const FORM_FIELDS=['apartment','area','price','cadastral','share','ownerName','ownerPhone','currentAgent','listingUrl','dealStatus','willPay','exclusive','dealType','objState','closedDate','leaseEnd','lastContact','nextDate','nextStep','notes'];
+function draftKey(){return 'actualka_draft_'+(editingId||'new')}
+function collectFormFields(){const g=f=>document.getElementById('fld_'+f).value.trim();const o={};FORM_FIELDS.forEach(f=>o[f]=g(f));o.otherListings=collectOtherLinks();return o;}
+let _draftTimer=null;
+function scheduleDraftSave(){
+  if(isGuest)return;
+  clearTimeout(_draftTimer);
+  _draftTimer=setTimeout(()=>{
+    try{localStorage.setItem(draftKey(),JSON.stringify(collectFormFields()));}catch(e){}
+  },600);
+}
+function clearDraft(){try{localStorage.removeItem(draftKey());}catch(e){}}
+function normDup(s){return String(s||'').trim().toLowerCase().replace(/\s+/g,'')}
+function checkDuplicate(){
+  const box=document.getElementById('dupWarning');
+  if(!box)return;
+  const apt=normDup(document.getElementById('fld_apartment').value);
+  const cad=normDup(document.getElementById('fld_cadastral').value);
+  if(!apt&&!cad){box.innerHTML='';return;}
+  const hit=items.find(o=>o.id!==editingId&&((apt&&normDup(o.apartment)===apt)||(cad&&normDup(o.cadastral)===cad)));
+  box.innerHTML=hit?`<div class="dup-warn">⚠ Такой объект уже есть в базе: <b>${esc(hit.apartment)||'без номера'}</b>${hit.ownerName?' · '+esc(hit.ownerName):''} — возможно, дубль.</div>`:'';
+}
 function openModal(id){
   editingId=id||null; pendingPhoto=null;
   const o=id?items.find(x=>x.id===id):{};
@@ -994,6 +1021,22 @@ function openModal(id){
   if(o.cadastral) egrnLookup();
   setPhotoPreview(o.photo||null);
   document.getElementById('overlay').classList.add('show');
+  checkDraft(o);
+  checkDuplicate();
+}
+function checkDraft(o){
+  if(isGuest)return;
+  let raw=null; try{raw=localStorage.getItem(draftKey());}catch(e){}
+  if(!raw)return;
+  let draft; try{draft=JSON.parse(raw);}catch(e){clearDraft();return;}
+  const baseline=collectFormFields();
+  if(JSON.stringify(draft)===JSON.stringify(baseline)){clearDraft();return;}
+  if(confirm('Есть несохранённый черновик этой формы (остался после случайного закрытия). Восстановить его?')){
+    FORM_FIELDS.forEach(f=>{if(f in draft)document.getElementById('fld_'+f).value=draft[f];});
+    if(draft.otherListings) renderOtherLinks(draft.otherListings);
+  }else{
+    clearDraft();
+  }
 }
 function closeModal(){document.getElementById('overlay').classList.remove('show')}
 function saveCard(){
@@ -1015,6 +1058,7 @@ function saveCard(){
   if(!item.apartment && !item.ownerName && !item.listingUrl){alert('Заполни хотя бы квартиру, ФИО или ссылку на объявление');return;}
   const prevSnap=existing?(typeof structuredClone==='function'?structuredClone(existing):JSON.parse(JSON.stringify(existing))):null;
   const newId=item.id;
+  clearDraft();
   upsert(item); closeModal(); if(state.view==='schema')renderSchema();
   if(prevSnap){
     showUndo('Изменения сохранены',()=>{upsert(prevSnap);if(state.view==='schema')renderSchema();});
@@ -1951,6 +1995,7 @@ document.getElementById('fPay').addEventListener('change',e=>{state.pay=e.target
 document.getElementById('fState').addEventListener('change',e=>{state.objState=e.target.value;render()});
 document.getElementById('fSort').addEventListener('change',e=>{state.sort=e.target.value;render()});
 document.getElementById('overlay').addEventListener('click',e=>{if(e.target.id==='overlay')closeModal()});
+document.getElementById('modal').addEventListener('input',scheduleDraftSave);
 document.getElementById('reportOverlay').addEventListener('click',e=>{if(e.target.id==='reportOverlay')closeReport()});
 document.getElementById('cellOverlay').addEventListener('click',e=>{if(e.target.id==='cellOverlay')closeCell()});
 document.addEventListener('mousemove',e=>{if(state.view==='schema'&&e.target.closest&&e.target.closest('.schemaWrap'))schemaTip(e);else if(!e.target.closest||!e.target.closest('.brick'))document.getElementById('schemaTip').style.display='none';});
