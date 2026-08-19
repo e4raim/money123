@@ -1108,16 +1108,26 @@ function render(){
 function commissionValue(o){const pct=num(o.commissionPct),price=num(o.price);return (pct&&price)?price*pct/100:0}
 function dealAmount(o){return num(o.dealSum)||num(o.price)}
 function dealCommissionValue(o){const pct=num(o.commissionPct),amt=dealAmount(o);return (pct&&amt)?amt*pct/100:0}
+let dealsFilter='all';
+function setDealsFilter(v){dealsFilter=v;renderDeals();}
 function renderDeals(){
   const box=document.getElementById('viewDeals');
   if(!box)return;
-  const deals=items.filter(o=>['sold','rented'].includes(stateOf(o)));
-  if(!deals.length){box.innerHTML='<div class="empty"><div class="big">Пока нет закрытых сделок</div>Появляются здесь, когда в карточке меняете «Состояние объекта» на «Продано» или «Сдано».</div>';return;}
+  const allDeals=items.filter(o=>['sold','rented'].includes(stateOf(o)));
+  if(!allDeals.length){box.innerHTML='<div class="empty"><div class="big">Пока нет закрытых сделок</div>Появляются здесь, когда в карточке меняете «Состояние объекта» на «Продано» или «Сдано».</div>';return;}
+  const defs=[['all','Общая'],['sale','Продажа'],['rent','Аренда']];
+  const chips=defs.map(([k,lab])=>`<button class="chip ${dealsFilter===k?'active':''}" onclick="setDealsFilter('${k}')">${lab}</button>`).join('');
+  const deals=dealsFilter==='all'?allDeals:allDeals.filter(o=>dealsFilter==='rent'?(dealOf(o)==='rent'||dealOf(o)==='both'):(dealOf(o)==='sale'||dealOf(o)==='both'));
+  if(!deals.length){
+    box.innerHTML=`<div class="filters" style="margin:0 0 16px">${chips}</div><div class="empty"><div class="big">Нет сделок в этой категории</div></div>`;
+    return;
+  }
   const ours=deals.filter(o=>o.wonByUs==='yes');
   const ym=new Date().toISOString().slice(0,7);
   const oursThisMonth=ours.filter(o=>(o.closedDate||'').slice(0,7)===ym).length;
   const commissionSum=ours.reduce((s,o)=>s+dealCommissionValue(o),0);
-  const stats=`<div class="dash">
+  const stats=`<div class="filters" style="margin:0 0 16px">${chips}</div>
+  <div class="dash">
     <div class="stat"><div class="sv">${ours.length}</div><div class="sl">Наших сделок</div></div>
     <div class="stat"><div class="sv">${oursThisMonth}</div><div class="sl">Наших за месяц</div></div>
     <div class="stat"><div class="sv">${commissionSum?fmtMoney(Math.round(commissionSum)):'—'}</div><div class="sl">Комиссия по нашим</div></div>
@@ -1127,8 +1137,11 @@ function renderDeals(){
   const rows=sorted.map(o=>{
     const dl=dealOf(o)==='rent'?'Аренда':'Продажа';
     const wonLabel=o.wonByUs==='yes'?'<span style="color:var(--ok);font-weight:700">✓ наша</span>':o.wonByUs==='no'?'<span style="color:var(--ink-soft)">не наша</span>':'<span style="color:var(--brass)">не отмечено</span>';
-    const diffPrice=num(o.dealSum)&&num(o.price)&&num(o.dealSum)!==num(o.price);
-    const amt=num(o.dealSum)?`${fmtMoney(o.dealSum)}${diffPrice?` <span style="color:var(--ink-soft);font-size:12px">(в объявлении ${fmtMoney(o.price)})</span>`:''}`:(num(o.price)?fmtMoney(o.price):'—');
+    const realSum=num(o.dealSum),adPrice=num(o.price);
+    const adNote=adPrice?` <span style="color:var(--ink-soft);font-size:12px">(в объявлении было ${fmtMoney(o.price)})</span>`:'';
+    const amt=realSum
+      ? `${fmtMoney(o.dealSum)}${realSum!==adPrice?adNote:''}`
+      : `<span style="color:var(--brass)">сумма сделки не указана</span>${adNote}`;
     return `<div class="lrow" onclick="openModal('${o.id}')">
       <b>${esc(o.apartment)||'Без номера'}</b> · ${dl} · ${stateOf(o)==='sold'?'Продано':'Сдано'}${o.closedDate?' · '+fmtDateY(o.closedDate):''}
       <small>${amt} · ${wonLabel}${o.ownerName?' · '+esc(o.ownerName):''}</small>
@@ -1143,11 +1156,14 @@ function renderDash(){
   const active=items.filter(o=>!CLOSED.includes(stateOf(o)));
   const commission=active.reduce((s,o)=>s+commissionValue(o),0);
   const salePrices=active.filter(o=>dealOf(o)!=='rent'&&num(o.price)>0).map(o=>num(o.price));
+  const rentPrices=active.filter(o=>dealOf(o)==='rent'&&num(o.price)>0).map(o=>num(o.price));
   const avgCheck=salePrices.length?salePrices.reduce((a,b)=>a+b,0)/salePrices.length:0;
+  const avgRent=rentPrices.length?rentPrices.reduce((a,b)=>a+b,0)/rentPrices.length:0;
   const tiles=[
     ['В работе',active.length],
     ['Ожид. комиссия (в работе)',commission?fmtMoney(Math.round(commission)):'—'],
-    ['Средний чек',avgCheck?fmtMoney(Math.round(avgCheck)):'—']
+    ['Средний чек продажи',avgCheck?fmtMoney(Math.round(avgCheck)):'—'],
+    ['Средний чек аренды',avgRent?fmtMoney(Math.round(avgRent))+' / мес.':'—']
   ];
   box.innerHTML=tiles.map(([l,v])=>`<div class="stat"><div class="sv">${v}</div><div class="sl">${l}</div></div>`).join('');
 }
