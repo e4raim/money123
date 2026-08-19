@@ -858,7 +858,7 @@ function render(){
         <div class="title">${esc(o.apartment)||'Без номера'}</div>
         ${num(o.area)?`<div class="metr">${esc(o.area)} м²${o.share&&o.share!=='1/1'?` · доля ${esc(o.share)}`:''}</div>`:(o.share&&o.share!=='1/1'?`<div class="metr">доля ${esc(o.share)}</div>`:'')}
         ${o.cadastral?`<div class="cadline">${esc(o.cadastral)}</div>`:''}
-        ${num(o.price)?`<div class="price">${fmtMoney(o.price)}</div>`:(o.price?`<div class="price">${esc(o.price)}</div>`:'')}
+        ${num(o.price)?`<div class="price">${fmtMoney(o.price)}${dl==='rent'?' / мес.':''}</div>`:(o.price?`<div class="price">${esc(o.price)}${dl==='rent'?' / мес.':''}</div>`:'')}
         ${(perM&&dl!=='rent')?`<div class="ppm">${Math.round(perM).toLocaleString('ru-RU')} ₽/м²</div>`:''}
         ${(dl!=='sale')&&o.leaseEnd?`<div class="row"><span class="k">Договор до:</span> ${fmtDateY(o.leaseEnd)}</div>`:''}
         ${o.currentAgent?`<div class="row"><span class="k">Ведёт:</span> ${esc(o.currentAgent)}</div>`:''}
