@@ -90,6 +90,8 @@ main{max-width:1240px;margin:0 auto;padding:18px}
 .call{flex:none;width:34px;height:34px;border-radius:10px;background:var(--brass-tint);color:var(--brass);display:flex;align-items:center;justify-content:center;text-decoration:none}
 .call svg{width:16px;height:16px;fill:currentColor}
 .next{font-size:12px;color:var(--brass);font-weight:600;margin-top:4px;display:flex;gap:5px;align-items:baseline}
+.next.overdue{color:var(--no)}
+.next.overdue .k{color:var(--no)}
 .next .k{color:#B8AC8A}
 
 .empty{text-align:center;padding:70px 20px;color:var(--ink-soft)}
@@ -172,7 +174,9 @@ label.f .lb{font-size:12.5px;font-weight:600;color:var(--ink-soft);margin-bottom
 }
 .tabs{max-width:1240px;margin:12px auto 0;display:flex;gap:6px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
 .tabs::-webkit-scrollbar{display:none}
-.tab{border:1px solid var(--line);background:#fff;color:var(--ink-soft);border-radius:12px;padding:9px 18px;font-size:14px;font-weight:600;cursor:pointer;font-family:var(--sans);white-space:nowrap;flex:none}
+.tab{border:1px solid var(--line);background:#fff;color:var(--ink-soft);border-radius:12px;padding:9px 18px;font-size:14px;font-weight:600;cursor:pointer;font-family:var(--sans);white-space:nowrap;flex:none;transition:.15s ease}
+.chip,.tab,.btn-add,.call,.modal-foot .save,.privbtn,.floatlock{transition-property:transform,background-color,border-color,color,box-shadow,filter;transition-duration:.15s;transition-timing-function:ease}
+.chip:active,.tab:active,.btn-add:active,.call:active,.modal-foot .save:active,.privbtn:active{transform:scale(.96)}
 .tab.active{color:#fff;background:var(--brass);border-color:var(--brass)}
 .schema-head{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:14px}
 .twr{border:1px solid var(--line);background:#fff;color:var(--ink-soft);padding:8px 14px;border-radius:999px;font-size:13.5px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:8px}
@@ -796,6 +800,8 @@ function fmtDate(d){if(!d)return'';const[y,m,day]=d.split('-');return`${day}.${m
 function fmtDateY(d){if(!d)return'';const[y,m,day]=d.split('-');return`${day}.${m}.${y.slice(2)}`}
 function fmtMoney(v){const n=num(v);if(!n)return esc(v||'');return n.toLocaleString('ru-RU')+' ₽'}
 function isIncomplete(o){return !o.ownerPhone || !num(o.price) || !num(o.area) || !o.listingUrl}
+function isOverdue(o){return !!o.nextDate && o.nextDate<=todayStr() && !CLOSED.includes(stateOf(o))}
+function todayStr(){return new Date().toISOString().slice(0,10)}
 
 /* ---------- render ---------- */
 function filtered(){
@@ -804,6 +810,7 @@ function filtered(){
   if(q) out=out.filter(o=>[o.apartment,o.cadastral,o.ownerName,o.ownerPhone,o.currentAgent,o.notes]
       .filter(Boolean).join(' ').toLowerCase().includes(q));
   if(state.status==='incomplete') out=out.filter(isIncomplete);
+  else if(state.status==='overdue') out=out.filter(isOverdue);
   else if(state.status!=='all') out=out.filter(o=>(o.dealStatus||'base')===state.status);
   if(state.pay!=='all') out=out.filter(o=>(o.willPay||'unknown')===state.pay);
   if(state.dealType==='sale') out=out.filter(o=>dealOf(o)==='sale'||dealOf(o)==='both');
@@ -872,21 +879,22 @@ function render(){
           </div>
           ${phoneClean?`<a class="call" href="tel:${phoneClean}" onclick="event.stopPropagation()" aria-label="Позвонить"><svg viewBox="0 0 24 24"><path d="M6.6 10.8c1.4 2.8 3.8 5.2 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.1.4 2.3.6 3.6.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1C10.6 21 3 13.4 3 4c0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.2.2 2.4.6 3.6.1.4 0 .8-.3 1z"/></svg></a>`:''}
         </div>
-        ${o.nextStep?`<div class="next"><span class="k">Дальше:</span> ${esc(o.nextStep)}${o.nextDate?` · ${fmtDate(o.nextDate)}`:''}</div>`:''}
+        ${(o.nextStep||o.nextDate)?`<div class="next${isOverdue(o)?' overdue':''}"><span class="k">${o.nextStep?'Дальше:':'Перезвонить:'}</span> ${o.nextStep?esc(o.nextStep):''}${o.nextDate?`${o.nextStep?' · ':''}${fmtDate(o.nextDate)}`:''}</div>`:''}
       </div>
     </div>`;
   }).join('');
 }
 
 function buildChips(){
-  const counts={all:items.length,works:0,thinking:0,refusal:0,base:0,incomplete:0};
-  items.forEach(o=>{counts[o.dealStatus||'base']++;if(isIncomplete(o))counts.incomplete++;});
+  const counts={all:items.length,works:0,thinking:0,refusal:0,base:0,incomplete:0,overdue:0};
+  items.forEach(o=>{counts[o.dealStatus||'base']++;if(isIncomplete(o))counts.incomplete++;if(isOverdue(o))counts.overdue++;});
   const defs=[['all','Все'],['works','Работает'],['thinking','Думает'],['refusal','Отказ'],['base','Не общались']];
   let html=defs.map(([k,lab])=>`<button class="chip ${state.status===k?'active':''}" data-k="${k}" onclick="setStatus('${k}')">${k!=='all'?'<span class="dot"></span>':''}${lab}<span class="cnt">${counts[k]}</span></button>`).join('');
+  if(counts.overdue) html+=`<button class="chip warn ${state.status==='overdue'?'active':''}" onclick="setStatus('overdue')">⏰ Просрочен звонок<span class="cnt">${counts.overdue}</span></button>`;
   html+=`<button class="chip warn ${state.status==='incomplete'?'active':''}" onclick="setStatus('incomplete')">Не дозаполнено<span class="cnt">${counts.incomplete}</span></button>`;
   document.getElementById('statusChips').innerHTML=html;
 }
-function setStatus(k){state.status=(state.status===k&&k==='incomplete')?'all':k;render()}
+function setStatus(k){state.status=(state.status===k&&(k==='incomplete'||k==='overdue'))?'all':k;render()}
 
 /* ---------- фильтры сделка/состояние ---------- */
 function stateFilterOptions(){
