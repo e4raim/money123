@@ -294,6 +294,11 @@ body.privacy .pers-name:active{filter:none}
 .undo-toast.show{opacity:1;transform:translate(-50%,0);pointer-events:auto}
 .undo-toast button{border:none;background:none;color:var(--brass-tint);font-weight:700;font-size:14px;cursor:pointer;padding:6px 8px;border-radius:8px;flex:none}
 .undo-toast button:hover{background:rgba(255,255,255,.1)}
+.device-alert{position:fixed;top:14px;left:50%;transform:translate(-50%,-160%);z-index:95;background:#3A1B1B;color:#FCE8E4;padding:12px 16px;border-radius:14px;box-shadow:0 12px 32px rgba(0,0,0,.3);display:flex;gap:12px;align-items:center;font-size:13.5px;max-width:calc(100vw - 24px);transition:.25s ease}
+.device-alert.show{transform:translate(-50%,0)}
+.device-alert b{color:#fff}
+.device-alert button{border:none;background:rgba(255,255,255,.15);color:#fff;font-weight:700;border-radius:8px;padding:7px 12px;cursor:pointer;flex:none;font-size:13px;font-family:var(--sans)}
+.device-alert button:hover{background:rgba(255,255,255,.25)}
 .bulk-bar{position:fixed;left:50%;bottom:16px;transform:translate(-50%,120%);z-index:85;background:#fff;border:1px solid var(--line);box-shadow:0 12px 32px rgba(0,0,0,.18);border-radius:16px;padding:10px 14px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;max-width:calc(100vw - 24px);transition:.2s ease}
 .bulk-bar.show{transform:translate(-50%,0)}
 .bulk-bar #bulkCount{font-size:13px;font-weight:700;color:var(--ink);margin-right:2px;white-space:nowrap}
@@ -453,6 +458,7 @@ body.guest .f input,body.guest .f select,body.guest .f textarea,body.guest .phot
 <button class="floatlock" onclick="lockNow()" title="Заблокировать">🔒</button>
 <div id="schemaTip"></div>
 <div class="undo-toast" id="undoToast"><span id="undoMsg"></span><button onclick="doUndo()">Отменить</button></div>
+<div class="device-alert" id="deviceAlert">🔐 Новый вход с устройства: <b id="deviceAlertUa"></b>. Если это не вы — смени пароль.<button onclick="closeDeviceAlert()">Понятно</button></div>
 
 <div class="overlay" id="overlay">
   <div class="modal" id="modal">
@@ -727,6 +733,7 @@ function startCloud(user){
   dbRef.on('value',s=>{const v=s.val()||{};items=Object.keys(v).map(k=>({...v[k],id:k}));render();if(state.view==='schema')renderSchema();if(!isGuest)offerMigration();},
     err=>{const n=document.getElementById('cloudNote');n.className='cloud-note';n.innerHTML='<b>Нет доступа к базе.</b> Проверь правила Firebase.';console.error(err);});
   claimSession(user);
+  checkDeviceAlert();
   if(!isGuest)startAux();
   armIdle();
   applyGuestUI();
@@ -760,6 +767,40 @@ function claimSession(user){
     });
   }catch(e){console.error(e);}
 }
+/* ---------- алерт о входе с нового устройства ---------- */
+function shortUa(ua){
+  ua=ua||'';
+  if(/iPad/.test(ua))return 'iPad';
+  if(/iPhone/.test(ua))return 'iPhone';
+  if(/Android/.test(ua))return 'Android · '+(/Chrome/.test(ua)?'Chrome':'браузер');
+  if(/Macintosh/.test(ua))return 'Mac · '+(/Chrome/.test(ua)?'Chrome':/Firefox/.test(ua)?'Firefox':'Safari');
+  if(/Windows/.test(ua))return 'Windows · '+(/Edg/.test(ua)?'Edge':/Chrome/.test(ua)?'Chrome':/Firefox/.test(ua)?'Firefox':'браузер');
+  return ua.slice(0,40)||'неизвестное устройство';
+}
+function checkDeviceAlert(){
+  if(isGuest)return;
+  try{
+    const devRef=firebase.database().ref('aux/devices/'+SESSION_ID);
+    devRef.once('value').then(snap=>{
+      const known=snap.exists();
+      const now=Date.now();
+      const ua=(navigator.userAgent||'').slice(0,140);
+      devRef.set({ua,lastSeen:now,firstSeen:known?(snap.val().firstSeen||now):now});
+      const logRef=firebase.database().ref('aux/loginLog');
+      logRef.once('value').then(s2=>{
+        let list=s2.val()||[];
+        if(!Array.isArray(list))list=Object.values(list);
+        list.push({ts:now,ua,newDevice:!known});
+        logRef.set(list.slice(-20));
+      });
+      if(!known){
+        document.getElementById('deviceAlertUa').textContent=shortUa(ua);
+        document.getElementById('deviceAlert').classList.add('show');
+      }
+    }).catch(e=>console.error(e));
+  }catch(e){console.error(e);}
+}
+function closeDeviceAlert(){document.getElementById('deviceAlert').classList.remove('show');}
 function forceLogout(msg){
   try{if(sessRef){sessRef.off();sessRef=null;}}catch(e){}
   clearTimeout(_idleT);
@@ -1552,7 +1593,7 @@ function kinApts(fio,exceptApt){
   const s=familyApts(fio);s.delete(exceptApt);return s;
 }
 /* ---------- доп. слои в облаке: заметки, семьи, правки собственников ---------- */
-let groups=[], ownerFix={}, auxRef=null;
+let groups=[], ownerFix={}, auxRef=null, loginLog=[];
 function startAux(){
   let localSchema={};
   try{localSchema=JSON.parse(localStorage.getItem('actualka_schema')||'{}')||{}}catch(e){}
@@ -1565,6 +1606,7 @@ function startAux(){
     schemaInfo=v.schema||{};
     groups=Array.isArray(v.groups)?v.groups:(v.groups?Object.values(v.groups):[]);
     ownerFix=v.owners||{};
+    loginLog=Array.isArray(v.loginLog)?v.loginLog:(v.loginLog?Object.values(v.loginLog):[]);
     /* первый заход: поднимаем заметки с устройства в облако, ничего не теряя */
     if(auxFirst){
       auxFirst=false;
@@ -1725,6 +1767,11 @@ function renderSettings(){
         <div class="st-row"><div class="st-l"><b>Не запоминать вход</b><small>Спрашивать пароль при каждом открытии</small></div>
           <button class="tgl ${noRemember?'on':''}" onclick="toggleRemember();renderSettings()"><i></i></button></div>
         <button class="st-btn danger" onclick="lockNow()">🔒 Заблокировать сейчас</button>
+        ${loginLog.length?`<div class="sec"><div class="sec-h"><b>История входов</b></div>${loginLog.slice().reverse().slice(0,8).map(l=>{
+          const dt=new Date(l.ts);
+          const when=dt.toLocaleDateString('ru-RU')+' '+dt.toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'});
+          return `<div class="noteline"><b>${when}</b> — ${esc(shortUa(l.ua))}${l.newDevice?' <span style="color:var(--no);font-weight:700">· новое устройство</span>':''}</div>`;
+        }).join('')}</div>`:''}
       </div>
 
       <div class="st-card">
