@@ -58,6 +58,11 @@ select.mini:focus{border-color:var(--brass)}
 
 main{max-width:1240px;margin:0 auto;padding:18px}
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(258px,1fr));gap:18px}
+.dash{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:18px}
+.dash:empty{display:none;margin:0}
+.dash .stat{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 16px;box-shadow:var(--shadow);min-width:130px;flex:1}
+.dash .stat .sv{font-family:var(--serif);font-size:22px;font-weight:700;color:var(--ink)}
+.dash .stat .sl{font-size:11.5px;color:var(--ink-soft);margin-top:2px;text-transform:uppercase;letter-spacing:.3px}
 .card{background:var(--card);border:1px solid var(--line);border-radius:16px;overflow:hidden;cursor:pointer;box-shadow:var(--shadow);transition:transform .16s ease,box-shadow .16s ease;display:flex;flex-direction:column}
 .card:hover{transform:translateY(-3px);box-shadow:0 2px 4px rgba(30,28,24,.06),0 14px 30px rgba(30,28,24,.11)}
 .card.incomplete{border-color:#E3AFC6}
@@ -401,6 +406,7 @@ body.guest .f input,body.guest .f select,body.guest .f textarea,body.guest .phot
 
 <main>
   <div id="viewActualka">
+  <div class="dash" id="dashBar"></div>
   <div class="grid" id="grid"></div>
   <div class="tools">
     <button onclick="document.getElementById('egrnFile').click()">🗄 Загрузить базу ЕГРН</button>
@@ -446,6 +452,10 @@ body.guest .f input,body.guest .f select,body.guest .f textarea,body.guest .phot
       <div class="two">
         <label class="f"><span class="lb">Цена</span><input id="fld_price" placeholder="120 000 000 ₽"></label>
         <label class="f"><span class="lb">Доля</span><input id="fld_share" placeholder="1/1"></label>
+      </div>
+      <div class="two">
+        <label class="f"><span class="lb">Комиссия, %</span><input id="fld_commissionPct" inputmode="decimal" placeholder="3"></label>
+        <div></div>
       </div>
 
       <div class="two">
@@ -520,6 +530,10 @@ body.guest .f input,body.guest .f select,body.guest .f textarea,body.guest .phot
       </div>
       <label class="f"><span class="lb">Следующий шаг</span><input id="fld_nextStep" placeholder="Скинуть покупателя, дожать по комиссии…"></label>
       <label class="f"><span class="lb">Заметки</span><textarea id="fld_notes" placeholder="Возражения, характер, торг, детали…"></textarea></label>
+      <div class="sec" id="historySec" style="display:none">
+        <div class="sec-h"><b>История изменений</b></div>
+        <div id="historyBox"></div>
+      </div>
     </div>
     <div class="modal-foot">
       <button class="del" id="delBtn" onclick="delCurrent()" style="display:none">Удалить</button>
@@ -861,7 +875,7 @@ function filtered(){
 }
 
 function render(){
-  setJkLabel(); buildChips();
+  setJkLabel(); buildChips(); renderDash();
   const grid=document.getElementById('grid');
   const list=filtered();
   if(!items.length){
@@ -912,6 +926,28 @@ function render(){
   }).join('');
 }
 
+function commissionValue(o){const pct=num(o.commissionPct),price=num(o.price);return (pct&&price)?price*pct/100:0}
+function renderDash(){
+  const box=document.getElementById('dashBar');
+  if(!box)return;
+  if(!items.length){box.innerHTML='';return;}
+  const active=items.filter(o=>!CLOSED.includes(stateOf(o)));
+  const commission=active.reduce((s,o)=>s+commissionValue(o),0);
+  const salePrices=active.filter(o=>dealOf(o)!=='rent'&&num(o.price)>0).map(o=>num(o.price));
+  const avgCheck=salePrices.length?salePrices.reduce((a,b)=>a+b,0)/salePrices.length:0;
+  const ym=new Date().toISOString().slice(0,7);
+  const closedThisMonth=items.filter(o=>CLOSED.includes(stateOf(o))&&stateOf(o)!=='withdrawn'&&(o.closedDate||'').slice(0,7)===ym).length;
+  const closedTotal=items.filter(o=>CLOSED.includes(stateOf(o))&&stateOf(o)!=='withdrawn').length;
+  const conversion=items.length?Math.round(closedTotal/items.length*100):0;
+  const tiles=[
+    ['В работе',active.length],
+    ['Ожид. комиссия',commission?fmtMoney(Math.round(commission)):'—'],
+    ['Средний чек',avgCheck?fmtMoney(Math.round(avgCheck)):'—'],
+    ['Закрыто за месяц',closedThisMonth],
+    ['Конверсия',conversion+'%']
+  ];
+  box.innerHTML=tiles.map(([l,v])=>`<div class="stat"><div class="sv">${v}</div><div class="sl">${l}</div></div>`).join('');
+}
 function buildChips(){
   const counts={all:items.length,works:0,thinking:0,refusal:0,base:0,incomplete:0,overdue:0,stale:0};
   items.forEach(o=>{counts[o.dealStatus||'base']++;if(isIncomplete(o))counts.incomplete++;if(isOverdue(o))counts.overdue++;if(isStale(o))counts.stale++;});
@@ -982,7 +1018,40 @@ function generateReport(){
 }
 
 /* ---------- modal ---------- */
-const FORM_FIELDS=['apartment','area','price','cadastral','share','ownerName','ownerPhone','currentAgent','listingUrl','dealStatus','willPay','exclusive','dealType','objState','closedDate','leaseEnd','lastContact','nextDate','nextStep','notes'];
+const FORM_FIELDS=['apartment','area','price','cadastral','share','commissionPct','ownerName','ownerPhone','currentAgent','listingUrl','dealStatus','willPay','exclusive','dealType','objState','closedDate','leaseEnd','lastContact','nextDate','nextStep','notes'];
+const HISTORY_LABELS={price:'Цена',dealStatus:'Статус',objState:'Состояние',willPay:'Оплата нам',exclusive:'Эксклюзив у другого',ownerName:'Собственник',ownerPhone:'Телефон собственника',currentAgent:'Ведёт',dealType:'Тип сделки',nextStep:'Следующий шаг',nextDate:'Когда перезвонить',commissionPct:'Комиссия, %'};
+const HISTORY_VALUE_LABELS={dealStatus:STATUS,objState:{active:'В работе',sold:'Продано',rented:'Сдано',withdrawn:'Снято'},willPay:PAY,exclusive:{unknown:'не выяснено',no:'нет',yes:'да'},dealType:{sale:'Продажа',rent:'Аренда',both:'Продажа + аренда'}};
+const HISTORY_FIELD_DEFAULTS={dealStatus:'base',objState:'active',willPay:'unknown',exclusive:'unknown',dealType:'sale'};
+function historyValueLabel(field,v){
+  if(field==='price') return v?fmtMoney(v):'—';
+  const map=HISTORY_VALUE_LABELS[field];
+  if(map){
+    const key=v||HISTORY_FIELD_DEFAULTS[field]||'unknown';
+    if(key in map){const m=map[key];return (m&&m.label)?m.label:(m||'не выяснено');}
+  }
+  return v?String(v):'—';
+}
+function buildHistoryEntry(prev,next){
+  const changes=[];
+  Object.keys(HISTORY_LABELS).forEach(f=>{
+    const a=prev[f]||HISTORY_FIELD_DEFAULTS[f]||'';
+    const b=next[f]||HISTORY_FIELD_DEFAULTS[f]||'';
+    if(String(a)!==String(b)) changes.push({field:f,from:historyValueLabel(f,a),to:historyValueLabel(f,b)});
+  });
+  return changes.length?{ts:Date.now(),changes}:null;
+}
+function renderHistory(o){
+  const sec=document.getElementById('historySec'), box=document.getElementById('historyBox');
+  const hist=(o&&o.history)||[];
+  if(!hist.length){sec.style.display='none';box.innerHTML='';return;}
+  sec.style.display='block';
+  box.innerHTML=hist.slice().reverse().slice(0,30).map(h=>{
+    const dt=new Date(h.ts);
+    const when=dt.toLocaleDateString('ru-RU')+' '+dt.toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'});
+    const lines=h.changes.map(c=>`${HISTORY_LABELS[c.field]||c.field}: ${esc(c.from)} → ${esc(c.to)}`).join('<br>');
+    return `<div class="noteline"><b>${when}</b><br>${lines}</div>`;
+  }).join('');
+}
 function draftKey(){return 'actualka_draft_'+(editingId||'new')}
 function collectFormFields(){const g=f=>document.getElementById('fld_'+f).value.trim();const o={};FORM_FIELDS.forEach(f=>o[f]=g(f));o.otherListings=collectOtherLinks();return o;}
 let _draftTimer=null;
@@ -1010,7 +1079,7 @@ function openModal(id){
   document.getElementById('mTitle').textContent=id?'Редактировать объект':'Новый объект';
   document.getElementById('delBtn').style.display=id?'block':'none';
   const set=(f,v)=>document.getElementById('fld_'+f).value=v||'';
-  set('apartment',o.apartment);set('area',o.area);set('price',o.price);set('cadastral',o.cadastral);set('share',o.share);
+  set('apartment',o.apartment);set('area',o.area);set('price',o.price);set('cadastral',o.cadastral);set('share',o.share);set('commissionPct',o.commissionPct);
   set('ownerName',o.ownerName);set('ownerPhone',o.ownerPhone);
   set('currentAgent',o.currentAgent);set('listingUrl',o.listingUrl);
   set('dealStatus',o.dealStatus||'base');set('willPay',o.willPay||'unknown');set('exclusive',o.exclusive||'unknown');
@@ -1020,6 +1089,7 @@ function openModal(id){
   document.getElementById('egrnResult').innerHTML='';
   if(o.cadastral) egrnLookup();
   setPhotoPreview(o.photo||null);
+  renderHistory(o);
   document.getElementById('overlay').classList.add('show');
   checkDraft(o);
   checkDuplicate();
@@ -1045,7 +1115,7 @@ function saveCard(){
   const existing=editingId?items.find(x=>x.id===editingId):null;
   const item={
     id:editingId||genId(),
-    apartment:g('apartment'),area:g('area'),price:g('price'),cadastral:g('cadastral'),share:g('share'),
+    apartment:g('apartment'),area:g('area'),price:g('price'),cadastral:g('cadastral'),share:g('share'),commissionPct:g('commissionPct'),
     ownerName:g('ownerName'),ownerPhone:g('ownerPhone'),
     currentAgent:g('currentAgent'),listingUrl:g('listingUrl'),
     dealStatus:g('dealStatus'),willPay:g('willPay'),exclusive:g('exclusive'),
@@ -1057,6 +1127,8 @@ function saveCard(){
   };
   if(!item.apartment && !item.ownerName && !item.listingUrl){alert('Заполни хотя бы квартиру, ФИО или ссылку на объявление');return;}
   const prevSnap=existing?(typeof structuredClone==='function'?structuredClone(existing):JSON.parse(JSON.stringify(existing))):null;
+  const histEntry=existing?buildHistoryEntry(existing,item):null;
+  item.history=(existing?(existing.history||[]):[]).concat(histEntry?[histEntry]:[]).slice(-30);
   const newId=item.id;
   clearDraft();
   upsert(item); closeModal(); if(state.view==='schema')renderSchema();
