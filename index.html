@@ -883,6 +883,24 @@ function fmtDate(d){if(!d)return'';const[y,m,day]=d.split('-');return`${day}.${m
 function fmtDateY(d){if(!d)return'';const[y,m,day]=d.split('-');return`${day}.${m}.${y.slice(2)}`}
 function fmtMoney(v){const n=num(v);if(!n)return esc(v||'');return n.toLocaleString('ru-RU')+' ₽'}
 function isIncomplete(o){return !o.ownerPhone || !num(o.price) || !num(o.area) || !o.listingUrl}
+function levenshtein(a,b){
+  const m=a.length,n=b.length;
+  if(!m)return n; if(!n)return m;
+  const dp=[];
+  for(let i=0;i<=m;i++)dp.push(new Array(n+1).fill(0));
+  for(let j=0;j<=n;j++)dp[0][j]=j;
+  for(let i=1;i<=m;i++)dp[i][0]=i;
+  for(let i=1;i<=m;i++)for(let j=1;j<=n;j++)
+    dp[i][j]=a[i-1]===b[j-1]?dp[i-1][j-1]:1+Math.min(dp[i-1][j-1],dp[i-1][j],dp[i][j-1]);
+  return dp[m][n];
+}
+function fuzzyNameMatch(q,name){
+  if(!name||!q)return false;
+  const qWords=q.toLowerCase().split(/\s+/).filter(Boolean);
+  const nWords=name.toLowerCase().split(/\s+/).filter(Boolean);
+  const thresh=w=>w.length<=4?1:(w.length<=8?2:3);
+  return qWords.every(qw=>nWords.some(nw=>levenshtein(qw,nw)<=thresh(qw)));
+}
 function isOverdue(o){return !!o.nextDate && o.nextDate<=todayStr() && !CLOSED.includes(stateOf(o))}
 function isStale(o){return !!o.lastContact && !CLOSED.includes(stateOf(o)) && (Date.now()-new Date(o.lastContact).getTime())>=30*86400000}
 function todayStr(){return new Date().toISOString().slice(0,10)}
@@ -891,8 +909,12 @@ function todayStr(){return new Date().toISOString().slice(0,10)}
 function filtered(){
   let out=items.slice();
   const q=state.q.trim().toLowerCase();
-  if(q) out=out.filter(o=>[o.apartment,o.cadastral,o.ownerName,o.ownerPhone,o.currentAgent,o.notes]
-      .filter(Boolean).join(' ').toLowerCase().includes(q));
+  if(q){
+    const exact=out.filter(o=>[o.apartment,o.cadastral,o.ownerName,o.ownerPhone,o.currentAgent,o.notes]
+        .filter(Boolean).join(' ').toLowerCase().includes(q));
+    const isNumericQ=/^[\d\s+()-]+$/.test(q);
+    out=exact.length||isNumericQ?exact:out.filter(o=>fuzzyNameMatch(q,o.ownerName||''));
+  }
   if(state.status==='incomplete') out=out.filter(isIncomplete);
   else if(state.status==='overdue') out=out.filter(isOverdue);
   else if(state.status==='stale') out=out.filter(isStale);
