@@ -82,6 +82,32 @@ select.mini:focus{border-color:var(--brass)}
 
 main{max-width:1240px;margin:0 auto;padding:18px}
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(258px,1fr));gap:18px}
+/* переключатель «плитками / списком» */
+.viewtog{display:flex;border:1px solid var(--line);border-radius:10px;overflow:hidden;flex:none}
+.viewtog button{border:none;background:var(--card);color:var(--ink-soft);padding:7px 11px;cursor:pointer;display:flex;align-items:center}
+.viewtog button svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:1.8}
+.viewtog button+button{border-left:1px solid var(--line)}
+.viewtog button.on{background:var(--brass);color:#fff}
+/* режим списка: та же карточка, разложенная в строку — без отдельной вёрстки */
+.grid.list{grid-template-columns:1fr;gap:8px}
+.grid.list .card{flex-direction:row;align-items:stretch;border-radius:12px}
+.grid.list .card:hover{transform:none}
+.grid.list .thumb{width:104px;aspect-ratio:1;flex:none}
+.grid.list .thumb .placeholder svg{width:26px;height:26px}
+.grid.list .pill{top:5px;left:5px;font-size:9.5px;padding:2px 6px}
+.grid.list .deal-badge,.grid.list .pay-badge,.grid.list .todo-badge{display:none}
+.grid.list .sold-overlay span{font-size:11px;letter-spacing:1px;padding:3px 8px}
+.grid.list .body{flex-direction:row;align-items:center;flex-wrap:wrap;gap:6px 18px;padding:10px 16px}
+.grid.list .title{min-width:64px}
+.grid.list .cadline{max-width:190px}
+.grid.list .next{order:2;margin:0}
+.grid.list .owner{order:3;margin:0 0 0 auto;padding:0;border-top:none;flex:none}
+@media (max-width:640px){
+  .grid.list .thumb{width:76px}
+  .grid.list .body{gap:4px 12px;padding:9px 12px}
+  .grid.list .cadline,.grid.list .ppm{display:none}
+  .grid.list .owner{margin-left:0;width:100%}
+}
 .dash{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:18px}
 .dash:empty{display:none;margin:0}
 .dash .stat{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 16px;box-shadow:var(--shadow);min-width:130px;flex:1}
@@ -488,6 +514,14 @@ body.guest .f input,body.guest .f select,body.guest .f textarea,body.guest .phot
       <option value="ppm_asc">Метр: дешёвый → дорогой</option>
       <option value="contact">По дате контакта</option>
     </select>
+    <div class="viewtog" id="viewTog">
+      <button id="vmGrid" onclick="setViewMode('grid')" title="Плитками" aria-label="Плитками">
+        <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+      </button>
+      <button id="vmList" onclick="setViewMode('list')" title="Списком" aria-label="Списком">
+        <svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+      </button>
+    </div>
   </div>
 
   <div id="cloudNote" class="cloud-note"></div>
@@ -774,7 +808,8 @@ function stateOf(o){return o.objState||'active'}
 let items = [];
 let cloud=false, dbRef=null, editingId=null, pendingPhoto=null;
 let selectMode=false, selectedIds=new Set();
-const state = {q:"", status:"all", pay:"all", sort:"new", dealType:"all", objState:"all", view:"actualka"};
+const state = {q:"", status:"all", pay:"all", sort:"new", dealType:"all", objState:"all", view:"actualka",
+  viewMode:(function(){try{return localStorage.getItem('actualka_viewmode')==='list'?'list':'grid';}catch(e){return 'grid';}})()};
 
 /* ---------- ЖК label ---------- */
 function jkName(){return localStorage.getItem('actualka_jk')||(COMPLEX&&COMPLEX.name)||''}
@@ -1105,9 +1140,21 @@ function refreshCurrentView(){
   else if(state.view==='deals')renderDeals();
   else if(state.view==='archive')renderArchive();
 }
+function setViewMode(m){
+  state.viewMode=(m==='list'?'list':'grid');
+  try{localStorage.setItem('actualka_viewmode',state.viewMode);}catch(e){}
+  render();
+}
+function applyViewMode(){
+  const grid=document.getElementById('grid');
+  if(grid) grid.classList.toggle('list',state.viewMode==='list');
+  const g=document.getElementById('vmGrid'),l=document.getElementById('vmList');
+  if(g) g.classList.toggle('on',state.viewMode!=='list');
+  if(l) l.classList.toggle('on',state.viewMode==='list');
+}
 function render(){
   refreshCurrentView();
-  setJkLabel(); buildChips(); renderDash(); renderBulkBar();
+  setJkLabel(); buildChips(); renderDash(); renderBulkBar(); applyViewMode();
   const grid=document.getElementById('grid');
   const list=filtered();
   if(!items.length){
