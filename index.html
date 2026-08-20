@@ -212,6 +212,26 @@ body.dark .cv-act.wa{background:#1E2E24;border-color:#2E4636;color:#3FAE72}
 .cv-mini{display:flex;align-items:center;gap:10px;padding:9px 11px;border:1px solid var(--line);border-radius:10px;background:var(--card);margin-bottom:6px;cursor:pointer;font-size:13.5px}
 .cv-mini:hover{border-color:var(--brass)}
 .cv-note{font-size:13.5px;line-height:1.5;background:var(--surface2);border:1px solid var(--line);border-radius:11px;padding:11px 13px;white-space:pre-wrap}
+/* хронология внутри карточки */
+.cv-comp{display:flex;gap:8px;margin-bottom:16px}
+.cv-comp input{flex:1;min-width:0;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:11px;padding:11px 13px;font-size:14.5px;font-family:var(--sans);outline:none}
+.cv-comp input:focus{border-color:var(--brass);box-shadow:0 0 0 3px var(--brass-tint)}
+.cv-comp button{flex:none;border:none;background:var(--brass);color:#fff;border-radius:11px;padding:11px 16px;font-size:14px;font-weight:700;cursor:pointer;font-family:var(--sans)}
+.cv-feed{position:relative;padding-left:24px}
+.cv-feed:before{content:"";position:absolute;left:6px;top:7px;bottom:7px;width:2px;background:var(--line)}
+.cv-ev{position:relative;margin-bottom:15px}
+.cv-ev:before{content:"";position:absolute;left:-22px;top:3px;width:11px;height:11px;border-radius:50%;background:var(--card);border:2px solid var(--brass)}
+.cv-ev.sys:before{border-color:#C7C2B6}
+.cv-ev .when{font-size:11.5px;color:var(--ink-soft);font-weight:600;display:flex;align-items:center;gap:6px}
+.cv-ev .when .rm{border:none;background:none;color:#C7C2B6;font-size:15px;line-height:1;cursor:pointer;padding:0 3px;opacity:0;transition:.15s}
+.cv-ev:hover .when .rm{opacity:1}
+.cv-ev .when .rm:hover{color:var(--no)}
+.cv-ev .txt{font-size:14px;line-height:1.45;margin-top:3px;color:var(--ink);white-space:pre-wrap;word-break:break-word}
+.cv-ev.sys .txt{font-size:13px;color:var(--ink-soft)}
+.cv-ev .chg{background:var(--surface2);border:1px solid var(--line);border-radius:9px;padding:7px 10px;display:inline-block;line-height:1.5}
+.cv-ev .chg b{color:var(--ink)}
+.cv-empty{font-size:13px;color:var(--ink-soft);background:var(--surface2);border:1px dashed var(--line);border-radius:11px;padding:12px 14px;line-height:1.5}
+@media (max-width:760px){.cv-comp input{font-size:16px}.cv-ev .when .rm{opacity:1}}
 .modal-foot .closebtn{border:1px solid var(--line);background:var(--card);color:var(--ink-soft);border-radius:12px;padding:13px 18px;font-size:14px;cursor:pointer;font-family:var(--sans)}
 .modal-foot .closebtn:hover{border-color:var(--brass);color:var(--brass)}
 body.dark{--fam:#B79BE0;--fam-tint:#312A3D}
@@ -1508,19 +1528,6 @@ function buildHistoryEntry(prev,next){
   });
   return changes.length?{ts:Date.now(),changes}:null;
 }
-function renderHistory(o){
-  const sec=document.getElementById('historySec'), box=document.getElementById('historyBox');
-  if(!sec||!box)return;                 /* в режиме формы этого блока нет — он живёт в обзоре */
-  const hist=(o&&o.history)||[];
-  if(!hist.length){sec.style.display='none';box.innerHTML='';return;}
-  sec.style.display='block';
-  box.innerHTML=hist.slice().reverse().slice(0,30).map(h=>{
-    const dt=new Date(h.ts);
-    const when=dt.toLocaleDateString('ru-RU')+' '+dt.toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'});
-    const lines=h.changes.map(c=>`${HISTORY_LABELS[c.field]||c.field}: ${esc(c.from)} → ${esc(c.to)}`).join('<br>');
-    return `<div class="noteline"><b>${when}</b><br>${lines}</div>`;
-  }).join('');
-}
 function draftKey(){return 'actualka_draft_'+(editingId||'new')}
 function collectFormFields(){const g=f=>document.getElementById('fld_'+f).value.trim();const o={};FORM_FIELDS.forEach(f=>o[f]=g(f));o.otherListings=collectOtherLinks();return o;}
 let _draftTimer=null;
@@ -1668,11 +1675,66 @@ function renderCardView(o){
 
     ${o.notes?`<div style="margin-bottom:14px"><div style="font-size:11px;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.3px;font-weight:700;margin-bottom:7px">Заметки</div><div class="cv-note pii">${esc(o.notes)}</div></div>`:''}
 
-    <div class="sec" id="historySec" style="display:none">
-      <div class="sec-h"><b>История изменений</b></div>
-      <div id="historyBox"></div>
-    </div>`;
-  renderHistory(o);
+    <div style="font-size:11px;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.3px;font-weight:700;margin-bottom:9px">Хронология</div>
+    ${isGuest?'':`<div class="cv-comp">
+      <input id="logInput" placeholder="Что сказал собственник?" onkeydown="if(event.key==='Enter')addLogEntry()">
+      <button onclick="addLogEntry()">Записать</button>
+    </div>`}
+    <div id="cvFeed"></div>`;
+  renderFeed(o);
+}
+/* лента: ваши заметки и то, что приложение записало само — в одном потоке */
+function feedEntries(o){
+  const out=[];
+  (o.log||[]).forEach((e,i)=>out.push({ts:e.ts||0,kind:'note',text:e.text||'',idx:i}));
+  (o.history||[]).forEach(h=>out.push({ts:h.ts||0,kind:'sys',changes:h.changes||[]}));
+  return out.sort((a,b)=>b.ts-a.ts);
+}
+function fmtWhen(ts){
+  if(!ts)return '';
+  const d=new Date(ts),now=new Date();
+  const t=d.toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'});
+  if(d.toDateString()===now.toDateString())return 'сегодня, '+t;
+  const y=new Date(now);y.setDate(y.getDate()-1);
+  if(d.toDateString()===y.toDateString())return 'вчера, '+t;
+  return d.toLocaleDateString('ru-RU',{day:'2-digit',month:'2-digit',year:'2-digit'})+', '+t;
+}
+function renderFeed(o){
+  const box=document.getElementById('cvFeed');
+  if(!box)return;
+  const list=feedEntries(o);
+  if(!list.length){box.innerHTML='<div class="cv-empty">Пока пусто. Запишите, чем закончился разговор — потом не вспомнить.</div>';return;}
+  box.innerHTML='<div class="cv-feed">'+list.map(e=>{
+    if(e.kind==='sys'){
+      const txt=e.changes.map(c=>`${HISTORY_LABELS[c.field]||c.field}: <b>${esc(c.from)}</b> → <b>${esc(c.to)}</b>`).join('<br>');
+      return `<div class="cv-ev sys"><div class="when">${fmtWhen(e.ts)}</div><div class="txt"><span class="chg">${txt}</span></div></div>`;
+    }
+    return `<div class="cv-ev"><div class="when">${fmtWhen(e.ts)}
+      ${isGuest?'':`<button class="rm" title="удалить запись" onclick="removeLogEntry(${e.idx})">×</button>`}</div>
+      <div class="txt pii">${esc(e.text)}</div></div>`;
+  }).join('')+'</div>';
+}
+function addLogEntry(){
+  if(isGuest||!editingId)return;
+  const el=document.getElementById('logInput');
+  const text=(el?el.value:'').trim();
+  if(!text)return;
+  const o=items.find(x=>x.id===editingId); if(!o)return;
+  const next={...o,log:(o.log||[]).concat([{ts:Date.now(),text}])};
+  el.value='';
+  upsert(next);
+  const fresh=items.find(x=>x.id===editingId)||next;
+  renderFeed(fresh);
+}
+function removeLogEntry(idx){
+  if(isGuest||!editingId)return;
+  const o=items.find(x=>x.id===editingId); if(!o||!o.log||!o.log[idx])return;
+  if(!confirm('Удалить эту запись?'))return;
+  const backup=typeof structuredClone==='function'?structuredClone(o):JSON.parse(JSON.stringify(o));
+  const next={...o,log:o.log.filter((_,i)=>i!==idx)};
+  upsert(next);
+  renderFeed(items.find(x=>x.id===editingId)||next);
+  showUndo('Запись удалена',()=>{upsert(backup);renderFeed(backup);});
 }
 function initials(fio){
   const p=(fio||'').trim().split(/\s+/);
@@ -1743,6 +1805,7 @@ function saveCard(){
   const prevSnap=existing?(typeof structuredClone==='function'?structuredClone(existing):JSON.parse(JSON.stringify(existing))):null;
   const histEntry=existing?buildHistoryEntry(existing,item):null;
   item.history=(existing?(existing.history||[]):[]).concat(histEntry?[histEntry]:[]).slice(-30);
+  item.log=existing?(existing.log||[]):[];   /* лента заметок живёт мимо формы — не потерять её при сохранении */
   const newId=item.id;
   clearDraft();
   upsert(item); closeModal(); if(state.view==='schema')renderSchema();
