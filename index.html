@@ -99,6 +99,8 @@ main{max-width:1240px;margin:0 auto;padding:18px}
 /* в списке от бейджа оплаты остаётся только ₽ — чтобы было видно, кто платит */
 .grid.list .pay-badge{top:auto;bottom:4px;right:4px;font-size:12px;font-weight:800;padding:1px 7px;line-height:1.45}
 .grid.list .pay-badge .pt{display:none}
+/* «Оплата: платит» в списке не нужна — про это уже говорит значок ₽ на фото */
+.grid.list .pay-row.pay-yes{display:none}
 .grid.list .sold-overlay span{font-size:11px;letter-spacing:1px;padding:3px 8px}
 .grid.list .body{flex-direction:row;align-items:center;flex-wrap:wrap;gap:6px 18px;padding:10px 16px}
 .grid.list .title{min-width:64px}
@@ -168,7 +170,7 @@ main{max-width:1240px;margin:0 auto;padding:18px}
 .modal-head h2{margin:0;font-family:var(--serif);font-size:19px}
 .x{border:none;background:none;font-size:24px;color:var(--ink-soft);cursor:pointer;line-height:1;padding:2px 6px}
 .modal-body{padding:18px 20px 4px}
-.photo-drop{aspect-ratio:16/10;border:1.5px dashed #CFC9BC;border-radius:14px;background:var(--card);display:flex;align-items:center;justify-content:center;text-align:center;color:var(--ink-soft);cursor:pointer;overflow:hidden;position:relative;margin-bottom:16px;transition:.15s}
+.photo-drop{height:180px;border:1.5px dashed #CFC9BC;border-radius:14px;background:var(--card);display:flex;align-items:center;justify-content:center;text-align:center;color:var(--ink-soft);cursor:pointer;overflow:hidden;position:relative;margin-bottom:16px;transition:.15s}
 .photo-drop:hover{border-color:var(--brass);color:var(--brass)}
 .photo-drop img{width:100%;height:100%;object-fit:cover}
 .photo-drop .hint{padding:16px;font-size:13.5px;line-height:1.5}
@@ -182,6 +184,23 @@ label.f .lb{font-size:12.5px;font-weight:600;color:var(--ink-soft);margin-bottom
 .f input:focus,.f select:focus,.f textarea:focus{border-color:var(--brass);box-shadow:0 0 0 3px var(--brass-tint)}
 .f select{appearance:none;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 10 10'><path d='M1 3l4 4 4-4' stroke='%236E6A62' stroke-width='1.6' fill='none'/></svg>");background-repeat:no-repeat;background-position:right 12px center}
 .two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+/* сворачиваемые блоки формы — чтобы карточка не была простынёй */
+.fsec{border:1px solid var(--line);border-radius:12px;background:var(--surface2);margin-bottom:13px;overflow:hidden}
+.fsec>summary{cursor:pointer;padding:11px 14px;font-size:13.5px;font-weight:700;color:var(--ink);list-style:none;display:flex;align-items:center;gap:8px;user-select:none}
+.fsec>summary::-webkit-details-marker{display:none}
+.fsec>summary::before{content:"";width:7px;height:7px;border-right:2px solid var(--ink-soft);border-bottom:2px solid var(--ink-soft);transform:rotate(-45deg);transition:transform .15s;flex:none;margin-left:2px}
+.fsec[open]>summary::before{transform:rotate(45deg)}
+.fsec>summary small{font-weight:500;color:var(--ink-soft);font-size:11.5px}
+.fsec>summary:hover{color:var(--brass)}
+.fsec-body{padding:2px 14px 6px}
+.autofill-note{font-size:12.5px;color:var(--ok);background:#E7F3EC;border:1px solid #CBE6D5;border-radius:10px;padding:8px 11px;margin:-6px 0 13px}
+body.dark .autofill-note{background:#1E2E24;border-color:#2E4636}
+@media (max-width:760px){
+  /* 16px — иначе iOS зумит страницу при фокусе на поле */
+  .f input,.f select,.f textarea,.link-row input{font-size:16px}
+  .photo-drop{height:140px}
+  .fsec-body{padding:2px 11px 6px}
+}
 .links-sec{margin-bottom:13px}
 .links-sec .lb{font-size:12.5px;font-weight:600;color:var(--ink-soft);margin-bottom:6px;display:block}
 .link-row{display:grid;grid-template-columns:1fr 1.5fr auto;gap:8px;margin-bottom:8px}
@@ -583,69 +602,21 @@ body.guest .f input,body.guest .f select,body.guest .f textarea,body.guest .phot
       </div>
 
       <div class="two">
-        <label class="f"><span class="lb">Квартира</span><input id="fld_apartment" placeholder="№ 214, кв. …" oninput="checkDuplicate()"></label>
+        <label class="f"><span class="lb">Квартира</span><input id="fld_apartment" placeholder="№ 214, кв. …" oninput="checkDuplicate();autofillDebounced()"></label>
         <label class="f"><span class="lb">Метраж, м²</span><input id="fld_area" inputmode="decimal" placeholder="72"></label>
       </div>
       <div id="dupWarning"></div>
+      <div id="autofillNote"></div>
       <label class="f"><span class="lb">Кадастровый номер <span style="color:var(--brass);font-weight:700">— автопоиск в базе</span></span><input id="fld_cadastral" placeholder="кадастр · или № объекта / ФИО" oninput="egrnLookupDebounced();checkDuplicate()"></label>
       <div id="egrnResult" class="egrn-result"></div>
       <div class="two">
-        <label class="f"><span class="lb">Цена</span><input id="fld_price" placeholder="120 000 000 ₽"></label>
+        <label class="f"><span class="lb">Цена</span><input id="fld_price" inputmode="numeric" placeholder="120 000 000" onblur="fmtMoneyInput(this)"></label>
         <label class="f"><span class="lb">Доля</span><input id="fld_share" placeholder="1/1"></label>
       </div>
       <div class="two">
-        <label class="f"><span class="lb">Комиссия, %</span><input id="fld_commissionPct" inputmode="decimal" placeholder="3"></label>
-        <div></div>
-      </div>
-
-      <div class="two">
         <label class="f"><span class="lb">Собственник (ФИО)</span><input id="fld_ownerName" placeholder="Иванов Иван"></label>
-        <label class="f"><span class="lb">Телефон</span><input id="fld_ownerPhone" placeholder="+7 ___ ___-__-__"></label>
+        <label class="f"><span class="lb">Телефон</span><input id="fld_ownerPhone" type="tel" inputmode="tel" placeholder="+7 ___ ___-__-__" onblur="fmtPhoneInput(this)"></label>
       </div>
-
-      <div class="two">
-        <label class="f"><span class="lb">Кто ведёт сейчас</span><input id="fld_currentAgent" placeholder="Агентство / агент"></label>
-        <label class="f"><span class="lb">Ссылка на объявление</span><input id="fld_listingUrl" placeholder="cian / avito / …"></label>
-      </div>
-
-      <div class="links-sec">
-        <span class="lb">Ссылки других агентов (дубли)</span>
-        <div id="otherLinks"></div>
-        <button type="button" class="add-link" onclick="addOtherRow()">+ Добавить ссылку</button>
-      </div>
-
-      <div class="two">
-        <label class="f"><span class="lb">Тип сделки</span>
-          <select id="fld_dealType" onchange="onStateFieldChange()">
-            <option value="sale">Продажа</option>
-            <option value="rent">Аренда</option>
-            <option value="both">Продажа + аренда</option>
-          </select>
-        </label>
-        <label class="f"><span class="lb">Состояние объекта</span>
-          <select id="fld_objState" onchange="onStateFieldChange()">
-            <option value="active">В работе</option>
-            <option value="sold">Продано</option>
-            <option value="rented">Сдано</option>
-            <option value="withdrawn" id="withdrawnOpt">Снято с продажи</option>
-          </select>
-        </label>
-      </div>
-      <div class="two" id="closeDatesRow">
-        <label class="f"><span class="lb">Дата закрытия (прод./сдачи)</span><input id="fld_closedDate" type="date"></label>
-        <label class="f" id="leaseEndWrap"><span class="lb">Договор аренды до</span><input id="fld_leaseEnd" type="date"></label>
-      </div>
-      <div class="two" id="wonByUsRow">
-        <label class="f"><span class="lb">Сделка наша?</span>
-          <select id="fld_wonByUs">
-            <option value="">— не отмечено</option>
-            <option value="yes">Да, закрыли мы</option>
-            <option value="no">Нет, закрыл другой агент/сам собственник</option>
-          </select>
-        </label>
-        <label class="f"><span class="lb" id="dealSumLabel">Сумма сделки <span style="color:var(--brass);font-weight:700">— реальная, если отличается от цены</span></span><input id="fld_dealSum" placeholder="фактическая сумма"></label>
-      </div>
-
       <label class="f"><span class="lb">Статус</span>
         <select id="fld_dealStatus">
           <option value="base">Не общались</option>
@@ -655,30 +626,82 @@ body.guest .f input,body.guest .f select,body.guest .f textarea,body.guest .phot
         </select>
       </label>
 
-      <div class="two">
-        <label class="f"><span class="lb">Оплата нам</span>
-          <select id="fld_willPay">
-            <option value="unknown">— не выяснено</option>
-            <option value="yes">Платит</option>
-            <option value="split">Делится с агентом</option>
-            <option value="low">Мало платит</option>
-            <option value="no">Не платит</option>
-          </select>
-        </label>
-        <label class="f"><span class="lb">Эксклюзив у другого?</span>
-          <select id="fld_exclusive">
-            <option value="unknown">— не выяснено</option>
-            <option value="no">Нет</option>
-            <option value="yes">Да</option>
-          </select>
-        </label>
-      </div>
+      <details class="fsec" open>
+        <summary>В работе <small>сделка, сроки, следующий шаг</small></summary>
+        <div class="fsec-body">
+          <div class="two">
+            <label class="f"><span class="lb">Тип сделки</span>
+              <select id="fld_dealType" onchange="onStateFieldChange()">
+                <option value="sale">Продажа</option>
+                <option value="rent">Аренда</option>
+                <option value="both">Продажа + аренда</option>
+              </select>
+            </label>
+            <label class="f"><span class="lb">Состояние объекта</span>
+              <select id="fld_objState" onchange="onStateFieldChange()">
+                <option value="active">В работе</option>
+                <option value="sold">Продано</option>
+                <option value="rented">Сдано</option>
+                <option value="withdrawn" id="withdrawnOpt">Снято с продажи</option>
+              </select>
+            </label>
+          </div>
+          <div class="two" id="closeDatesRow">
+            <label class="f"><span class="lb">Дата закрытия (прод./сдачи)</span><input id="fld_closedDate" type="date"></label>
+            <label class="f" id="leaseEndWrap"><span class="lb">Договор аренды до</span><input id="fld_leaseEnd" type="date"></label>
+          </div>
+          <div class="two" id="wonByUsRow">
+            <label class="f"><span class="lb">Сделка наша?</span>
+              <select id="fld_wonByUs">
+                <option value="">— не отмечено</option>
+                <option value="yes">Да, закрыли мы</option>
+                <option value="no">Нет, закрыл другой агент/сам собственник</option>
+              </select>
+            </label>
+            <label class="f"><span class="lb" id="dealSumLabel">Сумма сделки <span style="color:var(--brass);font-weight:700">— реальная, если отличается от цены</span></span><input id="fld_dealSum" inputmode="numeric" placeholder="фактическая сумма" onblur="fmtMoneyInput(this)"></label>
+          </div>
+          <div class="two">
+            <label class="f"><span class="lb">Кто ведёт сейчас</span><input id="fld_currentAgent" placeholder="Агентство / агент"></label>
+            <label class="f"><span class="lb">Ссылка на объявление</span><input id="fld_listingUrl" inputmode="url" placeholder="cian / avito / …"></label>
+          </div>
+          <div class="two">
+            <label class="f"><span class="lb">Оплата нам</span>
+              <select id="fld_willPay">
+                <option value="unknown">— не выяснено</option>
+                <option value="yes">Платит</option>
+                <option value="split">Делится с агентом</option>
+                <option value="low">Мало платит</option>
+                <option value="no">Не платит</option>
+              </select>
+            </label>
+            <label class="f"><span class="lb">Комиссия, %</span><input id="fld_commissionPct" inputmode="decimal" placeholder="3"></label>
+          </div>
+          <div class="two">
+            <label class="f"><span class="lb">Последний контакт</span><input id="fld_lastContact" type="date"></label>
+            <label class="f"><span class="lb">Когда перезвонить</span><input id="fld_nextDate" type="date"></label>
+          </div>
+          <label class="f"><span class="lb">Следующий шаг</span><input id="fld_nextStep" placeholder="Скинуть покупателя, дожать по комиссии…"></label>
+        </div>
+      </details>
 
-      <div class="two">
-        <label class="f"><span class="lb">Последний контакт</span><input id="fld_lastContact" type="date"></label>
-        <label class="f"><span class="lb">Когда перезвонить</span><input id="fld_nextDate" type="date"></label>
-      </div>
-      <label class="f"><span class="lb">Следующий шаг</span><input id="fld_nextStep" placeholder="Скинуть покупателя, дожать по комиссии…"></label>
+      <details class="fsec">
+        <summary>Дополнительно <small>эксклюзив, ссылки других агентов</small></summary>
+        <div class="fsec-body">
+          <label class="f"><span class="lb">Эксклюзив у другого?</span>
+            <select id="fld_exclusive">
+              <option value="unknown">— не выяснено</option>
+              <option value="no">Нет</option>
+              <option value="yes">Да</option>
+            </select>
+          </label>
+          <div class="links-sec">
+            <span class="lb">Ссылки других агентов (дубли)</span>
+            <div id="otherLinks"></div>
+            <button type="button" class="add-link" onclick="addOtherRow()">+ Добавить ссылку</button>
+          </div>
+        </div>
+      </details>
+
       <label class="f"><span class="lb">Заметки</span><textarea id="fld_notes" placeholder="Возражения, характер, торг, детали…"></textarea></label>
       <div class="sec" id="historySec" style="display:none">
         <div class="sec-h"><b>История изменений</b></div>
@@ -1068,10 +1091,17 @@ function baseFiltered(){
   let out=items.filter(o=>stateOf(o)!=='withdrawn');
   const q=state.q.trim().toLowerCase();
   if(q){
-    const exact=out.filter(o=>[o.apartment,o.cadastral,o.ownerName,o.ownerPhone,o.currentAgent,o.notes]
-        .filter(Boolean).join(' ').toLowerCase().includes(q));
+    const hay=o=>[o.apartment,o.cadastral,o.ownerName,o.ownerPhone,o.currentAgent,o.notes]
+        .filter(Boolean).join(' ').toLowerCase();
     const isNumericQ=/^[\d\s+()-]+$/.test(q);
-    out=exact.length||isNumericQ?exact:out.filter(o=>fuzzyNameMatch(q,o.ownerName||''));
+    let res=out.filter(o=>hay(o).includes(q));
+    if(!res.length&&isNumericQ){
+      /* ищем по одним цифрам — тогда формат записи телефона не мешает найти номер */
+      const qd=q.replace(/\D/g,'');
+      if(qd.length>=3) res=out.filter(o=>hay(o).replace(/\D/g,'').includes(qd));
+    }
+    if(!res.length&&!isNumericQ) res=out.filter(o=>fuzzyNameMatch(q,o.ownerName||''));
+    out=res;
   }
   if(state.pay!=='all') out=out.filter(o=>(o.willPay||'unknown')===state.pay);
   if(state.dealType==='sale') out=out.filter(o=>dealOf(o)==='sale'||dealOf(o)==='both');
@@ -1196,7 +1226,7 @@ function render(){
         ${(dl!=='sale')&&o.leaseEnd?`<div class="row"><span class="k">Договор до:</span> ${fmtDateY(o.leaseEnd)}</div>`:''}
         ${o.currentAgent?`<div class="row"><span class="k">Ведёт:</span> ${esc(o.currentAgent)}</div>`:''}
         ${(o.otherListings&&o.otherListings.filter(x=>x&&x.url).length)?`<div class="row"><span class="k">Ещё продают:</span> ${o.otherListings.filter(x=>x&&x.url).length} агент(ов)</div>`:''}
-        ${pay&&o.willPay!=='unknown'?`<div class="row"><span class="k">Оплата:</span> ${pay}</div>`:''}
+        ${pay&&o.willPay!=='unknown'?`<div class="row pay-row pay-${o.willPay}"><span class="k">Оплата:</span> ${pay}</div>`:''}
         <div class="owner">
           <div class="who">
             <div class="name">${esc(o.ownerName)||'—'}</div>
@@ -1341,6 +1371,11 @@ function onStateFieldChange(){
 function updateDealFieldLabels(){
   const dt=document.getElementById('fld_dealType').value;
   const st=document.getElementById('fld_objState').value;
+  /* поля закрытия сделки нужны только у закрытых объектов — иначе они просто мешают */
+  const isClosed=st==='sold'||st==='rented'||st==='withdrawn';
+  const cdRow=document.getElementById('closeDatesRow'),wuRow=document.getElementById('wonByUsRow');
+  if(cdRow) cdRow.style.display=isClosed?'':'none';
+  if(wuRow) wuRow.style.display=(st==='sold'||st==='rented')?'':'none';
   const leaseWrap=document.getElementById('leaseEndWrap');
   if(leaseWrap) leaseWrap.style.display=dt==='sale'?'none':'';
   const isRent=st==='rented'||(st!=='sold'&&dt==='rent');
@@ -1460,6 +1495,43 @@ function scheduleDraftSave(){
   },600);
 }
 function clearDraft(){try{localStorage.removeItem(draftKey());}catch(e){}}
+/* ---------- удобство ввода ---------- */
+function fmtMoneyInput(el){
+  const v=(el.value||'').trim();
+  if(!v||/[^\d\s]/.test(v))return;            /* «договорная» и прочий текст не трогаем */
+  const d=v.replace(/\s/g,'');
+  el.value=d.replace(/\B(?=(\d{3})+(?!\d))/g,' ');
+}
+function fmtPhoneInput(el){
+  let d=(el.value||'').replace(/\D/g,'');
+  if(!d)return;
+  if(d.length===11&&(d[0]==='8'||d[0]==='7'))d='7'+d.slice(1);
+  else if(d.length===10)d='7'+d;
+  else return;                                 /* необычный формат — оставляем как есть */
+  el.value=`+7 ${d.slice(1,4)} ${d.slice(4,7)}-${d.slice(7,9)}-${d.slice(9)}`;
+}
+/* подтягиваем метраж/кадастр/собственника по номеру квартиры — заполняются только пустые поля */
+let _autofillT=null;
+function autofillDebounced(){clearTimeout(_autofillT);_autofillT=setTimeout(autofillFromApartment,400);}
+function autofillFromApartment(){
+  const note=document.getElementById('autofillNote');
+  if(note)note.innerHTML='';
+  if(isGuest||!hasComplex())return;
+  const el=document.getElementById('fld_apartment');
+  const num=el?el.value.trim():'';
+  if(!num)return;
+  const obj=objOfNum(num);
+  if(!obj)return;                              /* нет такого объекта в конфигурации — молчим */
+  const filled=[];
+  const setIf=(id,v,label)=>{const e=document.getElementById(id);if(e&&!e.value&&v){e.value=v;filled.push(label);}};
+  const cad=cadOfApt(num);
+  const cadEl=document.getElementById('fld_cadastral');
+  if(cad&&cadEl&&!cadEl.value){cadEl.value=cad;filled.push('кадастр');egrnLookup();}
+  setIf('fld_area',obj.area,'метраж');
+  const rec=ownerRecOfCad(cad);
+  if(rec){setIf('fld_ownerName',rec.fio,'собственник');setIf('fld_ownerPhone',rec.phone,'телефон');setIf('fld_share',rec.share,'доля');}
+  if(filled.length&&note)note.innerHTML=`<div class="autofill-note">✓ Подставлено из базы: ${filled.join(', ')}</div>`;
+}
 function normDup(s){return String(s||'').trim().toLowerCase().replace(/\s+/g,'')}
 function checkDuplicate(){
   const box=document.getElementById('dupWarning');
@@ -1486,6 +1558,7 @@ function openModal(id){
   set('lastContact',o.lastContact);set('nextDate',o.nextDate);set('nextStep',o.nextStep);set('notes',o.notes);
   renderOtherLinks(o.otherListings||[]);
   document.getElementById('egrnResult').innerHTML='';
+  document.getElementById('autofillNote').innerHTML='';
   if(o.cadastral) egrnLookup();
   setPhotoPreview(o.photo||null);
   renderHistory(o);
@@ -2363,14 +2436,10 @@ function cellToCard(){
   closeCell();
   if(ex){openModal(ex.id);return;}
   openModalForApt(num);
-  const cad=cadOfApt(num),obj=objOfNum(num);
-  if(cad){document.getElementById('fld_cadastral').value=cad;egrnLookup();}
-  if(obj&&!document.getElementById('fld_area').value)document.getElementById('fld_area').value=obj.area;
-  const rec=ownerRecOfCad(cad);
-  if(rec){
-    const setIf=(id,v)=>{const el=document.getElementById(id);if(el&&!el.value&&v)el.value=v;};
-    setIf('fld_ownerName',rec.fio);setIf('fld_ownerPhone',rec.phone);setIf('fld_share',rec.share);
-  }
+  autofillFromApartment();                      /* тот же подхват, что и при ручном вводе номера */
+  const cad=cadOfApt(num);
+  const cadEl=document.getElementById('fld_cadastral');
+  if(cad&&cadEl&&!cadEl.value){cadEl.value=cad;egrnLookup();}
   const ni=schemaInfo[num];
   if(ni&&ni.note){const n=document.getElementById('fld_notes');if(n&&!n.value)n.value=ni.note;}
 }
