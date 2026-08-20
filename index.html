@@ -461,6 +461,17 @@ body.privacy .pers-name:active{filter:none}
 .bell-empty{font-size:12.5px;color:var(--ink-soft);padding:10px 8px 14px;line-height:1.5}
 @media (max-width:760px){.bell-panel{position:fixed;left:10px;right:10px;top:62px;width:auto;max-height:66vh}
   #lockBtn{display:none}}   /* на телефоне замок уже висит кружком внизу справа */
+.fam-block{margin-top:13px;padding-top:12px;border-top:1px solid var(--line)}
+.fam-h{display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin-bottom:9px}
+.fam-note{font-size:12px;color:var(--ink-soft)}
+.fam-row{display:flex;align-items:center;gap:10px;padding:9px 11px;border:1px solid var(--line);border-radius:10px;background:var(--card);margin-bottom:6px;cursor:pointer}
+.fam-row:hover{border-color:var(--brass)}
+.fam-row .av{width:30px;height:30px;border-radius:50%;background:var(--fam-tint);color:var(--fam);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:11.5px;flex:none}
+.fam-row .in{flex:1;min-width:0}
+.fam-row b{font-size:13.5px;display:block;line-height:1.25}
+.fam-row small{display:block;color:var(--ink-soft);font-size:11.5px;margin-top:2px}
+.fam-row .pgo{color:#C7C2B6;flex:none;font-size:14px}
+.fam-hint{font-size:12px;color:var(--ink-soft);background:var(--surface2);border:1px dashed var(--line);border-radius:10px;padding:8px 10px;line-height:1.5}
 .cv-ev.boss:before{border-color:var(--fam)}
 .cv-ev .au{color:var(--fam);font-weight:700}
 .floatlock{position:fixed;right:16px;bottom:16px;z-index:70;width:52px;height:52px;border-radius:50%;border:none;background:var(--ink);color:#fff;font-size:20px;cursor:pointer;box-shadow:0 6px 20px rgba(30,28,24,.3)}
@@ -2087,6 +2098,7 @@ function renderCardView(o){
   const phoneClean=(o.ownerPhone||'').replace(/[^\d+]/g,''),wa=waLink(o.ownerPhone);
   const others=items.filter(x=>x.id!==o.id&&x.ownerName&&o.ownerName&&x.ownerName.trim().toUpperCase()===o.ownerName.trim().toUpperCase());
   const overdue=isOverdue(o);
+  const fam=familyInfo(o.ownerName);
   const sub=[num(o.area)?esc(o.area)+' м²':'',d?d.f+' этаж':'',tw?esc(tw.ru)+' башня':'',
              (o.share&&o.share!=='1/1')?'доля '+esc(o.share):''].filter(Boolean).join(' · ');
   box.innerHTML=`
@@ -2127,6 +2139,7 @@ function renderCardView(o){
           <div class="name" style="font-size:15px;font-weight:700">${esc(o.ownerName)||'Собственник не указан'}</div>
           <div class="ph" style="font-size:13px;color:var(--ink-soft);margin-top:1px">${esc(o.ownerPhone)||'телефон не указан'}</div>
         </div>
+        ${fam?`<span class="pv-badge" style="flex:none" title="${esc(fam.g.name)}">в семье</span>`:''}
         ${others.length?`<span style="background:var(--fam);color:#fff;font-size:11px;font-weight:700;padding:3px 10px;border-radius:999px;flex:none">ещё ${others.length} кв.</span>`:''}
       </div>
       ${phoneClean?`<div class="cv-acts">
@@ -2141,6 +2154,7 @@ function renderCardView(o){
           <span style="font-size:12px;color:var(--ink-soft)">${(STATUS[x.dealStatus||'base']||{}).label||''}</span>
         </div>`).join('')}
       </div>`:''}
+      ${familyBlockHtml(o.ownerName)}
     </div>
 
     ${(o.currentAgent||o.listingUrl)?`<div class="cv-facts">
@@ -2232,6 +2246,40 @@ function authorLabel(e){
   return e.byName||'Руководитель';
 }
 function stamp(obj){return Object.assign({by:whoAmI(),byName:myLabel()},obj)}
+/* ---------- семья собственника: кто ещё в группе и что у них в доме ---------- */
+function familyInfo(fio){
+  const g=groupOf(fio);
+  if(!g)return null;
+  const me=normFio(fio);
+  const flatsOf=m=>ownerObjects(m).map(r=>objOfCad(r.cad)).filter(Boolean);
+  const members=g.members.filter(m=>normFio(m)!==me).map(m=>{
+    const all=flatsOf(m);
+    return {fio:m,flats:all.filter(o=>o.type==='kv'),rest:all.filter(o=>o.type!=='kv'),
+            phone:(ownerObjects(m)[0]||{}).phone||''};
+  });
+  let total=0;
+  groupMembers(fio).forEach(m=>{total+=flatsOf(m).filter(o=>o.type==='kv').length;});
+  return {g,members,total};
+}
+function familyBlockHtml(fio){
+  const fi=familyInfo(fio);
+  if(!fi)return '';
+  const rows=fi.members.length
+    ? fi.members.map(m=>`<div class="fam-row" onclick="openPerson('${jq(m.fio)}')">
+        <span class="av">${esc(initials(m.fio))}</span>
+        <div class="in pii"><b>${esc(m.fio)}</b>
+          <small>${m.flats.length?m.flats.length+' кв. · '+m.flats.map(f=>f.num).join(', '):(egrn.rows.length?'квартир в доме нет':'база ЕГРН не загружена')}${m.rest.length?' · ещё '+m.rest.length+' '+plural(m.rest.length,'объект','объекта','объектов'):''}</small></div>
+        <span class="pgo">→</span>
+      </div>`).join('')
+    : '<div class="fam-hint">В группе он пока один — свяжите его с роднёй в карточке собственника.</div>';
+  return `<div class="fam-block">
+    <div class="fam-h">
+      <span class="pv-badge">${esc(fi.g.name)} · ${fi.total} кв.</span>
+      <span class="fam-note">Собственник — член этой семьи${fi.members.length?', у родни тоже есть недвижимость в доме':''}</span>
+    </div>
+    ${rows}
+  </div>`;
+}
 function initials(fio){
   const p=(fio||'').trim().split(/\s+/);
   if(!p[0])return '—';
@@ -2980,6 +3028,7 @@ function openCell(k,f,p){
     </div>`;
   }
 
+  const famHtml=rec?familyBlockHtml(rec.fio):'';
   const ni=schemaInfo[num]||{};
   const qedit=isGuest
     ? (ni.note?`<div class="qedit"><div style="font-size:11.5px;color:var(--brass);font-weight:700;letter-spacing:.3px;text-transform:uppercase">Заметка по квартире</div><div class="cv-note" style="margin-top:6px">${esc(ni.note)}</div></div>`:'')
@@ -2987,7 +3036,7 @@ function openCell(k,f,p){
       <div style="font-size:11.5px;color:var(--brass);font-weight:700;letter-spacing:.3px;text-transform:uppercase">Заметка по квартире</div>
       <textarea id="cellNote" placeholder="живут собственники · ремонт, через год продают · сдают в аренду…">${esc(ni.note||'')}</textarea>
     </div>`;
-  const body=`${info}${port}${qedit}
+  const body=`${info}${port}${famHtml}${qedit}
     <div style="font-size:12.5px;font-weight:600;color:var(--ink-soft);margin-top:14px;margin-bottom:2px">Соседние квартиры</div>
     <div class="nb-grid">
       <div class="nb" style="visibility:hidden"></div>${nb(k,f+1,p,'этаж выше')}<div class="nb" style="visibility:hidden"></div>
