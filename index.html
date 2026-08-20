@@ -37,6 +37,7 @@ body.dark img{filter:brightness(.92)}
   body:not(.dark):not(.light-forced) .thumb .placeholder,
   body:not(.dark):not(.light-forced) .exp-card .ph{color:#5c574d}
   body:not(.dark):not(.light-forced) img{filter:brightness(.92)}
+  body:not(.dark):not(.light-forced){--fam:#B79BE0;--fam-tint:#312A3D}
 }
 *{box-sizing:border-box}
 html,body{margin:0}
@@ -184,6 +185,36 @@ label.f .lb{font-size:12.5px;font-weight:600;color:var(--ink-soft);margin-bottom
 .f input:focus,.f select:focus,.f textarea:focus{border-color:var(--brass);box-shadow:0 0 0 3px var(--brass-tint)}
 .f select{appearance:none;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 10 10'><path d='M1 3l4 4 4-4' stroke='%236E6A62' stroke-width='1.6' fill='none'/></svg>");background-repeat:no-repeat;background-position:right 12px center}
 .two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+/* --- карточка-обзор (режим просмотра) --- */
+.cv-head{display:flex;align-items:flex-start;gap:14px;margin-bottom:15px}
+.cv-photo{width:74px;height:74px;border-radius:12px;background:var(--thumb);flex:none;overflow:hidden;display:flex;align-items:center;justify-content:center;color:#C3BFB4}
+.cv-photo img{width:100%;height:100%;object-fit:cover}
+.cv-num{font-family:var(--serif);font-size:26px;font-weight:700;line-height:1}
+.cv-sub{font-size:13.5px;color:var(--ink-soft);margin-top:6px}
+.cv-cad{font-size:11.5px;color:#A8A296;margin-top:4px;font-family:ui-monospace,Menlo,monospace;word-break:break-all}
+.cv-dates{text-align:right;font-size:11px;color:#A8A296;line-height:1.6;flex:none}
+.cv-next{background:var(--brass-tint);border:1px solid #F0C4D6;border-radius:12px;padding:11px 14px;display:flex;align-items:center;gap:11px;margin-bottom:14px}
+.cv-next.over{background:#FBEEEC;border-color:#EBD3CF}
+.cv-next b{font-size:13.5px;color:#8E1642;display:block}
+.cv-next.over b{color:var(--no)}
+.cv-next small{font-size:12px;color:var(--ink-soft);display:block;margin-top:2px}
+.cv-facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:9px;margin-bottom:14px}
+.cv-fact{background:var(--surface2);border:1px solid var(--line);border-radius:11px;padding:9px 12px}
+.cv-fact .k{font-size:10.5px;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.3px;font-weight:700}
+.cv-fact .v{font-size:15px;font-weight:700;color:var(--ink);margin-top:3px}
+.cv-block{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 16px;margin-bottom:14px}
+.cv-acts{display:flex;gap:8px;margin-top:13px}
+.cv-act{border:none;border-radius:11px;padding:11px 14px;font-size:14px;font-weight:700;cursor:pointer;font-family:var(--sans);display:flex;align-items:center;justify-content:center;gap:8px;flex:1;text-decoration:none}
+.cv-act svg{width:16px;height:16px}
+.cv-act.cv-tel{background:var(--brass);color:#fff}
+.cv-act.wa{background:#E7F3EC;color:#2F8F5B;border:1px solid #CBE6D5}
+body.dark .cv-act.wa{background:#1E2E24;border-color:#2E4636;color:#3FAE72}
+.cv-mini{display:flex;align-items:center;gap:10px;padding:9px 11px;border:1px solid var(--line);border-radius:10px;background:var(--card);margin-bottom:6px;cursor:pointer;font-size:13.5px}
+.cv-mini:hover{border-color:var(--brass)}
+.cv-note{font-size:13.5px;line-height:1.5;background:var(--surface2);border:1px solid var(--line);border-radius:11px;padding:11px 13px;white-space:pre-wrap}
+.modal-foot .closebtn{border:1px solid var(--line);background:var(--card);color:var(--ink-soft);border-radius:12px;padding:13px 18px;font-size:14px;cursor:pointer;font-family:var(--sans)}
+.modal-foot .closebtn:hover{border-color:var(--brass);color:var(--brass)}
+body.dark{--fam:#B79BE0;--fam-tint:#312A3D}
 /* сворачиваемые блоки формы — чтобы карточка не была простынёй */
 .fsec{border:1px solid var(--line);border-radius:12px;background:var(--surface2);margin-bottom:13px;overflow:hidden}
 .fsec>summary{cursor:pointer;padding:11px 14px;font-size:13.5px;font-weight:700;color:var(--ink);list-style:none;display:flex;align-items:center;gap:8px;user-select:none}
@@ -199,6 +230,7 @@ body.dark .autofill-note{background:#1E2E24;border-color:#2E4636}
   /* 16px — иначе iOS зумит страницу при фокусе на поле */
   .f input,.f select,.f textarea,.link-row input{font-size:16px}
   .photo-drop{height:140px}
+  .cv-act{padding:14px;font-size:15px}   /* на телефоне кнопки звонка — под палец */
   .fsec-body{padding:2px 11px 6px}
 }
 .links-sec{margin-bottom:13px}
@@ -594,6 +626,8 @@ body.guest .f input,body.guest .f select,body.guest .f textarea,body.guest .phot
       <button class="x" onclick="closeModal()">×</button>
     </div>
     <div class="modal-body">
+      <div id="cardView" style="display:none"></div>
+      <div id="cardForm">
       <div class="photo-drop" id="photoDrop" onclick="pickPhoto()">
         <input type="file" id="photoInput" accept="image/*" hidden onchange="onPhotoFile(this.files[0])">
         <div class="hint" id="photoHint"><b>Фото квартиры</b>Нажми, чтобы выбрать · или вставь скриншот (Ctrl/⌘+V)</div>
@@ -703,14 +737,13 @@ body.guest .f input,body.guest .f select,body.guest .f textarea,body.guest .phot
       </details>
 
       <label class="f"><span class="lb">Заметки</span><textarea id="fld_notes" placeholder="Возражения, характер, торг, детали…"></textarea></label>
-      <div class="sec" id="historySec" style="display:none">
-        <div class="sec-h"><b>История изменений</b></div>
-        <div id="historyBox"></div>
       </div>
     </div>
     <div class="modal-foot">
       <button class="del" id="delBtn" onclick="delCurrent()" style="display:none">Удалить</button>
-      <button class="save" onclick="saveCard()">Сохранить</button>
+      <button class="save" id="saveBtn" onclick="saveCard()">Сохранить</button>
+      <button class="closebtn" id="closeViewBtn" style="display:none" onclick="closeModal()">Закрыть</button>
+      <button class="save" id="editBtn" style="display:none" onclick="setModalMode('edit')">✎ Редактировать</button>
     </div>
   </div>
 </div>
@@ -1477,6 +1510,7 @@ function buildHistoryEntry(prev,next){
 }
 function renderHistory(o){
   const sec=document.getElementById('historySec'), box=document.getElementById('historyBox');
+  if(!sec||!box)return;                 /* в режиме формы этого блока нет — он живёт в обзоре */
   const hist=(o&&o.history)||[];
   if(!hist.length){sec.style.display='none';box.innerHTML='';return;}
   sec.style.display='block';
@@ -1545,6 +1579,106 @@ function checkDuplicate(){
   const hit=items.find(o=>o.id!==editingId&&((apt&&normDup(o.apartment)===apt)||(cad&&normDup(o.cadastral)===cad)));
   box.innerHTML=hit?`<div class="dup-warn">⚠ Такой объект уже есть в базе: <b>${esc(hit.apartment)||'без номера'}</b>${hit.ownerName?' · '+esc(hit.ownerName):''} — возможно, дубль.</div>`:'';
 }
+/* ---------- карточка-обзор: смотрим, а правим по кнопке ---------- */
+let modalMode='edit';
+function setModalMode(m){
+  modalMode=m;
+  const view=m==='view';
+  document.getElementById('cardView').style.display=view?'':'none';
+  document.getElementById('cardForm').style.display=view?'none':'';
+  document.getElementById('saveBtn').style.display=view?'none':'';
+  document.getElementById('delBtn').style.display=(!view&&editingId)?'block':'none';
+  document.getElementById('closeViewBtn').style.display=view?'block':'none';
+  document.getElementById('editBtn').style.display=view?'block':'none';
+  document.getElementById('mTitle').textContent=view?'Карточка объекта':(editingId?'Редактировать объект':'Новый объект');
+  document.getElementById('modal').scrollTop=0;
+  const body=document.querySelector('#overlay .modal-body'); if(body) body.scrollTop=0;
+  if(!view) checkDraft(editingId?items.find(x=>x.id===editingId)||{}:{});
+}
+function waLink(phone){const d=(phone||'').replace(/\D/g,'');if(d.length<10)return '';return 'https://wa.me/'+(d.length===11&&d[0]==='8'?'7'+d.slice(1):d);}
+function renderCardView(o){
+  const box=document.getElementById('cardView');
+  const st=STATUS[o.dealStatus||'base']||{},closed=CLOSED.includes(stateOf(o));
+  const dl=dealOf(o),rent=dl==='rent';
+  const d=decodeApt(o.apartment),tw=d?towerOf(d.k):null;
+  const perM=ppm(o),comm=commissionValue(o);
+  const phoneClean=(o.ownerPhone||'').replace(/[^\d+]/g,''),wa=waLink(o.ownerPhone);
+  const others=items.filter(x=>x.id!==o.id&&x.ownerName&&o.ownerName&&x.ownerName.trim().toUpperCase()===o.ownerName.trim().toUpperCase());
+  const overdue=isOverdue(o);
+  const sub=[num(o.area)?esc(o.area)+' м²':'',d?d.f+' этаж':'',tw?esc(tw.ru)+' башня':'',
+             (o.share&&o.share!=='1/1')?'доля '+esc(o.share):''].filter(Boolean).join(' · ');
+  box.innerHTML=`
+    <div class="cv-head">
+      <div class="cv-photo">${o.photo?`<img src="${o.photo}" alt="">`:
+        `<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="8.5" cy="10" r="1.5"/><path d="M4 17l5-4 3 2 4-4 4 4"/></svg>`}</div>
+      <div style="flex:1;min-width:0">
+        <div style="display:flex;align-items:center;gap:9px;flex-wrap:wrap">
+          <div class="cv-num">${esc(o.apartment)||'Без номера'}</div>
+          <span class="pill ${o.dealStatus||'base'}" style="position:static;box-shadow:none">${st.label||''}</span>
+          ${o.willPay==='yes'&&!closed?`<span style="background:var(--brass-tint);color:var(--brass);font-size:11.5px;font-weight:800;padding:3px 9px;border-radius:999px">₽ платит</span>`:''}
+          ${closed?`<span style="background:var(--base);color:#fff;font-size:11.5px;font-weight:700;padding:3px 10px;border-radius:999px">${STATE_LABEL[stateOf(o)]}</span>`:''}
+        </div>
+        ${sub?`<div class="cv-sub">${sub}</div>`:''}
+        ${o.cadastral?`<div class="cv-cad">${esc(o.cadastral)}</div>`:''}
+      </div>
+      <div class="cv-dates">${o.createdAt?'заведена '+new Date(o.createdAt).toLocaleDateString('ru-RU'):''}</div>
+    </div>
+
+    ${(o.nextDate||o.nextStep)?`<div class="cv-next ${overdue?'over':''}">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="${overdue?'#C24A3E':'#9C1B4C'}" stroke-width="2" style="flex:none"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/></svg>
+      <div style="flex:1">
+        <b>${overdue?'Просрочен звонок':'Дальше'}${o.nextDate?' — '+fmtDateY(o.nextDate):''}</b>
+        <small>${esc(o.nextStep)||'без пометки'}${o.lastContact?' · последний контакт '+fmtDateY(o.lastContact):''}</small>
+      </div>
+    </div>`:''}
+
+    <div class="cv-facts">
+      ${num(o.price)?`<div class="cv-fact"><div class="k">${rent?'Аренда':'Цена'}</div><div class="v">${fmtMoney(o.price)}${rent?' / мес.':''}</div></div>`:''}
+      ${(perM&&!rent)?`<div class="cv-fact"><div class="k">За метр</div><div class="v">${Math.round(perM).toLocaleString('ru-RU')} ₽</div></div>`:''}
+      ${comm?`<div class="cv-fact"><div class="k">Комиссия ${esc(o.commissionPct)}%</div><div class="v">${fmtMoney(Math.round(comm))}</div></div>`:''}
+    </div>
+
+    <div class="cv-block">
+      <div style="display:flex;align-items:center;gap:12px">
+        <div style="width:40px;height:40px;border-radius:50%;background:var(--fam-tint);color:var(--fam);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex:none">${esc(initials(o.ownerName))}</div>
+        <div style="flex:1;min-width:0">
+          <div class="name" style="font-size:15px;font-weight:700">${esc(o.ownerName)||'Собственник не указан'}</div>
+          <div class="ph" style="font-size:13px;color:var(--ink-soft);margin-top:1px">${esc(o.ownerPhone)||'телефон не указан'}</div>
+        </div>
+        ${others.length?`<span style="background:var(--fam);color:#fff;font-size:11px;font-weight:700;padding:3px 10px;border-radius:999px;flex:none">ещё ${others.length} кв.</span>`:''}
+      </div>
+      ${phoneClean?`<div class="cv-acts">
+        <a class="cv-act cv-tel" href="tel:${phoneClean}"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M6.6 10.8c1.4 2.8 3.8 5.2 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.1.4 2.3.6 3.6.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1C10.6 21 3 13.4 3 4c0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.2.2 2.4.6 3.6.1.4 0 .8-.3 1z"/></svg>Позвонить</a>
+        ${wa?`<a class="cv-act wa" href="${wa}" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.4 8.4 0 01-12.3 7.5L3 20.5l1.6-5.5A8.4 8.4 0 1121 11.5z"/></svg>WhatsApp</a>`:''}
+      </div>`:''}
+      ${others.length?`<div style="margin-top:13px;padding-top:12px;border-top:1px solid var(--line)">
+        <div style="font-size:11px;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.3px;font-weight:700;margin-bottom:7px">Ещё у собственника</div>
+        ${others.slice(0,5).map(x=>`<div class="cv-mini" onclick="openModal('${x.id}')">
+          <span style="width:9px;height:9px;border-radius:50%;flex:none;background:${CLOSED.includes(stateOf(x))?'#6f6b64':({works:'var(--ok)',thinking:'var(--think)',refusal:'var(--no)'}[x.dealStatus]||'#8f9aa8')}"></span>
+          <div style="flex:1"><b>${esc(x.apartment)||'—'}</b>${num(x.area)?` <span style="color:var(--ink-soft)">· ${esc(x.area)} м²</span>`:''}</div>
+          <span style="font-size:12px;color:var(--ink-soft)">${(STATUS[x.dealStatus||'base']||{}).label||''}</span>
+        </div>`).join('')}
+      </div>`:''}
+    </div>
+
+    ${(o.currentAgent||o.listingUrl)?`<div class="cv-facts">
+      ${o.currentAgent?`<div class="cv-fact"><div class="k">Ведёт сейчас</div><div class="v" style="font-size:14px">${esc(o.currentAgent)}</div></div>`:''}
+      ${o.listingUrl?`<div class="cv-fact"><div class="k">Объявление</div><div class="v" style="font-size:14px"><a href="${esc(o.listingUrl)}" target="_blank" rel="noopener">открыть →</a></div></div>`:''}
+    </div>`:''}
+
+    ${o.notes?`<div style="margin-bottom:14px"><div style="font-size:11px;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.3px;font-weight:700;margin-bottom:7px">Заметки</div><div class="cv-note pii">${esc(o.notes)}</div></div>`:''}
+
+    <div class="sec" id="historySec" style="display:none">
+      <div class="sec-h"><b>История изменений</b></div>
+      <div id="historyBox"></div>
+    </div>`;
+  renderHistory(o);
+}
+function initials(fio){
+  const p=(fio||'').trim().split(/\s+/);
+  if(!p[0])return '—';
+  return ((p[0][0]||'')+((p[1]||'')[0]||'')).toUpperCase();
+}
 function openModal(id){
   editingId=id||null; pendingPhoto=null;
   const o=id?items.find(x=>x.id===id):{};
@@ -1564,9 +1698,10 @@ function openModal(id){
   document.getElementById('autofillNote').innerHTML='';
   if(o.cadastral) egrnLookup();
   setPhotoPreview(o.photo||null);
-  renderHistory(o);
+  document.getElementById('cardView').innerHTML='';
+  if(id){renderCardView(o);setModalMode('view');}   /* существующий объект открываем как справку */
+  else setModalMode('edit');                        /* новый — сразу форма, смотреть нечего */
   document.getElementById('overlay').classList.add('show');
-  checkDraft(o);
   checkDuplicate();
 }
 function checkDraft(o){
