@@ -10,7 +10,7 @@
   --brass:#9C1B4C;--brass-tint:#FBE7EF;
   --ok:#2F8F5B;--think:#C79218;--no:#C24A3E;--base:#8A867E;
   --surface2:#FBFAF7;--thumb:#EDEAE2;--danger-tint:#FBEEEC;
-  --sbw:232px;--sb-bg:#211D1A;
+  --sbw:232px;--sb-bg:#211D1A;--today-tint:rgba(156,27,76,.055);
   --serif:Georgia,"Times New Roman",serif;
   --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
   --shadow:0 1px 2px rgba(30,28,24,.05),0 6px 18px rgba(30,28,24,.06);
@@ -19,7 +19,7 @@ body.dark{
   --paper:#171512;--card:#241F1B;--ink:#F0EBE2;--ink-soft:#B3AA9C;--line:#3B352D;
   --brass:#E85C93;--brass-tint:#3A1F2A;
   --ok:#3FAE72;--think:#D9A53A;--no:#E06B5C;--base:#8A8F99;
-  --surface2:#2C2620;--thumb:#332C24;--danger-tint:#3A211D;
+  --surface2:#2C2620;--thumb:#332C24;--danger-tint:#3A211D;--today-tint:rgba(232,92,147,.10);
   --shadow:0 1px 2px rgba(0,0,0,.35),0 6px 18px rgba(0,0,0,.45);
 }
 body.dark header{background:rgba(23,21,18,.86)}
@@ -30,7 +30,7 @@ body.dark img{filter:brightness(.92)}
     --paper:#171512;--card:#241F1B;--ink:#F0EBE2;--ink-soft:#B3AA9C;--line:#3B352D;
     --brass:#E85C93;--brass-tint:#3A1F2A;
     --ok:#3FAE72;--think:#D9A53A;--no:#E06B5C;--base:#8A8F99;
-    --surface2:#2C2620;--thumb:#332C24;--danger-tint:#3A211D;
+    --surface2:#2C2620;--thumb:#332C24;--danger-tint:#3A211D;--today-tint:rgba(232,92,147,.10);
     --shadow:0 1px 2px rgba(0,0,0,.35),0 6px 18px rgba(0,0,0,.45);
   }
   body:not(.dark):not(.light-forced) header{background:rgba(23,21,18,.86)}
@@ -431,6 +431,7 @@ body.privacy .owner .ph,
 body.privacy .pers-name,
 body.privacy .pers-sub,
 body.privacy .mem .in,
+body.privacy .td-row .meta,
 body.privacy .lrow{filter:blur(5.5px);user-select:none;pointer-events:auto}
 body.privacy .pii:active,
 body.privacy .owner .name:active,
@@ -519,6 +520,105 @@ body.guest .f input,body.guest .f select,body.guest .f textarea,body.guest .phot
 .nb.occ{background:var(--brass-tint);border-color:#EFB9D2}
 .nb.mid{background:#2B2A28;color:#F2EAD6;border-color:#2B2A28}
 .nb.mid b{color:#fff}
+/* ---------- карточка собственника (новый вид) ---------- */
+.pv-head{display:flex;align-items:flex-start;gap:14px}
+.pv-av{width:54px;height:54px;border-radius:50%;background:var(--fam-tint);color:var(--fam);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:16px;flex:none}
+.pv-badges{display:flex;gap:6px;margin-top:9px;flex-wrap:wrap}
+.pv-badge{font-size:11px;font-weight:700;padding:3px 10px;border-radius:999px;background:var(--fam);color:#fff}
+.pv-badge.inv{background:var(--brass-tint);color:var(--brass)}
+.pv-badge.off{background:var(--base);color:#fff}
+.pv-badge.link{cursor:pointer}
+.pv-sec{margin-top:20px}
+.pv-sech{font-size:11px;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.4px;font-weight:700;margin-bottom:9px;display:flex;align-items:center;justify-content:space-between;gap:10px}
+.pv-sech .go{color:var(--brass);text-transform:none;font-size:12px;cursor:pointer;font-weight:600;flex:none}
+.pv-flat{display:flex;align-items:center;gap:11px;padding:11px 13px;border:1px solid var(--line);border-radius:11px;background:var(--card);margin-bottom:7px;cursor:pointer}
+.pv-flat:hover{border-color:var(--brass)}
+.pv-flat .dot{width:9px;height:9px;border-radius:50%;flex:none}
+.pv-flat b{font-size:14.5px}
+.pv-flat .fm{font-size:12.5px;color:var(--ink-soft);margin-top:2px}
+.pv-flat .fs{font-size:12px;font-weight:700;flex:none;text-align:right}
+.pv-hint{font-size:12.5px;color:var(--ink-soft);background:var(--surface2);border:1px dashed var(--line);border-radius:10px;padding:9px 11px;margin-top:3px;line-height:1.55}
+.mem.mem2{padding:10px 13px;border:1px solid var(--line);border-radius:11px;background:var(--card);margin-bottom:7px;border-bottom:1px solid var(--line)}
+.mem.mem2 .av{width:34px;height:34px;font-size:12px}
+/* ---------- вкладка «Сегодня» ---------- */
+.td-h{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:4px}
+.td-h .t{font-family:var(--serif);font-size:25px;font-weight:700}
+.td-h .d{font-size:13.5px;color:var(--ink-soft)}
+.td-sum{font-size:13.5px;color:var(--ink-soft);margin-bottom:16px}
+.td-seg{display:inline-flex;border:1px solid var(--line);background:var(--card);border-radius:11px;padding:3px;gap:2px}
+.td-seg button{border:none;background:none;color:var(--ink-soft);border-radius:8px;padding:7px 14px;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--sans)}
+.td-seg button.on{background:var(--brass);color:#fff}
+.td-bar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:14px 0}
+.td-nav{display:inline-flex;gap:6px}
+.td-nav button{border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:9px;padding:7px 12px;font-size:13px;cursor:pointer;font-family:var(--sans)}
+.td-nav button:hover{border-color:var(--brass);color:var(--brass)}
+.td-range{font-size:14px;font-weight:700}
+.td-grp{font-size:11px;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.4px;font-weight:700;margin:20px 0 9px}
+.td-row{display:flex;align-items:center;gap:12px;background:var(--card);border:1px solid var(--line);border-radius:13px;padding:11px 13px;margin-bottom:8px}
+.td-row.hot{border-color:#EBD3CF;background:var(--danger-tint)}
+.td-row .ph{width:52px;height:52px;border-radius:10px;background:var(--thumb);flex:none;overflow:hidden;display:flex;align-items:center;justify-content:center;color:#C3BFB4;cursor:pointer}
+.td-row .ph img{width:100%;height:100%;object-fit:cover}
+.td-row .mid{flex:1;min-width:0;cursor:pointer}
+.td-row .num{font-family:var(--serif);font-size:16px;font-weight:700}
+.td-row .num span{font-family:var(--sans);font-weight:400;font-size:13px;color:var(--ink-soft)}
+.td-row .why{overflow-wrap:anywhere}
+.td-row .meta{font-size:12.5px;color:var(--ink-soft);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.td-row .why{font-size:12px;font-weight:700;margin-top:3px;color:var(--brass)}
+.td-row.hot .why{color:var(--no)}
+.td-btn{border:none;border-radius:10px;width:42px;height:42px;flex:none;cursor:pointer;display:flex;align-items:center;justify-content:center;text-decoration:none}
+.td-btn svg{width:17px;height:17px}
+.td-btn.call{background:var(--brass);color:#fff}
+.td-btn.note{background:var(--card);border:1px solid var(--line);color:var(--ink-soft)}
+.td-btn.note:hover{border-color:var(--brass);color:var(--brass)}
+/* сетка недели / дня */
+.cal-wrap{border:1px solid var(--line);border-radius:14px;background:var(--card);overflow:hidden}
+.cal-scroll{overflow-x:auto}
+.cal-head{display:grid;border-bottom:1px solid var(--line);background:var(--surface2)}
+.cal-head .hcell{padding:8px 6px;text-align:center;font-size:12px;color:var(--ink-soft);border-left:1px solid var(--line)}
+.cal-head .hcell:first-child{border-left:none}
+.cal-head .hcell b{display:block;font-family:var(--serif);font-size:16px;color:var(--ink);margin-top:1px}
+.cal-head .hcell.today b{color:var(--brass)}
+.cal-head .hcell.today{background:var(--today-tint)}
+.cal-allday{display:grid;border-bottom:1px solid var(--line);min-height:30px}
+.cal-allday .acell{border-left:1px solid var(--line);min-width:0;padding:4px;display:flex;flex-direction:column;gap:3px}
+.cal-allday .acell:first-child{border-left:none}
+.cal-allday .lbl{font-size:9px;color:var(--ink-soft);text-transform:uppercase;font-weight:700;padding:6px 4px;text-align:right;line-height:1.25}
+.cal-body{display:grid;position:relative}
+.cal-gutter{border-right:1px solid var(--line)}
+.cal-gutter .hr{height:44px;font-size:10.5px;color:var(--ink-soft);text-align:right;padding-right:6px;transform:translateY(-6px)}
+.cal-col{position:relative;border-left:1px solid var(--line)}
+.cal-col:first-child{border-left:none}
+.cal-col .hr{height:44px;border-bottom:1px solid var(--line)}
+.cal-col.today{background:var(--today-tint)}
+.cal-ev{position:absolute;left:2px;right:2px;background:var(--brass-tint);border:1px solid #F0C4D6;border-left:3px solid var(--brass);border-radius:6px;padding:3px 5px;font-size:11px;line-height:1.25;overflow:hidden;cursor:pointer;color:var(--ink)}
+.cal-ev:hover{border-color:var(--brass)}
+.cal-ev b{display:block;font-size:11.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cal-ev.over{background:var(--danger-tint);border-color:#EBD3CF;border-left-color:var(--no)}
+.cal-ev.over b{color:var(--no)}
+.cal-chip{max-width:100%;background:var(--brass-tint);border:1px solid #F0C4D6;border-radius:6px;padding:2px 6px;font-size:11px;cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--ink)}
+.cal-chip.over{background:var(--danger-tint);border-color:#E4B4AC;color:var(--no);font-weight:600}
+.cal-now{position:absolute;left:0;right:0;height:0;border-top:2px solid var(--no);z-index:3;pointer-events:none}
+.cal-now:before{content:"";position:absolute;left:-4px;top:-5px;width:8px;height:8px;border-radius:50%;background:var(--no)}
+/* месяц */
+.cal-month{display:grid;grid-template-columns:repeat(7,1fr);border:1px solid var(--line);border-radius:14px;overflow:hidden;background:var(--card)}
+.cal-month .dow{background:var(--surface2);padding:7px 4px;text-align:center;font-size:11px;color:var(--ink-soft);font-weight:700;text-transform:uppercase;letter-spacing:.3px;border-bottom:1px solid var(--line)}
+.cal-month .mc{min-height:96px;min-width:0;border-top:1px solid var(--line);border-left:1px solid var(--line);padding:5px;display:flex;flex-direction:column;gap:3px}
+.cal-month .mc:nth-child(7n+1){border-left:none}
+.cal-month .mc.out{background:var(--surface2);opacity:.6}
+.cal-month .mc.today{background:var(--today-tint)}
+.cal-month .mc .dn{font-size:12px;font-weight:700;color:var(--ink-soft)}
+.cal-month .mc.today .dn{color:var(--brass)}
+.cal-more{font-size:11px;color:var(--brass);cursor:pointer;font-weight:600}
+@media (max-width:480px){
+  .td-row .num .pr,.td-row .meta .ph{display:none}
+  .td-row{gap:9px;padding:10px}
+  .td-btn{width:38px;height:38px}
+}
+@media (max-width:760px){
+  .cal-month .mc{min-height:74px}
+  .cal-scroll .cal-inner{min-width:640px}
+  .td-row .ph{width:44px;height:44px}
+}
 </style>
 </head>
 <body>
@@ -530,6 +630,9 @@ body.guest .f input,body.guest .f select,body.guest .f textarea,body.guest .phot
     <div class="sb-name"><b>Актуалка</b><small id="jkLabel"></small></div>
   </div>
   <nav class="sb-nav">
+    <div class="sb-group">План</div>
+    <button class="navi" id="tabToday" onclick="switchView('today')">
+      <svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M8 3v4M16 3v4M3 11h18"/></svg>Сегодня</button>
     <div class="sb-group">Недвижимость</div>
     <button class="navi active" id="tabActualka" onclick="switchView('actualka')">
       <svg viewBox="0 0 24 24"><rect x="3" y="4" width="8" height="8" rx="1.5"/><rect x="13" y="4" width="8" height="8" rx="1.5"/><rect x="3" y="14" width="8" height="6" rx="1.5"/><rect x="13" y="14" width="8" height="6" rx="1.5"/></svg>Актуалка</button>
@@ -625,6 +728,7 @@ body.guest .f input,body.guest .f select,body.guest .f textarea,body.guest .phot
     <button onclick="bulkExport()">📄 Экспорт подборки</button>
     <button onclick="toggleSelectMode()">Готово</button>
   </div>
+  <div id="viewToday" style="display:none"></div>
   <div id="viewSchema" style="display:none"></div>
   <div id="viewDb" style="display:none"></div>
   <div id="viewDeals" style="display:none"></div>
@@ -734,6 +838,7 @@ body.guest .f input,body.guest .f select,body.guest .f textarea,body.guest .phot
             <label class="f"><span class="lb">Последний контакт</span><input id="fld_lastContact" type="date"></label>
             <label class="f"><span class="lb">Когда перезвонить</span><input id="fld_nextDate" type="date"></label>
           </div>
+          <label class="f"><span class="lb">Во сколько <small style="font-weight:400">— чтобы встало в календарь на вкладке «Сегодня»</small></span><input id="fld_nextTime" type="time"></label>
           <label class="f"><span class="lb">Следующий шаг</span><input id="fld_nextStep" placeholder="Скинуть покупателя, дожать по комиссии…"></label>
         </div>
       </details>
@@ -940,7 +1045,7 @@ function applyGuestUI(){
   /* какие вкладки видит гость — решает CSS по классу body.guest, поэтому при смене
      аккаунта в том же сеансе вкладки владельца возвращаются сами */
   document.body.classList.toggle('guest',isGuest);
-  if(isGuest&&state.view!=='actualka'&&state.view!=='archive')switchView('actualka');
+  if(isGuest&&state.view!=='actualka'&&state.view!=='archive'&&state.view!=='today')switchView('actualka');
 }
 
 /* ---------- одна сессия на аккаунт ---------- */
@@ -1137,7 +1242,8 @@ function fuzzyNameMatch(q,name){
 }
 function isOverdue(o){return !!o.nextDate && o.nextDate<=todayStr() && !CLOSED.includes(stateOf(o))}
 function isStale(o){return !!o.lastContact && !CLOSED.includes(stateOf(o)) && (Date.now()-new Date(o.lastContact).getTime())>=30*86400000}
-function todayStr(){return new Date().toISOString().slice(0,10)}
+function todayStr(){return ymd(new Date())}
+function ymd(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
 
 /* ---------- render ---------- */
 function baseFiltered(){
@@ -1221,7 +1327,8 @@ function renderBulkBar(){
   document.getElementById('bulkCount').textContent='Выбрано: '+selectedIds.size;
 }
 function refreshCurrentView(){
-  if(state.view==='schema')renderSchema();
+  if(state.view==='today')renderToday();
+  else if(state.view==='schema')renderSchema();
   else if(state.view==='db')renderDb();
   else if(state.view==='deals')renderDeals();
   else if(state.view==='archive')renderArchive();
@@ -1370,6 +1477,247 @@ function restoreFromArchive(id){
   renderArchive();
   showUndo('Объект возвращён в актуалку',()=>{upsert(prevSnap);renderArchive();});
 }
+/* ---------- вкладка «Сегодня»: план и календарь ---------- */
+const calState={mode:'list',anchor:todayStr()};
+const DOW=['пн','вт','ср','чт','пт','сб','вс'];
+const DOW_FULL=['понедельник','вторник','среда','четверг','пятница','суббота','воскресенье'];
+const MON_GEN=['января','февраля','марта','апреля','мая','июня','июля','августа','сентября','октября','ноября','декабря'];
+const MON_NOM=['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
+function parseYmd(s){const[y,m,d]=(s||'').split('-').map(Number);return new Date(y,(m||1)-1,d||1);}
+function addDays(s,n){const d=parseYmd(s);d.setDate(d.getDate()+n);return ymd(d);}
+function mondayOf(s){const d=parseYmd(s);const w=(d.getDay()+6)%7;d.setDate(d.getDate()-w);return ymd(d);}
+function statusColor(o){
+  if(CLOSED.includes(stateOf(o)))return '#6f6b64';
+  return {works:'var(--ok)',thinking:'var(--think)',refusal:'var(--no)'}[o.dealStatus]||'#8f9aa8';
+}
+/* объекты с назначенным звонком — источник всего календаря */
+function planItems(){return items.filter(o=>o.nextDate&&!CLOSED.includes(stateOf(o)));}
+function plansOn(date){
+  return planItems().filter(o=>o.nextDate===date)
+    .sort((a,b)=>(a.nextTime||'99:99').localeCompare(b.nextTime||'99:99'));
+}
+function planWhy(o){return o.nextStep||'Перезвонить собственнику';}
+function shortMeta(o){
+  const a=num(o.area)?`<span class="ar">· ${esc(o.area)} м²</span>`:'';
+  const p=num(o.price)?`<span class="pr">· ${dealOf(o)==='rent'?fmtMoney(o.price)+' / мес.':fmtMoney(o.price)}</span>`:'';
+  return a+' '+p;
+}
+function setCalMode(m){calState.mode=m;if(m==='list')calState.anchor=todayStr();renderToday();}
+function calShift(n){
+  const m=calState.mode;
+  if(m==='day')calState.anchor=addDays(calState.anchor,n);
+  else if(m==='week')calState.anchor=addDays(calState.anchor,7*n);
+  else if(m==='month'){const d=parseYmd(calState.anchor);d.setDate(1);d.setMonth(d.getMonth()+n);calState.anchor=ymd(d);}
+  renderToday();
+}
+function calToday(){calState.anchor=todayStr();renderToday();}
+function openLog(id){
+  openModal(id);
+  const el=document.getElementById('logInput');
+  if(el){el.focus();el.scrollIntoView({block:'center'});}
+}
+const SVG_CALL='<svg viewBox="0 0 24 24" fill="currentColor"><path d="M6.6 10.8c1.4 2.8 3.8 5.2 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.1.4 2.3.6 3.6.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1C10.6 21 3 13.4 3 4c0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.2.2 2.4.6 3.6.1.4 0 .8-.3 1z"/></svg>';
+const SVG_NOTE='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4z"/></svg>';
+const SVG_PHOTO='<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="8.5" cy="10" r="1.5"/><path d="M4 17l5-4 3 2 4-4 4 4"/></svg>';
+function todayRow(o,hot,whyOverride){
+  const tel=(o.ownerPhone||'').replace(/[^\d+]/g,'');
+  const meta=(o.ownerName?esc(o.ownerName):'собственник не указан')
+    +(o.ownerPhone?` <span class="ph">· ${esc(o.ownerPhone)}</span>`:'');
+  return `<div class="td-row${hot?' hot':''}">
+    <div class="ph" onclick="openModal('${o.id}')">${o.photo?`<img src="${o.photo}" alt="">`:SVG_PHOTO}</div>
+    <div class="mid" onclick="openModal('${o.id}')">
+      <div class="num">${esc(o.apartment)||'Без номера'} ${shortMeta(o)}</div>
+      <div class="meta pii">${meta}</div>
+      <div class="why">${whyOverride||esc(planWhy(o))}</div>
+    </div>
+    ${tel?`<a class="td-btn call" href="tel:${tel}" title="Позвонить">${SVG_CALL}</a>`:''}
+    ${isGuest?'':`<button class="td-btn note" onclick="openLog('${o.id}')" title="Записать разговор">${SVG_NOTE}</button>`}
+  </div>`;
+}
+function renderToday(){
+  const box=document.getElementById('viewToday');
+  if(!box)return;
+  const t=todayStr(),now=new Date();
+  const plans=planItems();
+  const overdue=plans.filter(o=>o.nextDate<t);
+  const todayList=plans.filter(o=>o.nextDate===t);
+  const staleList=items.filter(o=>!CLOSED.includes(stateOf(o))&&isStale(o));
+  const head=`
+    <div class="td-h">
+      <div class="t">Сегодня</div>
+      <div class="d">${DOW_FULL[(now.getDay()+6)%7]}, ${now.getDate()} ${MON_GEN[now.getMonth()]}</div>
+    </div>
+    <div class="td-sum">${overdue.length+todayList.length} звонк${plural(overdue.length+todayList.length,'','а','ов')} на сегодня${overdue.length?` · из них ${overdue.length} просроч${plural(overdue.length,'ен','ено','ено')}`:''}</div>
+    <div class="dash">
+      <div class="stat"><div class="sv" style="${overdue.length?'color:var(--no)':''}">${overdue.length}</div><div class="sl">Просрочено</div></div>
+      <div class="stat"><div class="sv">${todayList.length}</div><div class="sl">На сегодня</div></div>
+      <div class="stat"><div class="sv">${staleList.length}</div><div class="sl">Молчат 30+ дней</div></div>
+      <div class="stat"><div class="sv">${plans.length}</div><div class="sl">Всего запланировано</div></div>
+    </div>
+    <div class="td-bar">
+      <div class="td-seg">
+        <button class="${calState.mode==='list'?'on':''}" onclick="setCalMode('list')">Список</button>
+        <button class="${calState.mode==='day'?'on':''}" onclick="setCalMode('day')">День</button>
+        <button class="${calState.mode==='week'?'on':''}" onclick="setCalMode('week')">Неделя</button>
+        <button class="${calState.mode==='month'?'on':''}" onclick="setCalMode('month')">Месяц</button>
+      </div>
+      ${calState.mode==='list'?'':`
+      <div class="td-nav">
+        <button onclick="calShift(-1)">‹</button>
+        <button onclick="calToday()">Сегодня</button>
+        <button onclick="calShift(1)">›</button>
+      </div>
+      <div class="td-range">${calRangeLabel()}</div>`}
+    </div>`;
+  let body='';
+  if(calState.mode==='list')body=renderAgenda(overdue,todayList,staleList);
+  else if(calState.mode==='day')body=renderCalGrid([calState.anchor]);
+  else if(calState.mode==='week'){const m=mondayOf(calState.anchor);body=renderCalGrid([0,1,2,3,4,5,6].map(i=>addDays(m,i)));}
+  else body=renderCalMonth();
+  box.innerHTML=head+body;
+}
+function plural(n,one,few,many){
+  const a=Math.abs(n)%100,b=a%10;
+  if(a>10&&a<20)return many;
+  if(b>1&&b<5)return few;
+  if(b===1)return one;
+  return many;
+}
+function calRangeLabel(){
+  const a=calState.anchor;
+  if(calState.mode==='day'){const d=parseYmd(a);return `${d.getDate()} ${MON_GEN[d.getMonth()]}, ${DOW_FULL[(d.getDay()+6)%7]}`;}
+  if(calState.mode==='week'){
+    const m=parseYmd(mondayOf(a)),e=parseYmd(addDays(mondayOf(a),6));
+    return m.getMonth()===e.getMonth()
+      ? `${m.getDate()}–${e.getDate()} ${MON_GEN[m.getMonth()]}`
+      : `${m.getDate()} ${MON_GEN[m.getMonth()]} – ${e.getDate()} ${MON_GEN[e.getMonth()]}`;
+  }
+  const d=parseYmd(a);return `${MON_NOM[d.getMonth()]} ${d.getFullYear()}`;
+}
+/* --- список: просрочено, сегодня, ближайшая неделя --- */
+function renderAgenda(overdue,todayList,staleList){
+  const t=todayStr();
+  const soon=planItems().filter(o=>o.nextDate>t&&o.nextDate<=addDays(t,7))
+    .sort((a,b)=>(a.nextDate+(a.nextTime||'')).localeCompare(b.nextDate+(b.nextTime||'')));
+  if(!overdue.length&&!todayList.length&&!soon.length&&!staleList.length)
+    return `<div class="empty"><div class="big">На сегодня звонков нет</div>Список собирается сам из дат «Когда перезвонить» в карточках объектов — заводить ничего не нужно.</div>`;
+  let h='';
+  const byTime=l=>l.slice().sort((a,b)=>(a.nextTime||'99:99').localeCompare(b.nextTime||'99:99'));
+  if(overdue.length){
+    h+=`<div class="td-grp" style="color:var(--no)">⏰ Просрочено · ${overdue.length}</div>`;
+    h+=overdue.slice().sort((a,b)=>a.nextDate.localeCompare(b.nextDate)).map(o=>{
+      const days=Math.round((parseYmd(t)-parseYmd(o.nextDate))/86400000);
+      return todayRow(o,true,`${esc(planWhy(o))} · ждёт с ${fmtDateY(o.nextDate)}, ${days} ${plural(days,'день','дня','дней')}`);
+    }).join('');
+  }
+  if(todayList.length){
+    h+=`<div class="td-grp">📞 На сегодня · ${todayList.length}</div>`;
+    h+=byTime(todayList).map(o=>todayRow(o,false,`${o.nextTime?'<b>'+esc(o.nextTime)+'</b> · ':''}${esc(planWhy(o))}`)).join('');
+  }
+  if(soon.length){
+    h+=`<div class="td-grp">🗓 Ближайшая неделя · ${soon.length}</div>`;
+    h+=soon.map(o=>todayRow(o,false,`${fmtDateY(o.nextDate)}${o.nextTime?', '+esc(o.nextTime):''} · ${esc(planWhy(o))}`)).join('');
+  }
+  if(staleList.length){
+    h+=`<div class="td-grp">💤 Молчат 30+ дней · ${staleList.length}</div>`;
+    h+=staleList.slice(0,10).map(o=>todayRow(o,false,`последний контакт ${fmtDateY(o.lastContact)} — не пора ли набрать?`)).join('');
+    if(staleList.length>10)h+=`<div class="pv-hint">…и ещё ${staleList.length-10}. Все — на вкладке «Актуалка», фильтр «💤 Давно без контакта».</div>`;
+  }
+  return h;
+}
+/* --- сетка дня/недели по часам --- */
+function renderCalGrid(days){
+  const t=todayStr();
+  const timed={},allday={};
+  let minH=9,maxH=20;
+  days.forEach(d=>{
+    timed[d]=[];allday[d]=[];
+    plansOn(d).forEach(o=>{
+      if(/^\d{2}:\d{2}$/.test(o.nextTime||'')){
+        const h=+o.nextTime.slice(0,2);
+        minH=Math.min(minH,h);maxH=Math.max(maxH,h+1);
+        timed[d].push(o);
+      } else allday[d].push(o);
+    });
+  });
+  minH=Math.max(0,minH);maxH=Math.min(24,Math.max(maxH,minH+4));
+  const HP=44,rows=maxH-minH;
+  const cols=`46px repeat(${days.length},minmax(88px,1fr))`;
+  const head=`<div class="cal-head" style="grid-template-columns:${cols}">
+    <div class="hcell" style="border-left:none"></div>
+    ${days.map(d=>{const dt=parseYmd(d);
+      return `<div class="hcell${d===t?' today':''}">${DOW[(dt.getDay()+6)%7]}<b>${dt.getDate()}</b></div>`;}).join('')}
+  </div>`;
+  const hasAllday=days.some(d=>allday[d].length);
+  const ad=hasAllday?`<div class="cal-allday" style="grid-template-columns:${cols}">
+    <div class="lbl">без<br>времени</div>
+    ${days.map(d=>`<div class="acell">${allday[d].map(o=>calChip(o,d<t)).join('')}</div>`).join('')}
+  </div>`:'';
+  const gutter=`<div class="cal-gutter">${Array.from({length:rows},(_,i)=>`<div class="hr">${String(minH+i).padStart(2,'0')}:00</div>`).join('')}</div>`;
+  const nowH=new Date().getHours()+new Date().getMinutes()/60;
+  const body=`<div class="cal-body" style="grid-template-columns:${cols}">
+    ${gutter}
+    ${days.map(d=>{
+      const isToday=d===t;
+      const nowTop=(nowH-minH)*HP;
+      return `<div class="cal-col${isToday?' today':''}">
+        ${Array.from({length:rows},()=>'<div class="hr"></div>').join('')}
+        ${isToday&&nowH>=minH&&nowH<=maxH?`<div class="cal-now" style="top:${nowTop}px"></div>`:''}
+        ${layoutDay(timed[d],minH,HP,d<t)}
+      </div>`;
+    }).join('')}
+  </div>`;
+  return `<div class="cal-wrap"><div class="cal-scroll"><div class="cal-inner" style="min-width:${days.length>1?640:320}px">${head}${ad}${body}</div></div></div>
+  <div class="pv-hint" style="margin-top:10px">Звонок встаёт в сетку, когда в карточке объекта заполнено «Когда перезвонить» и «Во сколько». Без времени — попадает в строку «без времени» сверху.</div>`;
+}
+function calChip(o,over){
+  return `<div class="cal-chip${over?' over':''}" onclick="openModal('${o.id}')" title="${esc(o.apartment)} · ${esc(planWhy(o))}">${esc(o.apartment)||'—'} ${esc(planWhy(o))}</div>`;
+}
+function layoutDay(list,minH,HP,over){
+  if(!list.length)return '';
+  const ev=list.map(o=>{
+    const h=+o.nextTime.slice(0,2),m=+o.nextTime.slice(3,5);
+    return {o,start:h*60+m};
+  }).sort((a,b)=>a.start-b.start);
+  /* раскладываем пересекающиеся по времени звонки в несколько колонок */
+  const clusters=[];let cur=[];
+  ev.forEach(e=>{
+    if(cur.length&&e.start-cur[cur.length-1].start<45)cur.push(e);
+    else{if(cur.length)clusters.push(cur);cur=[e];}
+  });
+  if(cur.length)clusters.push(cur);
+  let out='';
+  clusters.forEach(cl=>{
+    cl.forEach((e,i)=>{
+      const top=(e.start/60-minH)*HP;
+      const w=100/cl.length,left=i*w;
+      out+=`<div class="cal-ev${over?' over':''}" style="top:${top.toFixed(1)}px;height:${(HP*0.92).toFixed(0)}px;left:calc(${left}% + 2px);width:calc(${w}% - 4px)" onclick="openModal('${e.o.id}')" title="${esc(e.o.nextTime)} · ${esc(e.o.apartment)} · ${esc(planWhy(e.o))}">
+        <b>${esc(e.o.nextTime)} ${esc(e.o.apartment)||'—'}</b>${esc(planWhy(e.o))}</div>`;
+    });
+  });
+  return out;
+}
+/* --- месяц --- */
+function renderCalMonth(){
+  const t=todayStr(),a=parseYmd(calState.anchor);
+  const first=new Date(a.getFullYear(),a.getMonth(),1);
+  const start=mondayOf(ymd(first));
+  const cells=[];
+  for(let i=0;i<42;i++)cells.push(addDays(start,i));
+  while(cells.length>35&&parseYmd(cells[35]).getMonth()!==a.getMonth()&&parseYmd(cells[41]).getMonth()!==a.getMonth())cells.length=35;
+  const h=DOW.map(d=>`<div class="dow">${d}</div>`).join('')+cells.map(d=>{
+    const dt=parseYmd(d),out=dt.getMonth()!==a.getMonth();
+    const list=plansOn(d);
+    const shown=list.slice(0,3);
+    return `<div class="mc${out?' out':''}${d===t?' today':''}">
+      <div class="dn">${dt.getDate()}</div>
+      ${shown.map(o=>calChip(o,d<t)).join('')}
+      ${list.length>3?`<div class="cal-more" onclick="calState.mode='day';calState.anchor='${d}';renderToday()">+ ещё ${list.length-3}</div>`:''}
+    </div>`;
+  }).join('');
+  return `<div class="cal-month">${h}</div>
+  <div class="pv-hint" style="margin-top:10px">В клетках — объекты, которым назначен звонок на этот день. Клик по объекту открывает его карточку.</div>`;
+}
 function renderDash(){
   const box=document.getElementById('dashBar');
   if(!box)return;
@@ -1503,8 +1851,8 @@ function generateReport(){
 }
 
 /* ---------- modal ---------- */
-const FORM_FIELDS=['apartment','area','price','cadastral','share','commissionPct','ownerName','ownerPhone','currentAgent','listingUrl','dealStatus','willPay','exclusive','dealType','objState','closedDate','leaseEnd','wonByUs','dealSum','lastContact','nextDate','nextStep','notes'];
-const HISTORY_LABELS={price:'Цена',dealStatus:'Статус',objState:'Состояние',willPay:'Оплата нам',exclusive:'Эксклюзив у другого',ownerName:'Собственник',ownerPhone:'Телефон собственника',currentAgent:'Ведёт',dealType:'Тип сделки',nextStep:'Следующий шаг',nextDate:'Когда перезвонить',commissionPct:'Комиссия, %',wonByUs:'Сделка наша?',dealSum:'Сумма сделки'};
+const FORM_FIELDS=['apartment','area','price','cadastral','share','commissionPct','ownerName','ownerPhone','currentAgent','listingUrl','dealStatus','willPay','exclusive','dealType','objState','closedDate','leaseEnd','wonByUs','dealSum','lastContact','nextDate','nextTime','nextStep','notes'];
+const HISTORY_LABELS={price:'Цена',dealStatus:'Статус',objState:'Состояние',willPay:'Оплата нам',exclusive:'Эксклюзив у другого',ownerName:'Собственник',ownerPhone:'Телефон собственника',currentAgent:'Ведёт',dealType:'Тип сделки',nextStep:'Следующий шаг',nextDate:'Когда перезвонить',nextTime:'Время звонка',commissionPct:'Комиссия, %',wonByUs:'Сделка наша?',dealSum:'Сумма сделки'};
 const HISTORY_VALUE_LABELS={dealStatus:STATUS,objState:{active:'В работе',sold:'Продано',rented:'Сдано',withdrawn:'Снято'},willPay:PAY,exclusive:{unknown:'не выяснено',no:'нет',yes:'да'},dealType:{sale:'Продажа',rent:'Аренда',both:'Продажа + аренда'},wonByUs:{yes:'да',no:'нет'}};
 const HISTORY_FIELD_DEFAULTS={dealStatus:'base',objState:'active',willPay:'unknown',exclusive:'unknown',dealType:'sale'};
 function historyValueLabel(field,v){
@@ -1754,7 +2102,7 @@ function openModal(id){
   set('dealType',o.dealType||'sale');set('objState',o.objState||'active');set('closedDate',o.closedDate);set('leaseEnd',o.leaseEnd);
   set('wonByUs',o.wonByUs);set('dealSum',o.dealSum);
   updateDealFieldLabels();
-  set('lastContact',o.lastContact);set('nextDate',o.nextDate);set('nextStep',o.nextStep);set('notes',o.notes);
+  set('lastContact',o.lastContact);set('nextDate',o.nextDate);set('nextTime',o.nextTime);set('nextStep',o.nextStep);set('notes',o.notes);
   renderOtherLinks(o.otherListings||[]);
   document.getElementById('egrnResult').innerHTML='';
   document.getElementById('autofillNote').innerHTML='';
@@ -1796,7 +2144,7 @@ function saveCard(){
     dealStatus:g('dealStatus'),willPay:g('willPay'),exclusive:g('exclusive'),
     dealType:g('dealType'),objState:g('objState'),closedDate:g('closedDate'),leaseEnd:g('leaseEnd'),
     wonByUs:g('wonByUs'),dealSum:g('dealSum'),
-    lastContact:g('lastContact'),nextDate:g('nextDate'),nextStep:g('nextStep'),notes:g('notes'),
+    lastContact:g('lastContact'),nextDate:g('nextDate'),nextTime:g('nextTime'),nextStep:g('nextStep'),notes:g('notes'),
     otherListings:collectOtherLinks(),
     photo:pendingPhoto!==null?pendingPhoto:(existing?existing.photo:null),
     createdAt:existing?existing.createdAt:Date.now()
@@ -2174,11 +2522,12 @@ function toggleMenu(){document.body.classList.toggle('menu-open');}
 function closeMenu(){document.body.classList.remove('menu-open');}
 function switchView(v){
   closeMenu();
-  if(isGuest&&v!=='actualka'&&v!=='archive')v='actualka';
+  if(isGuest&&v!=='actualka'&&v!=='archive'&&v!=='today')v='actualka';
   state.view=v;
-  [['actualka','tabActualka'],['db','tabDb'],['schema','tabSchema'],['deals','tabDeals'],['archive','tabArchive'],['settings','tabSettings']]
+  [['actualka','tabActualka'],['today','tabToday'],['db','tabDb'],['schema','tabSchema'],['deals','tabDeals'],['archive','tabArchive'],['settings','tabSettings']]
     .forEach(([k,id])=>{const b=document.getElementById(id);if(b)b.classList.toggle('active',v===k);});
   document.getElementById('viewActualka').style.display=v==='actualka'?'':'none';
+  document.getElementById('viewToday').style.display=v==='today'?'':'none';
   document.getElementById('viewSchema').style.display=v==='schema'?'':'none';
   document.getElementById('viewDb').style.display=v==='db'?'':'none';
   document.getElementById('viewDeals').style.display=v==='deals'?'':'none';
@@ -2187,6 +2536,7 @@ function switchView(v){
   const act=v==='actualka';
   document.getElementById('statusChips').style.display=act?'':'none';
   document.getElementById('filtersRow2').style.display=act?'':'none';
+  if(v==='today')renderToday();
   if(v==='schema')renderSchema();
   if(v==='db')renderDb();
   if(v==='deals')renderDeals();
@@ -2513,53 +2863,68 @@ function openPerson(fio){
   /* заметки по всем его квартирам */
   const notes=[];
   flats.forEach(x=>{const ni=schemaInfo[x.o.num];if(ni&&ni.note)notes.push({num:x.o.num,note:ni.note});});
-  /* карточки актуалки по его квартирам */
-  const cards=flats.map(x=>items.find(o=>o.apartment===x.o.num)).filter(Boolean);
 
   let famTotal=0;groupMembers(fio).forEach(m=>{famTotal+=ownerObjects(m).filter(r=>{const o=objOfCad(r.cad);return o&&o.type==='kv';}).length;});
+  const tel=(rec.phone||'').replace(/[^\d+]/g,''),wa=waLink(rec.phone);
 
   const h=`
-    <div class="pers-top">
-      <div class="pers-name">${esc(fio)}</div>
-      <div class="pers-sub">${rec.phone?'☎ '+esc(rec.phone):'телефон не указан'}${rec.share&&rec.share!=='1/1'?' · доля '+esc(rec.share):''}</div>
-      ${flats.length>1?`<span class="pbadge" style="margin-top:7px;display:inline-block">инвестор · ${flats.length} кв.</span>`:''}
-      ${ownerFix[cadKey(rec.cad||'')]?'<span class="fixmark">данные скорректированы вручную</span>':''}
+    <div class="pv-head">
+      <div class="pv-av">${esc(initials(fio))}</div>
+      <div style="flex:1;min-width:0">
+        <div class="pers-name">${esc(fio)}</div>
+        <div class="pers-sub">${rec.phone?esc(rec.phone):'телефон не указан'}${rec.share&&rec.share!=='1/1'?' · доля '+esc(rec.share):''}</div>
+        <div class="pv-badges">
+          ${g?`<span class="pv-badge link" onclick="renameGroup('${jq(fio)}');openPerson('${jq(fio)}')">${esc(g.name)} · ${famTotal} кв.</span>`
+             :`<span class="pv-badge off">не связан с семьёй</span>`}
+          ${flats.length>1?`<span class="pv-badge inv">инвестор · ${flats.length} кв.</span>`:''}
+        </div>
+        ${ownerFix[cadKey(rec.cad||'')]?'<span class="fixmark">данные скорректированы вручную</span>':''}
+      </div>
     </div>
+    ${tel?`<div class="cv-acts">
+      <a class="cv-act cv-tel" href="tel:${tel}">${SVG_CALL}Позвонить</a>
+      ${wa?`<a class="cv-act wa" href="${wa}" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.4 8.4 0 01-12.3 7.5L3 20.5l1.6-5.5A8.4 8.4 0 1121 11.5z"/></svg>WhatsApp</a>`:''}
+    </div>`:''}
 
-    <div class="sec">
-      <div class="sec-h"><b>Квартиры (${flats.length})</b></div>
+    <div class="pv-sec">
+      <div class="pv-sech"><span>Квартиры собственника · ${flats.length}</span>
+        ${flats.length?`<span class="go" onclick="closePerson();jumpTo('${jq(flats[0].o.num)}')">на схеме →</span>`:''}</div>
       ${flats.length?flats.map(x=>{
         const card=items.find(o=>o.apartment===x.o.num);
-        const st=card?(STATUS[card.dealStatus||'base']||{}).label:'';
-        return `<div class="pobj" onclick="closePerson();jumpTo('${x.o.num}')">
-          <span class="pi">🏠</span>
-          <span class="pm">${x.o.num}<small>${x.o.area} м² · ${x.o.floor} эт.${st?' · '+st:''}</small></span>
-          <span class="pgo">→</span></div>`;}).join(''):'<div class="empty2">нет квартир в базе</div>'}
-      ${rest.length?`<div class="pextra">Прочее: ${rest.map(x=>x.o?typeIcon(x.o.type)+' '+x.o.num:'—').join(', ')}</div>`:''}
+        const st=card?(STATUS[card.dealStatus||'base']||{}).label||'':'';
+        const closed=card&&CLOSED.includes(stateOf(card));
+        const price=card&&num(card.price)?(dealOf(card)==='rent'?fmtMoney(card.price)+' / мес.':fmtMoney(card.price)):'не в актуалке';
+        const col=card?statusColor(card):'#8f9aa8';
+        const label=closed?STATE_LABEL[stateOf(card)]:(st||'Не в актуалке');
+        const labCol=closed?'var(--ink-soft)':(card?col:'var(--ink-soft)');
+        const go=card?`openPerson_open('${card.id}')`:`closePerson();jumpTo('${jq(x.o.num)}')`;
+        return `<div class="pv-flat" onclick="${go}">
+          <span class="dot" style="background:${col}"></span>
+          <div style="flex:1;min-width:0">
+            <b>${esc(x.o.num)}</b>
+            <div class="fm">${x.o.area} м² · ${x.o.floor} этаж · ${price}</div>
+          </div>
+          <span class="fs" style="color:${labCol}">${esc(label)}</span>
+        </div>`;}).join(''):'<div class="empty2">нет квартир в базе</div>'}
+      ${rest.length?`<div class="pv-hint">Прочее: ${rest.map(x=>x.o?typeIcon(x.o.type)+' '+x.o.num:'—').join(', ')}</div>`:''}
     </div>
 
-    <div class="sec">
-      <div class="sec-h"><b>Семья / связанные лица</b>
-        ${g?`<span class="pbadge" style="background:var(--fam)" onclick="renameGroup('${jq(fio)}');openPerson('${jq(fio)}')">${esc(g.name)} · ${famTotal} кв.</span>`:'<span class="pbadge" style="background:var(--base)">не связан</span>'}</div>
+    <div class="pv-sec">
+      <div class="pv-sech"><span>Семья и связанные лица</span></div>
       ${fam.length?fam.map(m=>{
         const mo=ownerObjects(m),mf=mo.filter(r=>{const o=objOfCad(r.cad);return o&&o.type==='kv';});
-        return `<div class="mem">
-          <div class="av">${esc((m.split(' ')[0]||' ')[0]+((m.split(' ')[1]||' ')[0]||''))}</div>
-          <div class="in" onclick="openPerson('${jq(m)}')">${esc(m)}<small>${mf.length} кв. · ${mf.map(r=>objOfCad(r.cad).num).join(', ')||'—'}</small></div>
+        return `<div class="mem mem2">
+          <div class="av">${esc(initials(m))}</div>
+          <div class="in" onclick="openPerson('${jq(m)}')"><b style="font-size:14px">${esc(m)}</b><small>${mf.length} кв.${mf.length?' · '+mf.map(r=>objOfCad(r.cad).num).join(', '):''}</small></div>
           <button class="rm" title="убрать из группы" onclick="unlinkPerson('${jq(m)}');openPerson('${jq(fio)}')">×</button>
         </div>`;}).join(''):'<div class="empty2">пока ни с кем не связан</div>'}
       <button class="addbtn" onclick="openLink('${jq(fio)}')">+ Связать с человеком</button>
-      ${phones.length>1?`<div class="pextra">Телефоны группы:<br>${phones.map(esc).join('<br>')}</div>`:''}
+      ${phones.length>1?`<div class="pv-hint pii">Телефоны семьи:<br>${phones.map(esc).join('<br>')}</div>`:''}
     </div>
 
-    ${notes.length?`<div class="sec">
-      <div class="sec-h"><b>Заметки по квартирам</b></div>
+    ${notes.length?`<div class="pv-sec">
+      <div class="pv-sech"><span>Заметки по его квартирам</span></div>
       ${notes.map(n=>`<div class="noteline" onclick="closePerson();jumpTo('${n.num}')"><b>${n.num}</b> ${esc(n.note)}</div>`).join('')}
-    </div>`:''}
-
-    ${cards.length?`<div class="sec">
-      <div class="sec-h"><b>В актуалке (${cards.length})</b></div>
-      ${cards.map(c=>`<div class="noteline" onclick="closePerson();openModal('${c.id}')"><b>${esc(c.apartment)}</b> ${(STATUS[c.dealStatus||'base']||{}).label} · ${STATE_LABEL[stateOf(c)]}${c.price?' · '+esc(c.price):''}</div>`).join('')}
     </div>`:''}`;
 
   document.getElementById('personTitle').textContent='Собственник';
@@ -2567,6 +2932,8 @@ function openPerson(fio){
   document.getElementById('personFoot').innerHTML=`<button class="del" style="color:var(--ink-soft);border-color:var(--line)" onclick="closePerson()">Закрыть</button><button class="save" onclick="editOwner('${jq(fio)}')">Изменить данные</button>`;
   document.getElementById('personOverlay').classList.add('show');
 }
+/* из карточки человека — сразу в карточку объекта */
+function openPerson_open(id){closePerson();openModal(id);}
 function closePerson(){document.getElementById('personOverlay').classList.remove('show')}
 
 /* --- правка данных собственника --- */
