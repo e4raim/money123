@@ -415,6 +415,7 @@ body.guest .f input,body.guest .f select,body.guest .f textarea,body.guest .phot
     <button class="tab" id="tabDb" onclick="switchView('db')">База</button>
     <button class="tab" id="tabSchema" onclick="switchView('schema')">Схема дома</button>
     <button class="tab" id="tabDeals" onclick="switchView('deals')">Сделки</button>
+    <button class="tab" id="tabArchive" onclick="switchView('archive')">Архив</button>
     <button class="tab" id="tabSettings" onclick="switchView('settings')">Настройки</button>
   </div>
 
@@ -476,6 +477,7 @@ body.guest .f input,body.guest .f select,body.guest .f textarea,body.guest .phot
   <div id="viewSchema" style="display:none"></div>
   <div id="viewDb" style="display:none"></div>
   <div id="viewDeals" style="display:none"></div>
+  <div id="viewArchive" style="display:none"></div>
   <div id="viewSettings" style="display:none"></div>
 </main>
 <input type="file" id="cfgFile" accept="application/json" hidden onchange="loadComplexFile(this)">
@@ -780,8 +782,8 @@ function startCloud(user){
 function applyGuestUI(){
   document.body.classList.toggle('guest',isGuest);
   if(!isGuest)return;
-  const tDb=document.getElementById('tabDb'),tSc=document.getElementById('tabSchema'),tSt=document.getElementById('tabSettings'),tDe=document.getElementById('tabDeals');
-  [tDb,tSc,tSt,tDe].forEach(b=>{if(b)b.style.display='none';});
+  const tDb=document.getElementById('tabDb'),tSc=document.getElementById('tabSchema'),tSt=document.getElementById('tabSettings'),tDe=document.getElementById('tabDeals'),tAr=document.getElementById('tabArchive');
+  [tDb,tSc,tSt,tDe,tAr].forEach(b=>{if(b)b.style.display='none';});
   if(state.view!=='actualka')switchView('actualka');
 }
 
@@ -982,8 +984,8 @@ function isStale(o){return !!o.lastContact && !CLOSED.includes(stateOf(o)) && (D
 function todayStr(){return new Date().toISOString().slice(0,10)}
 
 /* ---------- render ---------- */
-function filtered(){
-  let out=items.slice();
+function baseFiltered(){
+  let out=items.filter(o=>stateOf(o)!=='withdrawn');
   const q=state.q.trim().toLowerCase();
   if(q){
     const exact=out.filter(o=>[o.apartment,o.cadastral,o.ownerName,o.ownerPhone,o.currentAgent,o.notes]
@@ -991,16 +993,20 @@ function filtered(){
     const isNumericQ=/^[\d\s+()-]+$/.test(q);
     out=exact.length||isNumericQ?exact:out.filter(o=>fuzzyNameMatch(q,o.ownerName||''));
   }
-  if(state.status==='incomplete') out=out.filter(isIncomplete);
-  else if(state.status==='overdue') out=out.filter(isOverdue);
-  else if(state.status==='stale') out=out.filter(isStale);
-  else if(state.status!=='all') out=out.filter(o=>(o.dealStatus||'base')===state.status);
   if(state.pay!=='all') out=out.filter(o=>(o.willPay||'unknown')===state.pay);
   if(state.dealType==='sale') out=out.filter(o=>dealOf(o)==='sale'||dealOf(o)==='both');
   else if(state.dealType==='rent') out=out.filter(o=>dealOf(o)==='rent'||dealOf(o)==='both');
   if(state.objState==='active') out=out.filter(o=>stateOf(o)==='active');
   else if(state.objState==='closed') out=out.filter(o=>CLOSED.includes(stateOf(o)));
   else if(state.objState!=='all') out=out.filter(o=>stateOf(o)===state.objState);
+  return out;
+}
+function filtered(){
+  let out=baseFiltered();
+  if(state.status==='incomplete') out=out.filter(isIncomplete);
+  else if(state.status==='overdue') out=out.filter(isOverdue);
+  else if(state.status==='stale') out=out.filter(isStale);
+  else if(state.status!=='all') out=out.filter(o=>(o.dealStatus||'base')===state.status);
 
   const s=state.sort, low=1e18;
   out.sort((a,b)=>{
@@ -1151,11 +1157,43 @@ function renderDeals(){
   }).join('');
   box.innerHTML=stats+`<div style="margin-top:14px">${rows}</div>`;
 }
+function renderArchive(){
+  const box=document.getElementById('viewArchive');
+  if(!box)return;
+  const arch=items.filter(o=>stateOf(o)==='withdrawn').slice().sort((a,b)=>(b.closedDate||'').localeCompare(a.closedDate||''));
+  if(!arch.length){box.innerHTML='<div class="empty"><div class="big">В архиве пусто</div>Объекты попадают сюда, когда в карточке меняете «Состояние объекта» на «Снято с продажи» — и пропадают из основной актуалки.</div>';return;}
+  const rows=arch.map(o=>{
+    const dl=dealOf(o)==='rent'?'Аренда':dealOf(o)==='both'?'Прод.+Аренда':'Продажа';
+    return `<div class="lrow">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px">
+        <div onclick="openModal('${o.id}')" style="cursor:pointer;flex:1">
+          <b>${esc(o.apartment)||'Без номера'}</b> · ${dl}${o.closedDate?' · снято '+fmtDateY(o.closedDate):''}
+          <small>${num(o.price)?fmtMoney(o.price):'—'}${o.ownerName?' · '+esc(o.ownerName):''}</small>
+        </div>
+        <button class="st-btn" style="width:auto;margin:0;padding:8px 12px;font-size:12.5px" onclick="event.stopPropagation();restoreFromArchive('${o.id}')">↩ Вернуть в актуалку</button>
+      </div>
+    </div>`;
+  }).join('');
+  box.innerHTML=`<div style="margin-bottom:10px;color:var(--ink-soft);font-size:13px">Снятых с продажи: ${arch.length}</div>${rows}`;
+}
+function restoreFromArchive(id){
+  if(isGuest)return;
+  const existing=items.find(x=>x.id===id);
+  if(!existing)return;
+  const prevSnap=typeof structuredClone==='function'?structuredClone(existing):JSON.parse(JSON.stringify(existing));
+  const next={...existing,objState:'active'};
+  const histEntry=buildHistoryEntry(existing,next);
+  next.history=(existing.history||[]).concat(histEntry?[histEntry]:[]).slice(-30);
+  upsert(next);
+  renderArchive();
+  showUndo('Объект возвращён в актуалку',()=>{upsert(prevSnap);renderArchive();});
+}
 function renderDash(){
   const box=document.getElementById('dashBar');
   if(!box)return;
   if(!items.length){box.innerHTML='';return;}
-  const active=items.filter(o=>!CLOSED.includes(stateOf(o)));
+  const pool=baseFiltered();
+  const active=pool.filter(o=>!CLOSED.includes(stateOf(o)));
   const commission=active.reduce((s,o)=>s+commissionValue(o),0);
   const salePrices=active.filter(o=>dealOf(o)!=='rent'&&num(o.price)>0).map(o=>num(o.price));
   const rentPrices=active.filter(o=>dealOf(o)==='rent'&&num(o.price)>0).map(o=>num(o.price));
@@ -1170,8 +1208,9 @@ function renderDash(){
   box.innerHTML=tiles.map(([l,v])=>`<div class="stat"><div class="sv">${v}</div><div class="sl">${l}</div></div>`).join('');
 }
 function buildChips(){
-  const counts={all:items.length,works:0,thinking:0,refusal:0,base:0,incomplete:0,overdue:0,stale:0};
-  items.forEach(o=>{counts[o.dealStatus||'base']++;if(isIncomplete(o))counts.incomplete++;if(isOverdue(o))counts.overdue++;if(isStale(o))counts.stale++;});
+  const pool=baseFiltered();
+  const counts={all:pool.length,works:0,thinking:0,refusal:0,base:0,incomplete:0,overdue:0,stale:0};
+  pool.forEach(o=>{counts[o.dealStatus||'base']++;if(isIncomplete(o))counts.incomplete++;if(isOverdue(o))counts.overdue++;if(isStale(o))counts.stale++;});
   const defs=[['all','Все'],['works','Работает'],['thinking','Думает'],['refusal','Отказ'],['base','Не общались']];
   let html=defs.map(([k,lab])=>`<button class="chip ${state.status===k?'active':''}" data-k="${k}" onclick="setStatus('${k}')">${k!=='all'?'<span class="dot"></span>':''}${lab}<span class="cnt">${counts[k]}</span></button>`).join('');
   if(counts.overdue) html+=`<button class="chip warn ${state.status==='overdue'?'active':''}" onclick="setStatus('overdue')">⏰ Просрочен звонок<span class="cnt">${counts.overdue}</span></button>`;
@@ -1755,12 +1794,13 @@ function schemaIndex(){
 function switchView(v){
   if(isGuest&&v!=='actualka')v='actualka';
   state.view=v;
-  [['actualka','tabActualka'],['db','tabDb'],['schema','tabSchema'],['deals','tabDeals'],['settings','tabSettings']]
+  [['actualka','tabActualka'],['db','tabDb'],['schema','tabSchema'],['deals','tabDeals'],['archive','tabArchive'],['settings','tabSettings']]
     .forEach(([k,id])=>{const b=document.getElementById(id);if(b)b.classList.toggle('active',v===k);});
   document.getElementById('viewActualka').style.display=v==='actualka'?'':'none';
   document.getElementById('viewSchema').style.display=v==='schema'?'':'none';
   document.getElementById('viewDb').style.display=v==='db'?'':'none';
   document.getElementById('viewDeals').style.display=v==='deals'?'':'none';
+  document.getElementById('viewArchive').style.display=v==='archive'?'':'none';
   document.getElementById('viewSettings').style.display=v==='settings'?'':'none';
   const act=v==='actualka';
   document.getElementById('statusChips').style.display=act?'':'none';
@@ -1768,6 +1808,7 @@ function switchView(v){
   if(v==='schema')renderSchema();
   if(v==='db')renderDb();
   if(v==='deals')renderDeals();
+  if(v==='archive')renderArchive();
   if(v==='settings')renderSettings();
 }
 
