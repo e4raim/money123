@@ -547,7 +547,7 @@ body.guest .f input,body.guest .f select,body.guest .f textarea,body.guest .phot
             <option value="active">В работе</option>
             <option value="sold">Продано</option>
             <option value="rented">Сдано</option>
-            <option value="withdrawn">Снято с продажи</option>
+            <option value="withdrawn" id="withdrawnOpt">Снято с продажи</option>
           </select>
         </label>
       </div>
@@ -1168,7 +1168,7 @@ function renderArchive(){
   const box=document.getElementById('viewArchive');
   if(!box)return;
   const arch=items.filter(o=>stateOf(o)==='withdrawn').slice().sort((a,b)=>(b.closedDate||'').localeCompare(a.closedDate||''));
-  if(!arch.length){box.innerHTML='<div class="empty"><div class="big">В архиве пусто</div>Объекты попадают сюда, когда в карточке меняете «Состояние объекта» на «Снято с продажи» — и пропадают из основной актуалки.</div>';return;}
+  if(!arch.length){box.innerHTML='<div class="empty"><div class="big">В архиве пусто</div>Объекты попадают сюда, когда в карточке меняете «Состояние объекта» на «Снято с продажи/аренды» — и пропадают из основной актуалки.</div>';return;}
   const rows=arch.map(o=>{
     const dl=dealOf(o)==='rent'?'Аренда':dealOf(o)==='both'?'Прод.+Аренда':'Продажа';
     return `<div class="lrow">
@@ -1262,6 +1262,8 @@ function updateDealFieldLabels(){
       inp.placeholder='фактическая сумма продажи';
     }
   }
+  const wOpt=document.getElementById('withdrawnOpt');
+  if(wOpt) wOpt.textContent=dt==='rent'?'Снято с аренды':dt==='both'?'Снято с продажи/аренды':'Снято с продажи';
 }
 
 /* ---------- отчёт ---------- */
