@@ -1468,7 +1468,10 @@ function buildHistoryEntry(prev,next){
   Object.keys(HISTORY_LABELS).forEach(f=>{
     const a=prev[f]||HISTORY_FIELD_DEFAULTS[f]||'';
     const b=next[f]||HISTORY_FIELD_DEFAULTS[f]||'';
-    if(String(a)!==String(b)) changes.push({field:f,from:historyValueLabel(f,a),to:historyValueLabel(f,b)});
+    /* сравниваем то, что увидит человек: иначе «155000000» -> «155 000 000» после
+       автоформата цены запишется в историю как правка, хотя ничего не изменилось */
+    const from=historyValueLabel(f,a),to=historyValueLabel(f,b);
+    if(from!==to) changes.push({field:f,from,to});
   });
   return changes.length?{ts:Date.now(),changes}:null;
 }
@@ -1576,6 +1579,9 @@ function checkDraft(o){
   if(confirm('Есть несохранённый черновик этой формы (остался после случайного закрытия). Восстановить его?')){
     FORM_FIELDS.forEach(f=>{if(f in draft)document.getElementById('fld_'+f).value=draft[f];});
     if(draft.otherListings) renderOtherLinks(draft.otherListings);
+    /* раскрываем свёрнутое: иначе восстановленная правка останется невидимой */
+    document.querySelectorAll('#modal .fsec').forEach(d=>d.open=true);
+    updateDealFieldLabels();
   }else{
     clearDraft();
   }
