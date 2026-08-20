@@ -442,6 +442,27 @@ body.privacy .owner .name:active,
 body.privacy .pers-name:active{filter:none}
 .privbtn{border:1px solid var(--line);background:var(--card);color:var(--ink-soft);border-radius:11px;width:42px;height:42px;flex:none;cursor:pointer;font-size:17px;display:flex;align-items:center;justify-content:center}
 .privbtn.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.bell-wrap{position:relative;flex:none}
+.bell-dot{position:absolute;top:-5px;right:-5px;min-width:18px;height:18px;border-radius:9px;background:var(--brass);color:#fff;font-size:10.5px;font-weight:800;display:none;align-items:center;justify-content:center;padding:0 5px;border:2px solid var(--paper)}
+.bell-dot.on{display:flex}
+.bell-panel{display:none;position:absolute;right:0;top:50px;z-index:96;width:min(92vw,360px);max-height:60vh;overflow:auto;background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:0 16px 44px rgba(30,28,24,.22);padding:8px}
+.bell-panel.show{display:block}
+.bell-h{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:7px 8px 9px}
+.bell-h b{font-size:13.5px}
+.bell-h button{border:none;background:none;color:var(--brass);font-size:12px;font-weight:600;cursor:pointer;font-family:var(--sans);padding:2px 4px}
+.bell-item{display:flex;gap:10px;padding:9px 8px;border-radius:10px;cursor:pointer;border-top:1px solid var(--line)}
+.bell-item:hover{background:var(--surface2)}
+.bell-item.new{background:var(--brass-tint)}
+.bell-item .ic{width:26px;height:26px;border-radius:8px;background:var(--fam-tint);color:var(--fam);flex:none;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700}
+.bell-item .bd{flex:1;min-width:0}
+.bell-item .bt{font-size:13px;line-height:1.4;color:var(--ink);word-break:break-word}
+.bell-item .bt b{color:var(--brass)}
+.bell-item .bw{font-size:11px;color:var(--ink-soft);margin-top:3px}
+.bell-empty{font-size:12.5px;color:var(--ink-soft);padding:10px 8px 14px;line-height:1.5}
+@media (max-width:760px){.bell-panel{position:fixed;left:10px;right:10px;top:62px;width:auto;max-height:66vh}
+  #lockBtn{display:none}}   /* на телефоне замок уже висит кружком внизу справа */
+.cv-ev.boss:before{border-color:var(--fam)}
+.cv-ev .au{color:var(--fam);font-weight:700}
 .floatlock{position:fixed;right:16px;bottom:16px;z-index:70;width:52px;height:52px;border-radius:50%;border:none;background:var(--ink);color:#fff;font-size:20px;cursor:pointer;box-shadow:0 6px 20px rgba(30,28,24,.3)}
 .floatlock:active{transform:scale(.93)}
 .undo-toast{position:fixed;left:calc(50% + var(--sbw)/2);bottom:24px;transform:translate(-50%,16px);z-index:90;background:#23211E;color:#F2EAD6;padding:12px 12px 12px 18px;border-radius:14px;box-shadow:0 12px 32px rgba(0,0,0,.28);display:flex;align-items:center;gap:14px;font-size:14px;opacity:0;pointer-events:none;transition:.2s ease;max-width:calc(100vw - 32px)}
@@ -664,8 +685,15 @@ body.guest .f input,body.guest .f select,body.guest .f textarea,body.guest .phot
       <input id="q" type="search" placeholder="Поиск: ФИО, № квартиры, кадастр, телефон…" autocomplete="off">
       <div id="sugBox" class="sug-box"></div>
     </div>
+    <div class="bell-wrap owner-only">
+      <button class="privbtn" id="bellBtn" onclick="toggleBell()" title="Что сделал руководитель" aria-label="Уведомления">
+        <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M18 8a6 6 0 10-12 0c0 6-2 7-2 7h16s-2-1-2-7"/><path d="M13.7 20a2 2 0 01-3.4 0"/></svg>
+        <span class="bell-dot" id="bellCount"></span>
+      </button>
+      <div class="bell-panel" id="bellPanel"></div>
+    </div>
     <button class="privbtn" id="privBtn" onclick="togglePrivacy()" title="Скрыть персональные данные">👁</button>
-    <button class="privbtn" onclick="lockNow()" title="Быстро заблокировать">🔒</button>
+    <button class="privbtn" id="lockBtn" onclick="lockNow()" title="Быстро заблокировать">🔒</button>
     <button class="btn-add" onclick="openModal()"><span class="plus">+</span><span class="t">Добавить объект</span></button>
   </div>
 
@@ -1199,6 +1227,18 @@ function upsert(item){
   else{const i=items.findIndex(x=>x.id===item.id);if(i>=0)items[i]=item;else items.push(item);saveLocal();render();}
 }
 function removeItem(id){if(cloud){dbRef.child(id).remove();}else{items=items.filter(x=>x.id!==id);saveLocal();render();}}
+/* пишем только ленту: чужая правка карточки её не перезатрёт, и руководителю
+   можно открыть доступ ровно к этому полю, не пуская его в остальную карточку */
+function upsertLog(id,log){
+  if(cloud) return dbRef.child(id).child('log').set(log);
+  const i=items.findIndex(x=>x.id===id);
+  if(i>=0){items[i]={...items[i],log};saveLocal();render();}
+  return Promise.resolve();
+}
+function logWriteFailed(e){
+  console.error(e);
+  alert('Не удалось сохранить запись — база её не приняла.\n\nЕсли это гостевой доступ, в правилах Firebase нужно разрешить запись в поле log.');
+}
 function strip(o){const c={...o};delete c.id;return c;}
 function genId(){return 'o'+Date.now().toString(36)+Math.random().toString(36).slice(2,6)}
 
@@ -1352,9 +1392,16 @@ function applyViewMode(){
   if(g) g.classList.toggle('on',state.viewMode!=='list');
   if(l) l.classList.toggle('on',state.viewMode==='list');
 }
+function refreshOpenFeed(){
+  const ov=document.getElementById('overlay');
+  if(!ov||!ov.classList.contains('show')||modalMode!=='view'||!editingId)return;
+  const o=items.find(x=>x.id===editingId);
+  if(o)renderFeed(o);                            /* чужой комментарий появляется, не закрывая карточку */
+}
 function render(){
   refreshCurrentView();
-  setJkLabel(); buildChips(); renderDash(); renderBulkBar(); applyViewMode();
+  refreshOpenFeed();
+  setJkLabel(); buildChips(); renderDash(); renderBulkBar(); applyViewMode(); renderBell();
   const grid=document.getElementById('grid');
   const list=filtered();
   if(!items.length){
@@ -1725,6 +1772,74 @@ function renderCalMonth(){
   return `<div class="cal-month">${h}</div>
   <div class="pv-hint" style="margin-top:10px">В клетках — объекты, которым назначен звонок на этот день. Клик по объекту открывает его карточку.</div>`;
 }
+/* ---------- уведомления: только то, что сделал руководитель ---------- */
+function notifSeen(){try{return +(localStorage.getItem('actualka_notif_seen')||0)}catch(e){return 0}}
+function setNotifSeen(ts){try{localStorage.setItem('actualka_notif_seen',String(ts))}catch(e){}}
+function bossEvents(){
+  const out=[];
+  items.forEach(o=>{
+    (o.log||[]).forEach(e=>{ if(e&&e.by==='guest') out.push({ts:e.ts||0,id:o.id,apt:o.apartment,kind:'note',text:e.text||'',who:e.byName||'Руководитель'}); });
+    (o.history||[]).forEach(h=>{ if(h&&h.by==='guest') out.push({ts:h.ts||0,id:o.id,apt:o.apartment,kind:'sys',changes:h.changes||[],who:h.byName||'Руководитель'}); });
+  });
+  return out.sort((a,b)=>b.ts-a.ts).slice(0,60);
+}
+function renderBell(){
+  const btn=document.getElementById('bellCount');
+  if(!btn)return;
+  if(isGuest){btn.classList.remove('on');return;}
+  const seen=notifSeen();
+  const unread=bossEvents().filter(e=>e.ts>seen).length;
+  btn.textContent=unread>99?'99+':String(unread);
+  btn.classList.toggle('on',unread>0);
+  const panel=document.getElementById('bellPanel');
+  if(panel&&panel.classList.contains('show'))fillBell();
+}
+function fillBell(){
+  const panel=document.getElementById('bellPanel');
+  if(!panel)return;
+  const seen=notifSeen(),list=bossEvents();
+  const head=`<div class="bell-h"><b>Руководитель</b>${list.length?`<button onclick="markBellRead()">отметить прочитанным</button>`:''}</div>`;
+  if(!list.length){
+    panel.innerHTML=head+`<div class="bell-empty">Пока пусто. Здесь появятся комментарии руководителя и его правки в карточках — больше ничего сюда не попадает.</div>`;
+    return;
+  }
+  panel.innerHTML=head+list.map(e=>{
+    const apt=esc(e.apt)||'без номера';
+    const body=e.kind==='note'
+      ? `<b>${apt}</b> — «${esc(e.text)}»`
+      : `<b>${apt}</b> — ${e.changes.map(c=>`${HISTORY_LABELS[c.field]||c.field}: ${esc(c.from)} → ${esc(c.to)}`).join('; ')}`;
+    return `<div class="bell-item${e.ts>seen?' new':''}" onclick="openFromBell('${e.id}')">
+      <div class="ic">${e.kind==='note'?'💬':'✎'}</div>
+      <div class="bd"><div class="bt pii">${body}</div><div class="bw">${esc(e.who)} · ${fmtWhen(e.ts)}</div></div>
+    </div>`;
+  }).join('');
+}
+function toggleBell(){
+  const panel=document.getElementById('bellPanel');
+  if(!panel)return;
+  const open=!panel.classList.contains('show');
+  panel.classList.toggle('show',open);
+  if(open)fillBell();
+}
+function closeBell(){const p=document.getElementById('bellPanel');if(p)p.classList.remove('show');}
+function markBellRead(){
+  const list=bossEvents();
+  setNotifSeen(list.length?list[0].ts:Date.now());
+  renderBell();fillBell();
+}
+function openFromBell(id){
+  closeBell();
+  const e=bossEvents().find(x=>x.id===id);
+  if(e&&e.ts>notifSeen())setNotifSeen(e.ts);
+  renderBell();
+  if(items.some(o=>o.id===id))openModal(id);
+}
+document.addEventListener('click',e=>{
+  const p=document.getElementById('bellPanel');
+  if(!p||!p.classList.contains('show'))return;
+  if(e.target.closest('.bell-wrap'))return;
+  closeBell();
+});
 function renderDash(){
   const box=document.getElementById('dashBar');
   if(!box)return;
@@ -1881,7 +1996,7 @@ function buildHistoryEntry(prev,next){
     const from=historyValueLabel(f,a),to=historyValueLabel(f,b);
     if(from!==to) changes.push({field:f,from,to});
   });
-  return changes.length?{ts:Date.now(),changes}:null;
+  return changes.length?stamp({ts:Date.now(),changes}):null;
 }
 function draftKey(){return 'actualka_draft_'+(editingId||'new')}
 function collectFormFields(){const g=f=>document.getElementById('fld_'+f).value.trim();const o={};FORM_FIELDS.forEach(f=>o[f]=g(f));o.otherListings=collectOtherLinks();return o;}
@@ -1951,7 +2066,7 @@ function setModalMode(m){
   document.getElementById('saveBtn').style.display=view?'none':'';
   document.getElementById('delBtn').style.display=(!view&&editingId)?'block':'none';
   document.getElementById('closeViewBtn').style.display=view?'block':'none';
-  document.getElementById('editBtn').style.display=view?'block':'none';
+  document.getElementById('editBtn').style.display=(view&&!isGuest)?'block':'none';
   document.getElementById('mTitle').textContent=view?'Карточка объекта':(editingId?'Редактировать объект':'Новый объект');
   document.getElementById('modal').scrollTop=0;
   const body=document.querySelector('#overlay .modal-body'); if(body) body.scrollTop=0;
@@ -2036,18 +2151,18 @@ function renderCardView(o){
     ${o.notes?`<div style="margin-bottom:14px"><div style="font-size:11px;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.3px;font-weight:700;margin-bottom:7px">Заметки</div><div class="cv-note pii">${esc(o.notes)}</div></div>`:''}
 
     <div style="font-size:11px;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.3px;font-weight:700;margin-bottom:9px">Хронология</div>
-    ${isGuest?'':`<div class="cv-comp">
-      <input id="logInput" placeholder="Что сказал собственник?" onkeydown="if(event.key==='Enter')addLogEntry()">
-      <button onclick="addLogEntry()">Записать</button>
-    </div>`}
+    <div class="cv-comp">
+      <input id="logInput" placeholder="${isGuest?'Комментарий руководителя…':'Что сказал собственник?'}" onkeydown="if(event.key==='Enter')addLogEntry()">
+      <button onclick="addLogEntry()">${isGuest?'Оставить':'Записать'}</button>
+    </div>
     <div id="cvFeed"></div>`;
   renderFeed(o);
 }
 /* лента: ваши заметки и то, что приложение записало само — в одном потоке */
 function feedEntries(o){
   const out=[];
-  (o.log||[]).forEach((e,i)=>out.push({ts:e.ts||0,kind:'note',text:e.text||'',idx:i}));
-  (o.history||[]).forEach(h=>out.push({ts:h.ts||0,kind:'sys',changes:h.changes||[]}));
+  (o.log||[]).forEach((e,i)=>out.push({ts:e.ts||0,kind:'note',text:e.text||'',idx:i,by:e.by,byName:e.byName}));
+  (o.history||[]).forEach(h=>out.push({ts:h.ts||0,kind:'sys',changes:h.changes||[],by:h.by,byName:h.byName}));
   return out.sort((a,b)=>b.ts-a.ts);
 }
 function fmtWhen(ts){
@@ -2067,35 +2182,56 @@ function renderFeed(o){
   box.innerHTML='<div class="cv-feed">'+list.map(e=>{
     if(e.kind==='sys'){
       const txt=e.changes.map(c=>`${HISTORY_LABELS[c.field]||c.field}: <b>${esc(c.from)}</b> → <b>${esc(c.to)}</b>`).join('<br>');
-      return `<div class="cv-ev sys"><div class="when">${fmtWhen(e.ts)}</div><div class="txt"><span class="chg">${txt}</span></div></div>`;
+      const w=authorLabel(e);
+      return `<div class="cv-ev sys${w?' boss':''}"><div class="when">${fmtWhen(e.ts)}${w?` · <span class="au">${esc(w)}</span>`:''}</div><div class="txt"><span class="chg">${txt}</span></div></div>`;
     }
-    return `<div class="cv-ev"><div class="when">${fmtWhen(e.ts)}
-      ${isGuest?'':`<button class="rm" title="удалить запись" onclick="removeLogEntry(${e.idx})">×</button>`}</div>
+    const who=authorLabel(e);
+    return `<div class="cv-ev${who?' boss':''}"><div class="when">${fmtWhen(e.ts)}${who?` · <span class="au">${esc(who)}</span>`:''}
+      ${canRemoveLog(e)?`<button class="rm" title="удалить запись" onclick="removeLogEntry(${e.idx})">×</button>`:''}</div>
       <div class="txt pii">${esc(e.text)}</div></div>`;
   }).join('')+'</div>';
 }
 function addLogEntry(){
-  if(isGuest||!editingId)return;
+  if(!editingId)return;
   const el=document.getElementById('logInput');
   const text=(el?el.value:'').trim();
   if(!text)return;
   const o=items.find(x=>x.id===editingId); if(!o)return;
-  const next={...o,log:(o.log||[]).concat([{ts:Date.now(),text}])};
+  const log=(o.log||[]).concat([stamp({ts:Date.now(),text})]);
   el.value='';
-  upsert(next);
-  const fresh=items.find(x=>x.id===editingId)||next;
-  renderFeed(fresh);
+  Promise.resolve(upsertLog(o.id,log)).catch(logWriteFailed);
+  renderFeed({...o,log});
 }
+function canRemoveLog(e){return !isGuest || e.by==='guest'}   /* руководитель убирает только своё */
 function removeLogEntry(idx){
-  if(isGuest||!editingId)return;
+  if(!editingId)return;
   const o=items.find(x=>x.id===editingId); if(!o||!o.log||!o.log[idx])return;
+  if(!canRemoveLog(o.log[idx]))return;
   if(!confirm('Удалить эту запись?'))return;
-  const backup=typeof structuredClone==='function'?structuredClone(o):JSON.parse(JSON.stringify(o));
-  const next={...o,log:o.log.filter((_,i)=>i!==idx)};
-  upsert(next);
-  renderFeed(items.find(x=>x.id===editingId)||next);
-  showUndo('Запись удалена',()=>{upsert(backup);renderFeed(backup);});
+  const before=o.log.slice();
+  const log=o.log.filter((_,i)=>i!==idx);
+  Promise.resolve(upsertLog(o.id,log)).catch(logWriteFailed);
+  renderFeed({...o,log});
+  showUndo('Запись удалена',()=>{
+    const cur=items.find(x=>x.id===o.id)||o;
+    Promise.resolve(upsertLog(o.id,before)).catch(logWriteFailed);
+    renderFeed({...cur,log:before});
+  });
 }
+/* ---------- кто автор записи: вы или руководитель ---------- */
+function whoAmI(){return isGuest?'guest':'owner'}
+function myLabel(){
+  try{
+    const u=(window.firebase&&firebase.auth&&firebase.auth().currentUser)||null;
+    if(u&&u.email)return u.email;
+  }catch(e){}
+  return isGuest?'Руководитель':'Эль';
+}
+function authorLabel(e){
+  if(!e||e.by!=='guest')return '';
+  return e.byName||'Руководитель';
+}
+function stamp(obj){return Object.assign({by:whoAmI(),byName:myLabel()},obj)}
 function initials(fio){
   const p=(fio||'').trim().split(/\s+/);
   if(!p[0])return '—';
