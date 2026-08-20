@@ -227,15 +227,19 @@ label.f .lb{font-size:12.5px;font-weight:600;color:var(--ink-soft);margin-bottom
 body.guest #tabDb,body.guest #tabSchema,body.guest #tabDeals,body.guest .sb-group-acct{display:none}
 .chip,.navi,.btn-add,.call,.modal-foot .save,.privbtn,.floatlock{transition-property:transform,background-color,border-color,color,box-shadow,filter;transition-duration:.15s;transition-timing-function:ease}
 .chip:active,.navi:active,.btn-add:active,.call:active,.modal-foot .save:active,.privbtn:active{transform:scale(.96)}
-/* узкий экран: сайдбар превращается в горизонтальную ленту над шапкой */
-@media (max-width:900px){
+/* кнопка-гамбургер: только на телефоне, на планшете и шире сайдбар и так виден */
+.menu-btn{display:none;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:11px;width:42px;height:42px;flex:none;cursor:pointer;align-items:center;justify-content:center;padding:0}
+.menu-btn svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:2}
+.sb-backdrop{position:fixed;inset:0;background:rgba(20,18,16,.5);z-index:49;opacity:0;pointer-events:none;transition:opacity .2s ease}
+/* телефон: сайдбар уезжает за край и выдвигается по кнопке «меню» */
+@media (max-width:760px){
   :root{--sbw:0px}
-  .sidebar{position:static;width:auto;flex-direction:row;align-items:center;gap:6px;padding:8px 10px;overflow-x:auto;overflow-y:hidden;scrollbar-width:none;border-bottom:1px solid rgba(255,255,255,.08)}
-  .sidebar::-webkit-scrollbar{display:none}
-  .sb-brand,.sb-group{display:none}
-  .sb-nav{flex-direction:row;gap:6px;padding:0}
-  .navi{width:auto;flex:none;white-space:nowrap;padding:8px 13px}
+  .menu-btn{display:flex}
+  .sidebar{width:min(80vw,270px);transform:translateX(-100%);transition:transform .24s ease;box-shadow:0 0 40px rgba(0,0,0,.4)}
+  body.menu-open .sidebar{transform:none}
+  body.menu-open .sb-backdrop{opacity:1;pointer-events:auto}
 }
+@media (prefers-reduced-motion:reduce){.sidebar{transition:none}}
 .schema-head{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:14px}
 .twr{border:1px solid var(--line);background:var(--card);color:var(--ink-soft);padding:8px 14px;border-radius:999px;font-size:13.5px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:8px}
 .twr .sw{width:13px;height:13px;border-radius:3px;border:1px solid rgba(0,0,0,.15)}
@@ -419,6 +423,7 @@ body.guest .f input,body.guest .f select,body.guest .f textarea,body.guest .phot
 </head>
 <body>
 
+<div class="sb-backdrop" onclick="closeMenu()"></div>
 <aside class="sidebar">
   <div class="sb-brand">
     <div class="sb-mark">А</div>
@@ -444,6 +449,9 @@ body.guest .f input,body.guest .f select,body.guest .f textarea,body.guest .phot
 
 <header>
   <div class="bar-top">
+    <button class="menu-btn" onclick="toggleMenu()" title="Меню" aria-label="Меню">
+      <svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+    </button>
     <div class="search">
       <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
       <input id="q" type="search" placeholder="Поиск: ФИО, № квартиры, кадастр, телефон…" autocomplete="off">
@@ -770,7 +778,7 @@ const state = {q:"", status:"all", pay:"all", sort:"new", dealType:"all", objSta
 
 /* ---------- ЖК label ---------- */
 function jkName(){return localStorage.getItem('actualka_jk')||(COMPLEX&&COMPLEX.name)||''}
-function setJkLabel(){const el=document.getElementById('jkLabel');if(el)el.textContent='ЖК '+jkName();}
+function setJkLabel(){const el=document.getElementById('jkLabel');if(el)el.textContent=jkName()?('ЖК '+jkName()):'';}
 function renameJK(){
   const v=prompt('Название ЖК для этой актуалки:', jkName());
   if(v!==null && v.trim()){localStorage.setItem('actualka_jk',v.trim());setJkLabel();}
@@ -1834,7 +1842,11 @@ function schemaIndex(){
   const multi={};Object.keys(owners).forEach(nm=>{if(owners[nm].length>1)owners[nm].forEach(o=>{const d=decodeApt(o.apartment);if(d)multi[`${d.k}-${d.f}-${d.p}`]=nm;});});
   return {map,owners,multi};
 }
+/* выдвижное меню на телефоне */
+function toggleMenu(){document.body.classList.toggle('menu-open');}
+function closeMenu(){document.body.classList.remove('menu-open');}
 function switchView(v){
+  closeMenu();
   if(isGuest&&v!=='actualka'&&v!=='archive')v='actualka';
   state.view=v;
   [['actualka','tabActualka'],['db','tabDb'],['schema','tabSchema'],['deals','tabDeals'],['archive','tabArchive'],['settings','tabSettings']]
@@ -2450,7 +2462,7 @@ document.getElementById('cellOverlay').addEventListener('click',e=>{if(e.target.
 document.addEventListener('mousemove',e=>{if(state.view==='schema'&&e.target.closest&&e.target.closest('.schemaWrap'))schemaTip(e);else if(!e.target.closest||!e.target.closest('.brick'))document.getElementById('schemaTip').style.display='none';});
 document.getElementById('viewSchema').addEventListener('mouseleave',()=>{document.getElementById('schemaTip').style.display='none';});
 window.addEventListener('resize',()=>{if(state.view==='schema')fitSchema();});
-document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeModal();closeReport();closeCell();closePerson();closeLink();hideSuggest();}});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeModal();closeReport();closeCell();closePerson();closeLink();hideSuggest();closeMenu();}});
 
 /* ---------- компактная шапка, скрывающаяся при скролле вниз ---------- */
 (function(){
