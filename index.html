@@ -782,9 +782,9 @@ function startCloud(user){
 function applyGuestUI(){
   document.body.classList.toggle('guest',isGuest);
   if(!isGuest)return;
-  const tDb=document.getElementById('tabDb'),tSc=document.getElementById('tabSchema'),tSt=document.getElementById('tabSettings'),tDe=document.getElementById('tabDeals'),tAr=document.getElementById('tabArchive');
-  [tDb,tSc,tSt,tDe,tAr].forEach(b=>{if(b)b.style.display='none';});
-  if(state.view!=='actualka')switchView('actualka');
+  const tDb=document.getElementById('tabDb'),tSc=document.getElementById('tabSchema'),tSt=document.getElementById('tabSettings'),tDe=document.getElementById('tabDeals');
+  [tDb,tSc,tSt,tDe].forEach(b=>{if(b)b.style.display='none';});
+  if(state.view!=='actualka'&&state.view!=='archive')switchView('actualka');
 }
 
 /* ---------- одна сессия на аккаунт ---------- */
@@ -1177,7 +1177,7 @@ function renderArchive(){
           <b>${esc(o.apartment)||'Без номера'}</b> · ${dl}${o.closedDate?' · снято '+fmtDateY(o.closedDate):''}
           <small>${num(o.price)?fmtMoney(o.price):'—'}${o.ownerName?' · '+esc(o.ownerName):''}</small>
         </div>
-        <button class="st-btn" style="width:auto;margin:0;padding:8px 12px;font-size:12.5px" onclick="event.stopPropagation();restoreFromArchive('${o.id}')">↩ Вернуть в актуалку</button>
+        ${isGuest?'':`<button class="st-btn" style="width:auto;margin:0;padding:8px 12px;font-size:12.5px" onclick="event.stopPropagation();restoreFromArchive('${o.id}')">↩ Вернуть в актуалку</button>`}
       </div>
     </div>`;
   }).join('');
@@ -1799,7 +1799,7 @@ function schemaIndex(){
   return {map,owners,multi};
 }
 function switchView(v){
-  if(isGuest&&v!=='actualka')v='actualka';
+  if(isGuest&&v!=='actualka'&&v!=='archive')v='actualka';
   state.view=v;
   [['actualka','tabActualka'],['db','tabDb'],['schema','tabSchema'],['deals','tabDeals'],['archive','tabArchive'],['settings','tabSettings']]
     .forEach(([k,id])=>{const b=document.getElementById(id);if(b)b.classList.toggle('active',v===k);});
