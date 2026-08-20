@@ -1057,7 +1057,14 @@ function renderBulkBar(){
   btn.textContent=selectMode?'✕ Отменить выбор':'☑ Выбрать несколько';
   document.getElementById('bulkCount').textContent='Выбрано: '+selectedIds.size;
 }
+function refreshCurrentView(){
+  if(state.view==='schema')renderSchema();
+  else if(state.view==='db')renderDb();
+  else if(state.view==='deals')renderDeals();
+  else if(state.view==='archive')renderArchive();
+}
 function render(){
+  refreshCurrentView();
   setJkLabel(); buildChips(); renderDash(); renderBulkBar();
   const grid=document.getElementById('grid');
   const list=filtered();
