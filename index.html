@@ -135,7 +135,9 @@ main{max-width:1240px;margin:0 auto;padding:18px}
 .dash .stat{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 16px;box-shadow:var(--shadow);min-width:130px;flex:1}
 .dash .stat .sv{font-family:var(--serif);font-size:22px;font-weight:700;color:var(--ink)}
 .dash .stat .sl{font-size:11.5px;color:var(--ink-soft);margin-top:2px;text-transform:uppercase;letter-spacing:.3px}
-.card{background:var(--card);border:1px solid var(--line);border-radius:16px;overflow:hidden;cursor:pointer;box-shadow:var(--shadow);transition:transform .16s ease,box-shadow .16s ease;display:flex;flex-direction:column}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;overflow:hidden;cursor:pointer;box-shadow:var(--shadow);transition:transform .16s ease,box-shadow .16s ease;display:flex;flex-direction:column;
+  content-visibility:auto;contain-intrinsic-size:auto 430px}   /* за экраном браузер не считает раскладку */
+.grid.list .card{contain-intrinsic-size:auto 108px}
 @media (hover:hover) and (pointer:fine){
   .card:hover{transform:translateY(-3px);box-shadow:0 2px 4px rgba(30,28,24,.06),0 14px 30px rgba(30,28,24,.11)}
 }
@@ -173,6 +175,9 @@ main{max-width:1240px;margin:0 auto;padding:18px}
 .next.overdue .k{color:var(--no)}
 .next .k{color:var(--ink-soft)}
 
+.more-row{display:flex;align-items:center;justify-content:center;gap:14px;padding:18px 0 4px;font-size:13px;color:var(--ink-soft)}
+.more-row button{border:1px solid var(--line);background:var(--card);color:var(--brass);border-radius:11px;padding:11px 20px;font-size:14px;font-weight:600;cursor:pointer;font-family:var(--sans)}
+.more-row button:hover{border-color:var(--brass)}
 .empty{text-align:center;padding:70px 20px;color:var(--ink-soft)}
 .empty .big{font-family:var(--serif);font-size:22px;color:var(--ink);margin-bottom:8px}
 .empty button{margin-top:16px}
@@ -606,7 +611,7 @@ body.privacy .pers-name:active{filter:none}
 .db-bar input:focus{border-color:var(--brass);box-shadow:0 0 0 3px var(--brass-tint)}
 .db-count{font-size:12.5px;color:var(--ink-soft);margin-bottom:9px}
 .db-table{background:var(--card);border:1px solid var(--line);border-radius:14px;overflow:hidden}
-.db-head,.db-row{display:grid;grid-template-columns:110px 58px 44px 1fr 76px;gap:8px;padding:9px 13px;align-items:center;font-size:13.5px}
+.db-head,.db-row{content-visibility:auto;contain-intrinsic-size:auto 44px;display:grid;grid-template-columns:110px 58px 44px 1fr 76px;gap:8px;padding:9px 13px;align-items:center;font-size:13.5px}
 .db-head{background:var(--surface2);border-bottom:1px solid var(--line);font-size:11px;font-weight:700;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.3px;position:sticky;top:0;z-index:2}
 .db-row{border-bottom:1px solid var(--line);cursor:pointer}
 .db-row:hover{background:var(--brass-tint)}
@@ -1155,7 +1160,8 @@ function stateOf(o){return o.objState||'active'}
 let items = [];
 let cloud=false, dbRef=null, editingId=null, pendingPhoto=null;
 let selectMode=false, selectedIds=new Set();
-const state = {q:"", status:"all", pay:"all", sort:"new", dealType:"all", objState:"all", view:"actualka",
+const PAGE=60;                                   /* столько карточек в DOM за раз: дальше дотягиваем прокруткой */
+const state = {q:"", status:"all", pay:"all", sort:"new", dealType:"all", objState:"all", view:"actualka", limit:PAGE,
   viewMode:(function(){try{return localStorage.getItem('actualka_viewmode')==='list'?'list':'grid';}catch(e){return 'grid';}})()};
 
 /* ---------- ЖК label ---------- */
@@ -1559,7 +1565,20 @@ function render(){
   }
   if(!list.length){grid.innerHTML=`<div class="empty" style="grid-column:1/-1"><div class="big">Ничего не найдено</div>Сбрось фильтры или поиск.</div>`;return;}
 
-  grid.innerHTML=list.map(o=>{
+  _lastList=list;
+  const shown=list.slice(0,state.limit);
+  grid.innerHTML=shown.map(cardHtml).join("")+moreRowHtml(list,shown.length);
+  watchMore();
+}
+let _lastList=null;
+function moreRowHtml(list,shown){
+  return list.length>shown
+    ? `<div class="more-row" id="moreRow" style="grid-column:1/-1">
+         <button onclick="showMore()">Показать ещё ${Math.min(PAGE,list.length-shown)}</button>
+         <span>показано ${shown} из ${list.length}</span>
+       </div>` : '';
+}
+function cardHtml(o){
     const st=STATUS[o.dealStatus||'base']||STATUS.base;   /* чужой статус из импорта не должен ронять весь список */
     const pay=PAY[o.willPay||'unknown'];
     const phoneClean=(o.ownerPhone||'').replace(/[^\d+]/g,'');
@@ -1598,7 +1617,31 @@ function render(){
         ${(o.nextStep||o.nextDate)?`<div class="next${isOverdue(o)?' overdue':''}"><span class="k">${o.nextStep?'Дальше:':'Перезвонить:'}</span> ${o.nextStep?esc(o.nextStep):''}${o.nextDate?`${o.nextStep?' · ':''}${fmtDate(o.nextDate)}`:''}</div>`:''}
       </div>
     </div>`;
-  }).join('');
+}
+/* следующая порция дописывается в конец: перестраивать весь список на каждой прокрутке — тормоз */
+let _moreObs=null;
+function showMore(){
+  const list=_lastList; if(!list)return;
+  const from=state.limit, to=Math.min(list.length,from+PAGE);
+  if(to<=from)return;
+  state.limit=to;
+  const grid=document.getElementById('grid'), row=document.getElementById('moreRow');
+  if(!grid||!row){render();return;}
+  if(_moreObs){_moreObs.disconnect();_moreObs=null;}
+  row.insertAdjacentHTML('beforebegin',list.slice(from,to).map(cardHtml).join(''));
+  if(to>=list.length)row.remove();
+  else{
+    row.querySelector('button').textContent='Показать ещё '+Math.min(PAGE,list.length-to);
+    row.querySelector('span').textContent=`показано ${to} из ${list.length}`;
+    watchMore();
+  }
+}
+function watchMore(){
+  if(_moreObs){_moreObs.disconnect();_moreObs=null;}
+  const row=document.getElementById('moreRow');
+  if(!row||!('IntersectionObserver' in window))return;
+  _moreObs=new IntersectionObserver(es=>{ if(es.some(e=>e.isIntersecting))showMore(); },{rootMargin:'400px'});
+  _moreObs.observe(row);
 }
 
 function commissionValue(o){const pct=num(o.commissionPct),price=num(o.price);return (pct&&price)?price*pct/100:0}
@@ -1796,6 +1839,11 @@ function calRangeLabel(){
   const d=parseYmd(a);return `${MON_NOM[d.getMonth()]} ${d.getFullYear()}`;
 }
 /* --- список: просрочено, сегодня, ближайшая неделя --- */
+const GRP=40;                                    /* длиннее в группе не показываем: экран и так не осилить */
+function cut(list,label){
+  return list.length>GRP
+    ? `<div class="pv-hint">…и ещё ${list.length-GRP} ${label}. Все — на вкладке «Актуалка».</div>` : '';
+}
 function renderAgenda(overdue,todayList,staleList){
   const t=todayStr();
   const soon=planItems().filter(o=>o.nextDate>t&&o.nextDate<=addDays(t,7))
@@ -1806,18 +1854,18 @@ function renderAgenda(overdue,todayList,staleList){
   const byTime=l=>l.slice().sort((a,b)=>(a.nextTime||'99:99').localeCompare(b.nextTime||'99:99'));
   if(overdue.length){
     h+=`<div class="td-grp" style="color:var(--no)">${ico('clock')} Просрочено · ${overdue.length}</div>`;
-    h+=overdue.slice().sort((a,b)=>a.nextDate.localeCompare(b.nextDate)).map(o=>{
+    h+=overdue.slice().sort((a,b)=>a.nextDate.localeCompare(b.nextDate)).slice(0,GRP).map(o=>{
       const days=Math.round((parseYmd(t)-parseYmd(o.nextDate))/86400000);
       return todayRow(o,true,`${esc(planWhy(o))} · ждёт с ${fmtDateY(o.nextDate)}, ${days} ${plural(days,'день','дня','дней')}`);
-    }).join('');
+    }).join('')+cut(overdue,'просроченных');
   }
   if(todayList.length){
     h+=`<div class="td-grp">${ico('phone')} На сегодня · ${todayList.length}</div>`;
-    h+=byTime(todayList).map(o=>todayRow(o,false,`${o.nextTime?'<b>'+esc(o.nextTime)+'</b> · ':''}${esc(planWhy(o))}`)).join('');
+    h+=byTime(todayList).slice(0,GRP).map(o=>todayRow(o,false,`${o.nextTime?'<b>'+esc(o.nextTime)+'</b> · ':''}${esc(planWhy(o))}`)).join('')+cut(todayList,'на сегодня');
   }
   if(soon.length){
     h+=`<div class="td-grp">${ico('calendar')} Ближайшая неделя · ${soon.length}</div>`;
-    h+=soon.map(o=>todayRow(o,false,`${fmtDateY(o.nextDate)}${o.nextTime?', '+esc(o.nextTime):''} · ${esc(planWhy(o))}`)).join('');
+    h+=soon.slice(0,GRP).map(o=>todayRow(o,false,`${fmtDateY(o.nextDate)}${o.nextTime?', '+esc(o.nextTime):''} · ${esc(planWhy(o))}`)).join('')+cut(soon,'на неделе');
   }
   if(staleList.length){
     h+=`<div class="td-grp">${ico('moon')} Молчат 30+ дней · ${staleList.length}</div>`;
@@ -1992,14 +2040,16 @@ function renderDash(){
   if(!box)return;
   if(!items.length){box.innerHTML='';return;}
   const pool=baseFiltered();
-  const active=pool.filter(o=>!CLOSED.includes(stateOf(o)));
-  const commission=active.reduce((s,o)=>s+commissionValue(o),0);
-  const salePrices=active.filter(o=>dealOf(o)!=='rent'&&num(o.price)>0).map(o=>num(o.price));
-  const rentPrices=active.filter(o=>dealOf(o)==='rent'&&num(o.price)>0).map(o=>num(o.price));
-  const avgCheck=salePrices.length?salePrices.reduce((a,b)=>a+b,0)/salePrices.length:0;
-  const avgRent=rentPrices.length?rentPrices.reduce((a,b)=>a+b,0)/rentPrices.length:0;
+  let n=0,commission=0,saleSum=0,saleN=0,rentSum=0,rentN=0;
+  for(const o of pool){                            /* один проход вместо четырёх */
+    if(CLOSED.includes(stateOf(o)))continue;
+    n++; commission+=commissionValue(o);
+    const pr=num(o.price); if(!pr)continue;
+    if(dealOf(o)==='rent'){rentSum+=pr;rentN++;} else {saleSum+=pr;saleN++;}
+  }
+  const avgCheck=saleN?saleSum/saleN:0, avgRent=rentN?rentSum/rentN:0;
   const tiles=[
-    ['В работе',active.length],
+    ['В работе',n],
     ['Ожид. комиссия (в работе)',commission?fmtMoney(Math.round(commission)):'—'],
     ['Средний чек продажи',avgCheck?fmtMoney(Math.round(avgCheck)):'—'],
     ['Средний чек аренды',avgRent?fmtMoney(Math.round(avgRent))+' / мес.':'—']
@@ -2017,7 +2067,7 @@ function buildChips(){
   html+=`<button class="chip warn ${state.status==='incomplete'?'active':''}" onclick="setStatus('incomplete')">Не дозаполнено<span class="cnt">${counts.incomplete}</span></button>`;
   document.getElementById('statusChips').innerHTML=html;
 }
-function setStatus(k){state.status=(state.status===k&&(k==='incomplete'||k==='overdue'||k==='stale'))?'all':k;render()}
+function setStatus(k){state.status=(state.status===k&&(k==='incomplete'||k==='overdue'||k==='stale'))?'all':k;state.limit=PAGE;render()}
 
 /* ---------- фильтры сделка/состояние ---------- */
 function stateFilterOptions(){
@@ -2032,7 +2082,7 @@ function buildStateFilter(){
   if(!opts.some(o=>o[0]===state.objState)) state.objState='all';
   sel.innerHTML=opts.map(([v,l])=>`<option value="${v}" ${state.objState===v?'selected':''}>${l}</option>`).join('');
 }
-function onDealFilter(){state.dealType=document.getElementById('fDeal').value;state.objState='all';buildStateFilter();render();}
+function onDealFilter(){state.dealType=document.getElementById('fDeal').value;state.objState='all';state.limit=PAGE;buildStateFilter();render();}
 function onStateFieldChange(){
   const s=document.getElementById('fld_objState').value, cd=document.getElementById('fld_closedDate');
   if((s==='sold'||s==='rented')&&!cd.value) cd.value=todayStr();
@@ -2950,7 +3000,7 @@ function switchView(v){
 }
 
 /* ---------- вкладка «База» ---------- */
-const dbState={q:'',type:'all',sort:'num',limit:400};
+const dbState={q:'',type:'all',sort:'num',limit:120};
 function dbRows(){
   let rows=Object.keys(HYDE_OBJ).map(suf=>{
     const v=HYDE_OBJ[suf],num=v[0],cad=HYDE_PREFIX+suf;
@@ -3554,15 +3604,15 @@ function lockNow(){
 }
 
 /* ---------- wire up ---------- */
-document.getElementById('q').addEventListener('input',e=>{state.q=e.target.value;render();renderSuggest();});
+document.getElementById('q').addEventListener('input',e=>{state.q=e.target.value;state.limit=PAGE;render();renderSuggest();});
 document.getElementById('q').addEventListener('focus',renderSuggest);
 document.addEventListener('click',e=>{if(!e.target.closest('.search'))hideSuggest();});
 document.getElementById('personOverlay').addEventListener('click',e=>{if(e.target.id==='personOverlay')closePerson()});
 document.getElementById('linkOverlay').addEventListener('click',e=>{if(e.target.id==='linkOverlay')closeLink()});
 document.getElementById('linkQ').addEventListener('input',fillLink);
-document.getElementById('fPay').addEventListener('change',e=>{state.pay=e.target.value;render()});
-document.getElementById('fState').addEventListener('change',e=>{state.objState=e.target.value;render()});
-document.getElementById('fSort').addEventListener('change',e=>{state.sort=e.target.value;render()});
+document.getElementById('fPay').addEventListener('change',e=>{state.pay=e.target.value;state.limit=PAGE;render()});
+document.getElementById('fState').addEventListener('change',e=>{state.objState=e.target.value;state.limit=PAGE;render()});
+document.getElementById('fSort').addEventListener('change',e=>{state.sort=e.target.value;state.limit=PAGE;render()});
 document.getElementById('overlay').addEventListener('click',e=>{if(e.target.id==='overlay')closeModal()});
 document.getElementById('modal').addEventListener('input',scheduleDraftSave);
 document.getElementById('reportOverlay').addEventListener('click',e=>{if(e.target.id==='reportOverlay')closeReport()});
