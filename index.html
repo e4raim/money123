@@ -14,6 +14,7 @@
   --ok-s:#24774A;--think-s:#8A6410;--no-s:#A93B30;--base-s:#6E6A62;--on-solid:#fff;--on-brass:#fff;
   --surface2:#FBFAF7;--thumb:#EDEAE2;--danger-tint:#FBEEEC;
   --sbw:232px;--sb-bg:#211D1A;--today-tint:rgba(156,27,76,.055);
+  --ease-out:cubic-bezier(.23,1,.32,1);--ease-in-out:cubic-bezier(.77,0,.175,1);
   --serif:Georgia,"Times New Roman",serif;
   --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
   --shadow:0 1px 2px rgba(30,28,24,.05),0 6px 18px rgba(30,28,24,.06);
@@ -48,7 +49,12 @@ body.dark img{filter:brightness(.92)}
 }
 *{box-sizing:border-box}
 html,body{margin:0}
-body{background:var(--paper);color:var(--ink);font-family:var(--sans);-webkit-font-smoothing:antialiased;padding-bottom:90px;padding-left:var(--sbw)}
+body{background:var(--paper);color:var(--ink);font-family:var(--sans);line-height:1.5;-webkit-font-smoothing:antialiased;padding-bottom:90px;padding-left:var(--sbw)}
+/* трекинг зависит от кегля: крупные буквы кажутся разреженными, мелкие — слипшимися.
+   Одно значение на всё было бы неверным где-то обязательно. */
+.title,.cv-num,.pers-name,.modal-head h2,.empty .big,.dash .stat .sv,.td-h .t,.exp-card h3,
+#reportOutput h1,#reportOutput h2,.sb-name b,.st-h,.pv-flat b,.fam-row b{letter-spacing:-.012em}
+.cv-num,.dash .stat .sv,.td-h .t,.empty .big{letter-spacing:-.02em}
 a{color:inherit}
 
 header{position:sticky;top:0;z-index:40;background:rgba(243,241,236,.86);backdrop-filter:saturate(1.4) blur(12px);border-bottom:1px solid var(--line);padding:14px 18px 12px;transition:transform .22s ease,padding .18s ease}
@@ -68,7 +74,7 @@ header.compact #filtersRow2{display:none}
 .btn-add .plus{font-size:19px;line-height:1;margin-top:-1px}
 
 .filters{max-width:1240px;margin:12px auto 0;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
-.chip{border:1px solid var(--line);background:var(--card);color:var(--ink-soft);padding:7px 13px;border-radius:999px;font-size:13.5px;font-weight:500;cursor:pointer;display:inline-flex;align-items:center;gap:7px;transition:.12s}
+.chip{border:1px solid var(--line);background:var(--card);color:var(--ink-soft);padding:7px 13px;border-radius:999px;font-size:13.5px;font-weight:500;cursor:pointer;display:inline-flex;align-items:center;gap:7px}
 .chip .dot{width:8px;height:8px;border-radius:50%;background:var(--base)}
 .chip .cnt{font-variant-numeric:tabular-nums;color:var(--ink-soft);font-weight:600;font-size:12px}
 .chip[data-k="works"] .dot{background:var(--ok)}
@@ -130,7 +136,9 @@ main{max-width:1240px;margin:0 auto;padding:18px}
 .dash .stat .sv{font-family:var(--serif);font-size:22px;font-weight:700;color:var(--ink)}
 .dash .stat .sl{font-size:11.5px;color:var(--ink-soft);margin-top:2px;text-transform:uppercase;letter-spacing:.3px}
 .card{background:var(--card);border:1px solid var(--line);border-radius:16px;overflow:hidden;cursor:pointer;box-shadow:var(--shadow);transition:transform .16s ease,box-shadow .16s ease;display:flex;flex-direction:column}
-.card:hover{transform:translateY(-3px);box-shadow:0 2px 4px rgba(30,28,24,.06),0 14px 30px rgba(30,28,24,.11)}
+@media (hover:hover) and (pointer:fine){
+  .card:hover{transform:translateY(-3px);box-shadow:0 2px 4px rgba(30,28,24,.06),0 14px 30px rgba(30,28,24,.11)}
+}
 .card.incomplete{border-color:#E3AFC6}
 .thumb{position:relative;aspect-ratio:16/10;background:var(--thumb);overflow:hidden}
 .thumb img{width:100%;height:100%;object-fit:cover;display:block}
@@ -174,15 +182,22 @@ main{max-width:1240px;margin:0 auto;padding:18px}
 .tools button:hover{border-color:var(--brass);color:var(--brass)}
 
 .overlay{position:fixed;inset:0;background:rgba(30,28,24,.42);backdrop-filter:blur(3px);display:none;align-items:flex-start;justify-content:center;z-index:60;padding:24px 16px;overflow-y:auto}
-.overlay.show{display:flex}
-.modal{background:var(--paper);width:100%;max-width:560px;border-radius:20px;box-shadow:0 20px 60px rgba(0,0,0,.28);overflow:hidden;animation:pop .18s ease}
+.overlay.show{display:flex;animation:veil .2s var(--ease-out)}
+.overlay.closing{animation:veilOut .16s var(--ease-out) forwards}
+@keyframes veil{from{opacity:0}}
+@keyframes veilOut{to{opacity:0}}
+.modal{background:var(--paper);width:100%;max-width:560px;border-radius:20px;box-shadow:0 20px 60px rgba(0,0,0,.28);overflow:hidden;animation:pop .2s var(--ease-out)}
 @keyframes pop{from{opacity:0;transform:translateY(10px) scale(.98)}to{opacity:1;transform:none}}
+.overlay.closing .modal{animation:popOut .16s var(--ease-out) forwards}
+@keyframes popOut{to{opacity:0;transform:translateY(6px) scale(.985)}}
+@keyframes fadeIn{from{opacity:0}}
+@keyframes fadeOut{to{opacity:0}}
 .modal-head{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--paper);z-index:2}
 .modal-head h2{margin:0;font-family:var(--serif);font-size:19px}
 .x{border:none;background:none;font-size:24px;color:var(--ink-soft);cursor:pointer;line-height:1;width:36px;height:36px;display:flex;align-items:center;justify-content:center;border-radius:9px;flex:none}
 .x:hover{background:var(--surface2);color:var(--brass)}
 .modal-body{padding:18px 20px 4px}
-.photo-drop{height:180px;border:1.5px dashed #CFC9BC;border-radius:14px;background:var(--card);display:flex;align-items:center;justify-content:center;text-align:center;color:var(--ink-soft);cursor:pointer;overflow:hidden;position:relative;margin-bottom:16px;transition:.15s}
+.photo-drop{height:180px;border:1.5px dashed #CFC9BC;border-radius:14px;background:var(--card);display:flex;align-items:center;justify-content:center;text-align:center;color:var(--ink-soft);cursor:pointer;overflow:hidden;position:relative;margin-bottom:16px;transition:border-color .15s ease,color .15s ease}
 .photo-drop:hover{border-color:var(--brass);color:var(--brass)}
 .photo-drop img{width:100%;height:100%;object-fit:cover}
 .photo-drop .hint{padding:16px;font-size:13.5px;line-height:1.5}
@@ -237,7 +252,7 @@ body.dark .cv-act.wa{background:#1E2E24;border-color:#2E4636;color:#3FAE72}
 .cv-ev:before{content:"";position:absolute;left:-22px;top:3px;width:11px;height:11px;border-radius:50%;background:var(--card);border:2px solid var(--brass)}
 .cv-ev.sys:before{border-color:#C7C2B6}
 .cv-ev .when{font-size:11.5px;color:var(--ink-soft);font-weight:600;display:flex;align-items:center;gap:6px}
-.cv-ev .when .rm{border:none;background:none;color:#C7C2B6;font-size:15px;line-height:1;cursor:pointer;padding:0 3px;opacity:0;transition:.15s}
+.cv-ev .when .rm{border:none;background:none;color:#C7C2B6;font-size:15px;line-height:1;cursor:pointer;padding:0 3px;opacity:0;transition:opacity .15s ease,color .15s ease}
 .cv-ev:hover .when .rm{opacity:1}
 .cv-ev .when .rm:hover{color:var(--no)}
 .cv-ev .txt{font-size:14px;line-height:1.45;margin-top:3px;color:var(--ink);white-space:pre-wrap;word-break:break-word}
@@ -296,7 +311,33 @@ body.dark .autofill-note{background:#1E2E24;border-color:#2E4636}
 .modal-foot .del{border:1px solid #E7C9C4;background:var(--card);color:var(--no);border-radius:12px;padding:13px 16px;font-size:14px;cursor:pointer}
 .modal-foot .del:hover{background:var(--danger-tint)}
 @media (max-width:480px){.two{grid-template-columns:1fr}.btn-add span.t{display:none}.btn-add{padding:11px 13px}}
-@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+/* система просит «поменьше прозрачности» — стекло становится плотным */
+@media (prefers-reduced-transparency:reduce){
+  header{background:var(--paper);backdrop-filter:none}
+  .overlay{background:rgba(30,28,24,.72);backdrop-filter:none}
+  .deal-badge{background:#23211E}
+}
+/* система просит «побольше контраста» — плотные фоны и заметные границы */
+@media (prefers-contrast:more){
+  :root{--line:#B8B2A6;--ink-soft:#4A463F}
+  body.dark{--line:#6B6459;--ink-soft:#D2CBBE}
+  header{background:var(--paper);backdrop-filter:none}
+  .card,.cv-block,.cv-fact,.td-row,.pv-flat,.fam-row,.lrow,.st-card{border-width:1.5px}
+  .chip,.st-btn,.tools button,.cv-act,.td-btn{border-width:1.5px}
+}
+/* «поменьше движения»: убираем перемещение, но оставляем отклик и мягкое проявление —
+   полное обнуление лишало кнопки нажатия, а меню телепортировалось */
+@media (prefers-reduced-motion:reduce){
+  *{animation-duration:.14s!important;transition-duration:.12s!important}
+  .modal,.bell-panel.show,.cv-ev.fresh{animation-name:fadeIn!important}
+  .overlay.closing .modal{animation-name:fadeOut!important}
+  .card:hover{transform:none}
+  .brick:hover{transform:none;outline-width:3px}
+  .chip:active,.navi:active,.btn-add:active,.call:active,.modal-foot .save:active,.privbtn:active,
+  .cv-act:active,.td-btn:active,.tools button:active,.st-btn:active,.x:active,.plan-chips button:active,
+  .td-seg button:active,.cv-comp button:active,.plan-acts button:active,.cv-planbtn:active,
+  .bulk-bar button:active,.viewtog button:active,.floatlock:active{transform:none}
+}
 .rep-check{display:flex;align-items:center;gap:10px;padding:11px 12px;border:1px solid var(--line);background:var(--card);border-radius:10px;margin-bottom:8px;cursor:pointer;font-size:14.5px}
 .rep-check input{width:18px;height:18px;accent-color:var(--brass);flex:none}
 .rep-period{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:6px 0 4px}
@@ -339,8 +380,10 @@ body.dark .autofill-note{background:#1E2E24;border-color:#2E4636}
 .navi.active{background:var(--brass);color:var(--on-brass)}
 /* гостю (руководителю) — только Актуалка и Архив; чисто декларативно, чтобы состояние не «залипало» при смене аккаунта */
 body.guest #tabDb,body.guest #tabSchema,body.guest #tabDeals,body.guest .sb-group-acct,body.guest .owner-only{display:none}
-.chip,.navi,.btn-add,.call,.modal-foot .save,.privbtn,.floatlock{transition-property:transform,background-color,border-color,color,box-shadow,filter;transition-duration:.15s;transition-timing-function:ease}
-.chip:active,.navi:active,.btn-add:active,.call:active,.modal-foot .save:active,.privbtn:active{transform:scale(.96)}
+.chip,.navi,.btn-add,.call,.modal-foot .save,.privbtn,.floatlock,.cv-act,.td-btn,.tools button,.st-btn,.x,.plan-chips button,.td-seg button,.cv-comp button,.plan-acts button,.cv-planbtn,.bulk-bar button,.viewtog button{transition-property:transform,background-color,border-color,color,box-shadow,filter;transition-duration:.14s;transition-timing-function:var(--ease-out)}
+.chip:active,.navi:active,.btn-add:active,.call:active,.modal-foot .save:active,.privbtn:active,
+.cv-act:active,.td-btn:active,.tools button:active,.st-btn:active,.x:active,.plan-chips button:active,
+.td-seg button:active,.cv-comp button:active,.plan-acts button:active,.cv-planbtn:active,.bulk-bar button:active,.viewtog button:active{transform:scale(.97)}
 /* кнопка-гамбургер: только на телефоне, на планшете и шире сайдбар и так виден */
 .menu-btn{display:none;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:11px;width:42px;height:42px;flex:none;cursor:pointer;align-items:center;justify-content:center;padding:0}
 .menu-btn svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:2}
@@ -353,7 +396,7 @@ body.guest #tabDb,body.guest #tabSchema,body.guest #tabDeals,body.guest .sb-grou
   body.menu-open .sidebar{transform:none}
   body.menu-open .sb-backdrop{opacity:1;pointer-events:auto}
 }
-@media (prefers-reduced-motion:reduce){.sidebar{transition:none}}
+@media (prefers-reduced-motion:reduce){.sidebar{transition-duration:.12s}}
 .schema-head{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:14px}
 .twr{border:1px solid var(--line);background:var(--card);color:var(--ink-soft);padding:8px 14px;border-radius:999px;font-size:13.5px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:8px}
 .twr .sw{width:13px;height:13px;border-radius:3px;border:1px solid rgba(0,0,0,.15)}
@@ -459,8 +502,9 @@ body.privacy .pers-name:active{filter:none}
 .bell-wrap{position:relative;flex:none}
 .bell-dot{position:absolute;top:-5px;right:-5px;min-width:18px;height:18px;border-radius:9px;background:var(--brass);color:var(--on-brass);font-size:11px;font-weight:800;display:none;align-items:center;justify-content:center;padding:0 5px;border:2px solid var(--paper)}
 .bell-dot.on{display:flex}
-.bell-panel{display:none;position:absolute;right:0;top:50px;z-index:96;width:min(92vw,360px);max-height:60vh;overflow:auto;background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:0 16px 44px rgba(30,28,24,.22);padding:8px}
-.bell-panel.show{display:block}
+.bell-panel{display:none;transform-origin:top right;position:absolute;right:0;top:50px;z-index:96;width:min(92vw,360px);max-height:60vh;overflow:auto;background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:0 16px 44px rgba(30,28,24,.22);padding:8px}
+.bell-panel.show{display:block;animation:popTR .16s var(--ease-out)}
+@keyframes popTR{from{opacity:0;transform:scale(.96) translateY(-5px)}}
 .bell-h{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:7px 8px 9px}
 .bell-h b{font-size:13.5px}
 .bell-h button{border:none;background:none;color:var(--brass);font-size:12px;font-weight:600;cursor:pointer;font-family:var(--sans);padding:2px 4px}
@@ -503,8 +547,11 @@ body.privacy .pers-name:active{filter:none}
 .cv-planbtn{width:100%;border:1px dashed #CFC9BC;background:var(--card);color:var(--brass);border-radius:11px;padding:11px;font-size:13.5px;font-weight:700;cursor:pointer;font-family:var(--sans);display:flex;align-items:center;justify-content:center;gap:8px}
 .cv-planbtn:hover{border-color:var(--brass)}
 .cv-planbtn svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.8}
-.cv-planbox{display:none;border:1px solid var(--line);background:var(--surface2);border-radius:12px;padding:12px 13px;margin-top:8px}
-.cv-planbox.show{display:block}
+.cv-planbox{display:grid;grid-template-rows:0fr;opacity:0;overflow:hidden;border:0 solid var(--line);background:transparent;border-radius:12px;padding:0 13px;margin-top:0;
+  visibility:hidden;                              /* свёрнутые поля не ловят Tab и не читаются */
+  transition:grid-template-rows .22s var(--ease-out),opacity .18s ease,padding .22s var(--ease-out),margin-top .22s var(--ease-out),border-width .22s,background-color .22s,visibility 0s linear .22s}
+.cv-planbox>.pb-inner{min-height:0;overflow:hidden}
+.cv-planbox.show{grid-template-rows:1fr;opacity:1;visibility:visible;border-width:1px;background:var(--surface2);padding:12px 13px;margin-top:8px;transition-delay:0s}
 .plan-chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
 .plan-chips button{border:1px solid var(--line);background:var(--card);color:var(--ink-soft);border-radius:999px;padding:6px 12px;font-size:12.5px;font-weight:600;cursor:pointer;font-family:var(--sans)}
 .plan-chips button:hover{border-color:var(--brass);color:var(--brass)}
@@ -531,19 +578,21 @@ body.privacy .pers-name:active{filter:none}
 .fam-row .pgo{color:#C7C2B6;flex:none;font-size:14px}
 .fam-hint{font-size:12px;color:var(--ink-soft);background:var(--surface2);border:1px dashed var(--line);border-radius:10px;padding:8px 10px;line-height:1.5}
 .cv-ev.boss:before{border-color:var(--fam)}
+.cv-ev.fresh{animation:evIn .22s var(--ease-out)}
+@keyframes evIn{from{opacity:0;transform:translateY(-5px)}}
 .cv-ev .au{color:var(--fam);font-weight:700}
 .floatlock{position:fixed;right:16px;bottom:16px;z-index:70;width:52px;height:52px;border-radius:50%;border:none;background:var(--ink);color:var(--paper);font-size:20px;cursor:pointer;box-shadow:0 6px 20px rgba(30,28,24,.3)}
 .floatlock:active{transform:scale(.93)}
-.undo-toast{position:fixed;left:calc(50% + var(--sbw)/2);bottom:24px;transform:translate(-50%,16px);z-index:90;background:#23211E;color:#F2EAD6;padding:12px 12px 12px 18px;border-radius:14px;box-shadow:0 12px 32px rgba(0,0,0,.28);display:flex;align-items:center;gap:14px;font-size:14px;opacity:0;pointer-events:none;transition:.2s ease;max-width:calc(100vw - 32px)}
+.undo-toast{position:fixed;left:calc(50% + var(--sbw)/2);bottom:24px;transform:translate(-50%,100%);z-index:90;background:#23211E;color:#F2EAD6;padding:12px 12px 12px 18px;border-radius:14px;box-shadow:0 12px 32px rgba(0,0,0,.28);display:flex;align-items:center;gap:14px;font-size:14px;opacity:0;pointer-events:none;transition:transform .3s var(--ease-out),opacity .2s ease;max-width:calc(100vw - 32px)}
 .undo-toast.show{opacity:1;transform:translate(-50%,0);pointer-events:auto}
 .undo-toast button{border:none;background:none;color:#F6C6DA;font-weight:700;font-size:14px;cursor:pointer;padding:6px 8px;border-radius:8px;flex:none}
 .undo-toast button:hover{background:rgba(255,255,255,.1)}
-.device-alert{position:fixed;top:14px;left:calc(50% + var(--sbw)/2);transform:translate(-50%,-160%);z-index:95;background:#3A1B1B;color:#FCE8E4;padding:12px 16px;border-radius:14px;box-shadow:0 12px 32px rgba(0,0,0,.3);display:flex;gap:12px;align-items:center;font-size:13.5px;max-width:calc(100vw - 24px);transition:.25s ease}
+.device-alert{position:fixed;top:14px;left:calc(50% + var(--sbw)/2);transform:translate(-50%,-160%);z-index:95;background:#3A1B1B;color:#FCE8E4;padding:12px 16px;border-radius:14px;box-shadow:0 12px 32px rgba(0,0,0,.3);display:flex;gap:12px;align-items:center;font-size:13.5px;max-width:calc(100vw - 24px);transition:transform .28s var(--ease-out),opacity .2s ease}
 .device-alert.show{transform:translate(-50%,0)}
 .device-alert b{color:#fff}
 .device-alert button{border:none;background:rgba(255,255,255,.15);color:#fff;font-weight:700;border-radius:8px;padding:7px 12px;cursor:pointer;flex:none;font-size:13px;font-family:var(--sans)}
 .device-alert button:hover{background:rgba(255,255,255,.25)}
-.bulk-bar{position:fixed;left:calc(50% + var(--sbw)/2);bottom:16px;transform:translate(-50%,120%);z-index:85;background:var(--card);border:1px solid var(--line);box-shadow:0 12px 32px rgba(0,0,0,.18);border-radius:16px;padding:10px 14px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;max-width:calc(100vw - 24px);transition:.2s ease}
+.bulk-bar{position:fixed;left:calc(50% + var(--sbw)/2);bottom:16px;transform:translate(-50%,120%);z-index:85;background:var(--card);border:1px solid var(--line);box-shadow:0 12px 32px rgba(0,0,0,.18);border-radius:16px;padding:10px 14px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;max-width:calc(100vw - 24px);transition:transform .28s var(--ease-out),opacity .2s ease}
 .bulk-bar.show{transform:translate(-50%,0)}
 .bulk-bar #bulkCount{font-size:13px;font-weight:700;color:var(--ink);margin-right:2px;white-space:nowrap}
 .bulk-bar button{border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:9px;padding:8px 12px;font-size:13px;cursor:pointer;font-family:var(--sans);white-space:nowrap}
@@ -580,15 +629,17 @@ body.privacy .pers-name:active{filter:none}
 .st-btn:hover{border-color:var(--brass);color:var(--brass)}
 .st-btn.danger{color:var(--no);border-color:#EBD3CF}
 .st-btn.danger:hover{background:var(--danger-tint);color:var(--no)}
-.tgl{width:46px;height:27px;border-radius:999px;border:none;background:#DAD6CC;cursor:pointer;position:relative;flex:none;transition:.15s}
-.tgl i{position:absolute;top:3px;left:3px;width:21px;height:21px;border-radius:50%;background:#fff;transition:.15s;box-shadow:0 1px 3px rgba(0,0,0,.2)}
+.tgl{width:46px;height:27px;border-radius:999px;border:none;background:#DAD6CC;cursor:pointer;position:relative;flex:none;transition:background-color .15s ease}
+.tgl i{position:absolute;top:3px;left:3px;width:21px;height:21px;border-radius:50%;background:#fff;transition:transform .18s var(--ease-out);box-shadow:0 1px 3px rgba(0,0,0,.2)}
 .tgl.on{background:var(--ok-s)}
 .tgl::after{content:"";position:absolute;inset:-9px -6px}   /* зона нажатия 44px, вид прежний */
-.tgl.on i{left:22px}
+.tgl.on i{transform:translateX(19px)}   /* двигаем transform, а не left: left считается на CPU и дёргается */
 body.guest .btn-add,body.guest .empty button,body.guest .modal-foot .save,body.guest .modal-foot .del{display:none!important}
 body.guest .f input,body.guest .f select,body.guest .f textarea,body.guest .photo-drop{pointer-events:none;opacity:.75}
 .brick.works{background:var(--ok)} .brick.thinking{background:var(--think)} .brick.refusal{background:var(--no)} .brick.base{background:#8f9aa8} .brick.closed{background:#6f6b64}
-.brick:hover{transform:scale(1.55);z-index:6;outline:2px solid var(--brass);border-radius:2px}
+@media (hover:hover) and (pointer:fine){
+  .brick:hover{transform:scale(1.55);z-index:6;outline:2px solid var(--brass);border-radius:2px}
+}
 .brick.multi::after{content:"";position:absolute;top:1px;right:1px;width:4px;height:4px;border-radius:50%;background:#fff;box-shadow:0 0 0 1px rgba(0,0,0,.35)}
 .bld-base{border:1px solid;border-top-width:3px;border-radius:0 0 10px 10px;padding:7px 12px;text-align:center;font-size:11px;font-weight:700;letter-spacing:.3px;min-width:80%}
 .bld.w .bld-base{background:#EDEAE2;border-color:#D8D3C7;color:#4a463f}
@@ -1324,6 +1375,22 @@ function genId(){return 'o'+Date.now().toString(36)+Math.random().toString(36).s
 
 /* ---------- отмена последнего действия ---------- */
 let _undoAction=null, _undoTimer=null;
+/* окно уходит тем же путём, каким пришло: класс .closing, потом снимаем .show */
+function openOverlay(el){ if(!el)return; el.classList.remove('closing'); el.classList.add('show'); }
+function closeOverlay(el){
+  if(!el||!el.classList.contains('show')||el.classList.contains('closing'))return;
+  el.classList.add('closing');
+  let done=false;
+  const finish=()=>{
+    if(done)return; done=true;
+    el.removeEventListener('animationend',onEnd);
+    if(!el.classList.contains('closing'))return;   /* окно успели открыть заново — не гасим его */
+    el.classList.remove('show','closing');
+  };
+  const onEnd=e=>{ if(e.target===el)finish(); };
+  el.addEventListener('animationend',onEnd);
+  setTimeout(finish,320);                       /* страховка, если анимация не запустилась */
+}
 function showUndo(msg,fn){
   _undoAction=fn;
   document.getElementById('undoMsg').textContent=msg;
@@ -1997,8 +2064,8 @@ function updateDealFieldLabels(){
 }
 
 /* ---------- отчёт ---------- */
-function openReport(){document.getElementById('reportOutput').innerHTML='';document.getElementById('reportOverlay').classList.add('show');}
-function closeReport(){document.getElementById('reportOverlay').classList.remove('show');}
+function openReport(){document.getElementById('reportOutput').innerHTML='';openOverlay(document.getElementById('reportOverlay'));}
+function closeReport(){closeOverlay(document.getElementById('reportOverlay'));}
 
 /* ---------- клиентский экспорт (без персональных данных) ---------- */
 function openExport(ids){
@@ -2014,9 +2081,9 @@ function openExport(ids){
         ${num(o.price)?`<div class="exp-price">${fmtMoney(o.price)}${dealOf(o)==='rent'?' / мес.':''}</div>`:''}
       </div>
     </div>`).join('');
-  document.getElementById('exportOverlay').classList.add('show');
+  openOverlay(document.getElementById('exportOverlay'));
 }
-function closeExport(){document.getElementById('exportOverlay').classList.remove('show');}
+function closeExport(){closeOverlay(document.getElementById('exportOverlay'));}
 function inPeriod(o){
   const from=document.getElementById('rc_from').value, to=document.getElementById('rc_to').value;
   if(!from&&!to) return true;
@@ -2238,7 +2305,7 @@ function renderCardView(o){
         <svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M8 3v4M16 3v4M3 11h18"/></svg>
         ${o.nextDate?'Перенести звонок':'Запланировать звонок'}
       </button>
-      <div class="cv-planbox" id="planBox">
+      <div class="cv-planbox" id="planBox"><div class="pb-inner">
         <div class="plan-chips">
           <button onclick="planQuick(0)">Сегодня</button>
           <button onclick="planQuick(1)">Завтра</button>
@@ -2256,7 +2323,7 @@ function renderCardView(o){
           ${o.nextDate?`<button class="no" onclick="clearPlan()">Убрать</button>`:''}
           <button class="no" onclick="togglePlan()">Отмена</button>
         </div>
-      </div>
+      </div></div>
     </div>`}
     <div style="font-size:11px;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.3px;font-weight:700;margin-bottom:9px">Хронология</div>
     <div class="cv-comp">
@@ -2282,6 +2349,7 @@ function fmtWhen(ts){
   if(d.toDateString()===y.toDateString())return 'вчера, '+t;
   return d.toLocaleDateString('ru-RU',{day:'2-digit',month:'2-digit',year:'2-digit'})+', '+t;
 }
+let _freshLog=0;
 function renderFeed(o){
   const box=document.getElementById('cvFeed');
   if(!box)return;
@@ -2294,10 +2362,11 @@ function renderFeed(o){
       return `<div class="cv-ev sys${w?' boss':''}"><div class="when">${fmtWhen(e.ts)}${w?` · <span class="au">${esc(w)}</span>`:''}</div><div class="txt"><span class="chg">${txt}</span></div></div>`;
     }
     const who=authorLabel(e);
-    return `<div class="cv-ev${who?' boss':''}"><div class="when">${fmtWhen(e.ts)}${who?` · <span class="au">${esc(who)}</span>`:''}
+    return `<div class="cv-ev${who?' boss':''}${e.ts&&e.ts===_freshLog?' fresh':''}"><div class="when">${fmtWhen(e.ts)}${who?` · <span class="au">${esc(who)}</span>`:''}
       ${canRemoveLog(e)?`<button class="rm" title="удалить запись" onclick="removeLogEntry(${e.idx})">×</button>`:''}</div>
       <div class="txt pii">${esc(e.text)}</div></div>`;
   }).join('')+'</div>';
+  _freshLog=0;                                   /* подсвечиваем появление только один раз */
 }
 /* ---------- запланировать звонок, не заходя в форму ---------- */
 function planBox(){return document.getElementById('planBox')}
@@ -2346,7 +2415,9 @@ function addLogEntry(){
   const text=(el?el.value:'').trim();
   if(!text)return;
   const o=items.find(x=>x.id===editingId); if(!o)return;
-  const log=(o.log||[]).concat([stamp({ts:Date.now(),text})]);
+  const entry=stamp({ts:Date.now(),text});
+  const log=(o.log||[]).concat([entry]);
+  _freshLog=entry.ts;
   el.value='';
   Promise.resolve(upsertLog(o.id,log)).catch(logWriteFailed);
   renderFeed({...o,log});
@@ -2442,7 +2513,7 @@ function openModal(id){
   document.getElementById('cardView').innerHTML='';
   if(id){renderCardView(o);setModalMode('view');}   /* существующий объект открываем как справку */
   else setModalMode('edit');                        /* новый — сразу форма, смотреть нечего */
-  document.getElementById('overlay').classList.add('show');
+  openOverlay(document.getElementById('overlay'));
   checkDuplicate();
 }
 function checkDraft(o){
@@ -2462,7 +2533,7 @@ function checkDraft(o){
     clearDraft();
   }
 }
-function closeModal(){document.getElementById('overlay').classList.remove('show')}
+function closeModal(){closeOverlay(document.getElementById('overlay'))}
 function saveCard(){
   if(isGuest){alert('Гостевой доступ — только просмотр');return;}
   const g=f=>document.getElementById('fld_'+f).value.trim();
@@ -3181,7 +3252,7 @@ function openCell(k,f,p){
   document.getElementById('cellTitle').textContent='Квартира '+num;
   document.getElementById('cellBody').innerHTML=body;
   document.getElementById('cellFoot').innerHTML=`<button class="del" style="color:var(--ink-soft);border-color:var(--line)" onclick="closeCell()">Закрыть</button>${isGuest?'':`<button class="save" onclick="quickSave()">Сохранить заметку</button>`}<button class="save" style="background:#4a4a48;flex:none" onclick="cellToCard()">Карточка</button>`;
-  document.getElementById('cellOverlay').classList.add('show');
+  openOverlay(document.getElementById('cellOverlay'));
   renderSchema();
 }
 function jumpTo(numStr){
@@ -3276,11 +3347,11 @@ function openPerson(fio){
   document.getElementById('personTitle').textContent='Собственник';
   document.getElementById('personBody').innerHTML=h;
   document.getElementById('personFoot').innerHTML=`<button class="del" style="color:var(--ink-soft);border-color:var(--line)" onclick="closePerson()">Закрыть</button>${isGuest?'':`<button class="save" onclick="editOwner('${jq(fio)}')">Изменить данные</button>`}`;
-  document.getElementById('personOverlay').classList.add('show');
+  openOverlay(document.getElementById('personOverlay'));
 }
 /* из карточки человека — сразу в карточку объекта */
 function openPerson_open(id){closePerson();openModal(id);}
-function closePerson(){document.getElementById('personOverlay').classList.remove('show')}
+function closePerson(){closeOverlay(document.getElementById('personOverlay'))}
 
 /* --- правка данных собственника --- */
 function editOwner(fio){
@@ -3310,10 +3381,10 @@ function openLink(fio){
   _linkFor=fio;
   document.getElementById('linkQ').value='';
   fillLink();
-  document.getElementById('linkOverlay').classList.add('show');
+  openOverlay(document.getElementById('linkOverlay'));
   setTimeout(()=>document.getElementById('linkQ').focus(),60);
 }
-function closeLink(){document.getElementById('linkOverlay').classList.remove('show')}
+function closeLink(){closeOverlay(document.getElementById('linkOverlay'))}
 function allOwners(){
   const set=new Map();
   Object.keys(egrn.byOwner||{}).forEach(k=>{const r=egrn.byOwner[k][0];if(r&&r.fio)set.set(normFio(r.fio),r.fio);});
@@ -3361,7 +3432,7 @@ function cellToCard(){
   const ni=schemaInfo[num];
   if(ni&&ni.note){const n=document.getElementById('fld_notes');if(n&&!n.value)n.value=ni.note;}
 }
-function closeCell(){document.getElementById('cellOverlay').classList.remove('show');}
+function closeCell(){closeOverlay(document.getElementById('cellOverlay'));}
 function clearKin(){closeCell();_cell=null;_kinFio=null;renderSchema();}
 function openModalForApt(num){openModal();document.getElementById('fld_apartment').value=num;}
 
