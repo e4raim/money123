@@ -1,0 +1,483 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{ shop_name }} — {{ tagline_short }}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=PT+Sans:wght@400;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:       #EFE8DC;
+    --ink-dim:   #B7ADA0;
+    --ink-faint: #7C7468;
+    --ground:    #17140F;
+    --surface:   #201B15;
+    --surface-2: #2A241C;
+    --line:      #3A3226;
+    --brass:     #C79A56;
+    --brass-hi:  #E4BD7E;
+    --steel:     #8E9BA3;
+    --red:       #8C3B32;
+    --radius: 2px;
+    --wrap: 1180px;
+    --edge: clamp(20px, 5vw, 64px);
+  }
+
+  *{ box-sizing:border-box; }
+  html{ scroll-behavior:smooth; }
+  @media (prefers-reduced-motion: reduce){ html{ scroll-behavior:auto; } }
+
+  body{
+    margin:0;
+    background:var(--ground);
+    color:var(--ink);
+    font-family:'PT Sans', 'Helvetica Neue', Arial, sans-serif;
+    font-size:17px;
+    line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+  }
+
+  img{ max-width:100%; display:block; }
+  a{ color:inherit; }
+
+  h1,h2,h3{
+    font-family:'Oswald', 'Arial Narrow', sans-serif;
+    text-transform:uppercase;
+    letter-spacing:0.01em;
+    font-weight:600;
+    text-wrap:balance;
+    margin:0;
+  }
+
+  .mono{
+    font-family:'JetBrains Mono', ui-monospace, monospace;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .wrap{
+    max-width:var(--wrap);
+    margin:0 auto;
+    padding-left:var(--edge);
+    padding-right:var(--edge);
+  }
+
+  .eyebrow{
+    font-family:'JetBrains Mono', monospace;
+    font-size:0.72rem;
+    letter-spacing:0.16em;
+    text-transform:uppercase;
+    color:var(--brass);
+  }
+
+  /* ---------- top bar ---------- */
+  .topbar{
+    position:sticky; top:0; z-index:40;
+    background:rgba(23,20,15,0.92);
+    backdrop-filter:blur(6px);
+    border-bottom:1px solid var(--line);
+  }
+  .topbar .wrap{
+    display:flex; align-items:center; justify-content:space-between;
+    height:64px; gap:16px;
+  }
+  .brand{
+    font-family:'Oswald', sans-serif;
+    font-size:1.05rem;
+    letter-spacing:0.04em;
+    text-transform:uppercase;
+    text-decoration:none;
+    white-space:nowrap;
+  }
+  .brand b{ color:var(--brass); font-weight:600; }
+  .topbar-right{ display:flex; align-items:center; gap:20px; }
+  .status-pill{
+    display:flex; align-items:center; gap:8px;
+    font-family:'JetBrains Mono', monospace;
+    font-size:0.78rem;
+    color:var(--ink-dim);
+  }
+  .status-dot{
+    width:7px; height:7px; border-radius:50%;
+    background:var(--ink-faint);
+    flex:none;
+  }
+  .status-dot.open{ background:#8FAE7A; box-shadow:0 0 0 3px rgba(143,174,122,0.18); }
+  .status-dot.closed{ background:var(--red); box-shadow:0 0 0 3px rgba(140,59,50,0.18); }
+  .phone-link{
+    font-family:'JetBrains Mono', monospace;
+    font-size:0.92rem;
+    text-decoration:none;
+    border-bottom:1px solid var(--brass);
+    padding-bottom:1px;
+    white-space:nowrap;
+  }
+  @media (max-width:640px){ .status-pill{ display:none; } }
+
+  /* ---------- buttons ---------- */
+  .btn{
+    display:inline-flex; align-items:center; gap:10px;
+    padding:14px 26px;
+    font-family:'JetBrains Mono', monospace;
+    font-size:0.86rem;
+    letter-spacing:0.04em;
+    text-transform:uppercase;
+    text-decoration:none;
+    border-radius:var(--radius);
+    border:1px solid transparent;
+    transition:transform 0.15s ease, background-color 0.15s ease, border-color 0.15s ease;
+  }
+  .btn svg{ width:16px; height:16px; flex:none; }
+  .btn-primary{ background:var(--brass); color:#17140F; }
+  .btn-primary:hover{ background:var(--brass-hi); transform:translateY(-1px); }
+  .btn-ghost{ border-color:var(--line); color:var(--ink); }
+  .btn-ghost:hover{ border-color:var(--brass); color:var(--brass-hi); transform:translateY(-1px); }
+  @media (prefers-reduced-motion: reduce){ .btn:hover{ transform:none; } }
+
+  /* ---------- hero ---------- */
+  .hero{
+    padding:clamp(56px, 10vw, 108px) 0 clamp(48px, 8vw, 88px);
+    position:relative;
+    overflow:hidden;
+    border-bottom:1px solid var(--line);
+  }
+  .hero .wrap{
+    display:grid;
+    grid-template-columns: 1fr auto;
+    align-items:start;
+    gap:48px;
+  }
+  .hero-head{ min-width:0; }
+  .hero-title{
+    font-size:clamp(2.6rem, 8vw, 5.4rem);
+    line-height:0.94;
+  }
+  .hero-title span{ display:block; }
+  .hero-title .accent{ color:var(--brass); }
+  .hero-tagline{
+    margin-top:22px;
+    max-width:34ch;
+    font-size:1.12rem;
+    color:var(--ink-dim);
+  }
+  .hero-cta{ margin-top:32px; display:flex; flex-wrap:wrap; gap:14px; }
+  .hero-ticket{
+    margin-top:40px;
+    display:flex; flex-wrap:wrap; gap:6px 18px;
+    font-family:'JetBrains Mono', monospace;
+    font-size:0.82rem;
+    color:var(--ink-faint);
+  }
+  .hero-ticket span{ white-space:nowrap; }
+  .hero-ticket b{ color:var(--ink-dim); font-weight:400; }
+
+  .pole{
+    width:64px; height:220px;
+    border-radius:32px;
+    flex:none;
+    align-self:center;
+    background:conic-gradient(from 0deg,
+      var(--red) 0deg 30deg, var(--ink) 30deg 60deg,
+      var(--steel) 60deg 90deg, var(--ink) 90deg 120deg,
+      var(--red) 120deg 150deg, var(--ink) 150deg 180deg,
+      var(--steel) 180deg 210deg, var(--ink) 210deg 240deg,
+      var(--red) 240deg 270deg, var(--ink) 270deg 300deg,
+      var(--steel) 300deg 330deg, var(--ink) 330deg 360deg
+    );
+    background-size: 100% 42px;
+    box-shadow: inset 0 0 0 6px var(--surface), 0 0 0 1px var(--line);
+    animation: pole-spin 3.4s linear infinite;
+  }
+  @keyframes pole-spin{ to{ background-position: 0 420px; } }
+  @media (prefers-reduced-motion: reduce){ .pole{ animation:none; } }
+  @media (max-width:760px){ .hero .wrap{ grid-template-columns:1fr; } .pole{ display:none; } }
+
+  /* ---------- section scaffolding ---------- */
+  section{ padding:clamp(56px, 9vw, 96px) 0; border-bottom:1px solid var(--line); }
+  section:last-of-type{ border-bottom:none; }
+  .section-head{ display:flex; align-items:baseline; justify-content:space-between; gap:24px; margin-bottom:40px; flex-wrap:wrap; }
+  .section-title{ font-size:clamp(1.6rem, 3.4vw, 2.3rem); margin-top:8px; }
+
+  /* reveal on scroll */
+  .reveal{ opacity:0; transform:translateY(14px); transition:opacity 0.6s ease, transform 0.6s ease; }
+  .reveal.in{ opacity:1; transform:none; }
+  @media (prefers-reduced-motion: reduce){ .reveal{ opacity:1; transform:none; transition:none; } }
+
+  /* ---------- about ---------- */
+  .about-grid{ display:grid; grid-template-columns: 1.4fr 1fr; gap:56px; align-items:start; }
+  .about-grid p{ color:var(--ink-dim); max-width:56ch; }
+  .about-grid p + p{ margin-top:16px; }
+  .plate{
+    border:1px solid var(--line);
+    padding:28px;
+    text-align:center;
+    background:var(--surface);
+  }
+  .plate .num{ font-family:'Oswald'; font-size:2.4rem; color:var(--brass); line-height:1; }
+  .plate .label{ margin-top:8px; font-family:'JetBrains Mono', monospace; font-size:0.76rem; letter-spacing:0.1em; text-transform:uppercase; color:var(--ink-faint); }
+  @media (max-width:760px){ .about-grid{ grid-template-columns:1fr; } }
+
+  /* ---------- services ---------- */
+  .svc-group + .svc-group{ margin-top:36px; }
+  .svc-group h3{ font-size:1.05rem; color:var(--brass); letter-spacing:0.06em; }
+  .svc-row{
+    display:flex; align-items:baseline; justify-content:space-between; gap:16px;
+    padding:16px 0;
+    border-bottom:1px solid var(--line);
+    transition:padding-left 0.2s ease, border-color 0.2s ease;
+  }
+  .svc-row:hover{ padding-left:10px; border-color:var(--brass); }
+  .svc-name{ font-size:1.02rem; }
+  .svc-duration{ display:block; margin-top:2px; font-size:0.8rem; color:var(--ink-faint); font-family:'JetBrains Mono', monospace; }
+  .svc-dots{ flex:1; border-bottom:1px dotted var(--line); margin:0 4px 6px; min-width:24px; }
+  .svc-price{ font-family:'JetBrains Mono', monospace; font-size:1.05rem; white-space:nowrap; color:var(--ink); }
+  @media (max-width:560px){ .svc-dots{ display:none; } }
+
+  /* ---------- team ---------- */
+  .team-grid{ display:grid; grid-template-columns:repeat(auto-fit, minmax(200px,1fr)); gap:1px; background:var(--line); border:1px solid var(--line); }
+  .team-card{ background:var(--surface); padding:28px 22px; }
+  .badge{
+    width:56px; height:56px; border-radius:50%;
+    border:1.5px solid var(--brass);
+    display:flex; align-items:center; justify-content:center;
+    font-family:'Oswald'; font-size:1.1rem; color:var(--brass);
+    margin-bottom:16px;
+  }
+  .team-card h3{ font-size:1.05rem; text-transform:none; letter-spacing:0; }
+  .team-card .role{ margin-top:4px; font-size:0.88rem; color:var(--ink-dim); }
+  .team-card .years{ margin-top:10px; font-family:'JetBrains Mono', monospace; font-size:0.76rem; color:var(--ink-faint); }
+
+  /* ---------- reviews ---------- */
+  .review-grid{ display:grid; grid-template-columns:1fr 1fr; gap:1px; background:var(--line); border:1px solid var(--line); }
+  .review{ background:var(--surface); padding:32px; position:relative; }
+  .review .mark{ font-family:'Oswald'; font-size:2.4rem; color:var(--brass); line-height:1; display:block; margin-bottom:4px; }
+  .review p{ color:var(--ink); max-width:52ch; }
+  .review footer{ margin-top:16px; font-family:'JetBrains Mono', monospace; font-size:0.78rem; color:var(--ink-faint); }
+  @media (max-width:700px){ .review-grid{ grid-template-columns:1fr; } }
+
+  /* ---------- location ---------- */
+  .loc-grid{ display:grid; grid-template-columns:1fr 1fr; gap:56px; align-items:start; }
+  .hours-table{ width:100%; border-collapse:collapse; }
+  .hours-table td{ padding:10px 0; border-bottom:1px solid var(--line); }
+  .hours-table td:first-child{ color:var(--ink-dim); }
+  .hours-table td:last-child{ text-align:right; font-family:'JetBrains Mono', monospace; }
+  .hours-table tr.today td{ color:var(--brass-hi); }
+  .addr-line{ display:flex; gap:12px; align-items:flex-start; margin-bottom:22px; }
+  .addr-line svg{ width:18px; height:18px; flex:none; margin-top:3px; color:var(--brass); }
+  .cta-block{ margin-top:28px; display:flex; flex-wrap:wrap; gap:14px; }
+  @media (max-width:760px){ .loc-grid{ grid-template-columns:1fr; } }
+
+  /* ---------- footer ---------- */
+  footer.site{ padding:40px 0; }
+  footer.site .wrap{ display:flex; flex-wrap:wrap; justify-content:space-between; gap:16px; align-items:center; }
+  footer.site .brand{ pointer-events:none; }
+  footer.site .fine{ font-family:'JetBrains Mono', monospace; font-size:0.76rem; color:var(--ink-faint); }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="wrap">
+    <a class="brand" href="#top"><b>{{ shop_name_short }}</b> {{ shop_name_rest }}</a>
+    <div class="topbar-right">
+      <div class="status-pill" id="status-pill">
+        <span class="status-dot" id="status-dot"></span>
+        <span id="status-text">{{ hours_display[0].time }}</span>
+      </div>
+      <a class="phone-link" href="tel:{{ phone_href }}">{{ phone_display }}</a>
+    </div>
+  </div>
+</div>
+
+<header class="hero" id="top">
+  <div class="wrap">
+    <div class="hero-head">
+      <p class="eyebrow">{{ city }} · с {{ founded_year }} года</p>
+      <h1 class="hero-title">
+        {% for line in hero_lines %}<span{% if loop.last %} class="accent"{% endif %}>{{ line }}</span>{% endfor %}
+      </h1>
+      <p class="hero-tagline">{{ tagline_long }}</p>
+      <div class="hero-cta">
+        <a class="btn btn-primary" href="tel:{{ phone_href }}">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6.6 10.8c1.4 2.8 3.8 5.1 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.1.4 2.3.6 3.6.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1C10.7 21 3 13.3 3 4c0-.6.4-1 1-1h3.4c.6 0 1 .4 1 1 0 1.3.2 2.5.6 3.6.1.4 0 .8-.2 1L6.6 10.8z"/></svg>
+          Позвонить
+        </a>
+        <a class="btn btn-ghost" href="{{ whatsapp_link }}" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21l1.5-4.5A8 8 0 1 1 8.5 19.5L3 21z"/></svg>
+          Написать в WhatsApp
+        </a>
+      </div>
+      <div class="hero-ticket">
+        <span><b>Адрес</b> {{ address }}</span>
+        <span><b>Телефон</b> {{ phone_display }}</span>
+        <span><b>Мастеров</b> {{ team|length }}</span>
+      </div>
+    </div>
+    <div class="pole" aria-hidden="true"></div>
+  </div>
+</header>
+
+<section id="about">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <div>
+        <p class="eyebrow">О нас</p>
+        <h2 class="section-title">Школа старой закалки</h2>
+      </div>
+    </div>
+    <div class="about-grid reveal">
+      <div>
+        {% for p in about_paragraphs %}<p>{{ p }}</p>{% endfor %}
+      </div>
+      <div class="plate">
+        <div class="num mono">{{ clients_served }}+</div>
+        <div class="label">клиентов с {{ founded_year }} года</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="services">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <div>
+        <p class="eyebrow">Прайс</p>
+        <h2 class="section-title">Услуги и цены</h2>
+      </div>
+    </div>
+    <div class="reveal">
+      {% for group in services %}
+      <div class="svc-group">
+        <h3>{{ group.category }}</h3>
+        {% for item in group.entries %}
+        <div class="svc-row">
+          <span class="svc-name">{{ item.name }}<span class="svc-duration">{{ item.duration }}</span></span>
+          <span class="svc-dots"></span>
+          <span class="svc-price mono">{{ item.price }} ₽</span>
+        </div>
+        {% endfor %}
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<section id="team">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <div>
+        <p class="eyebrow">Команда</p>
+        <h2 class="section-title">Мастера</h2>
+      </div>
+    </div>
+    <div class="team-grid reveal">
+      {% for m in team %}
+      <div class="team-card">
+        <div class="badge">{{ m.initials }}</div>
+        <h3>{{ m.name }}</h3>
+        <div class="role">{{ m.role }}</div>
+        <div class="years mono">{{ m.years }}</div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<section id="reviews">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <div>
+        <p class="eyebrow">Отзывы</p>
+        <h2 class="section-title">Что говорят гости</h2>
+      </div>
+    </div>
+    <div class="review-grid reveal">
+      {% for r in reviews %}
+      <div class="review">
+        <span class="mark">"</span>
+        <p>{{ r.text }}</p>
+        <footer>{{ r.author }}</footer>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<section id="visit">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <div>
+        <p class="eyebrow">Как добраться</p>
+        <h2 class="section-title">Ждём вас</h2>
+      </div>
+    </div>
+    <div class="loc-grid reveal">
+      <div>
+        <div class="addr-line">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s-7-6.2-7-11a7 7 0 1 1 14 0c0 4.8-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/></svg>
+          <div>{{ address }}<br><span class="mono" style="color:var(--ink-faint); font-size:0.85rem;">{{ address_note }}</span></div>
+        </div>
+        <div class="cta-block">
+          <a class="btn btn-primary" href="tel:{{ phone_href }}">Позвонить сейчас</a>
+          <a class="btn btn-ghost" href="{{ whatsapp_link }}" target="_blank" rel="noopener">Записаться в WhatsApp</a>
+        </div>
+      </div>
+      <table class="hours-table" id="hours-table">
+        {% for h in hours_display %}
+        <tr data-days="{{ h.days_csv }}"><td>{{ h.label }}</td><td>{{ h.time }}</td></tr>
+        {% endfor %}
+      </table>
+    </div>
+  </div>
+</section>
+
+<footer class="site">
+  <div class="wrap">
+    <a class="brand" href="#top"><b>{{ shop_name_short }}</b> {{ shop_name_rest }}</a>
+    <span class="fine">{{ address }} · {{ phone_display }}</span>
+  </div>
+</footer>
+
+<script>
+(function(){
+  var schedule = {{ week_schedule | tojson }};
+  var now = new Date();
+  var day = now.getDay(); // 0 Sun .. 6 Sat
+  var idx = day === 0 ? 6 : day - 1; // 0 Mon .. 6 Sun
+  var today = schedule[idx];
+  var dot = document.getElementById('status-dot');
+  var text = document.getElementById('status-text');
+  if (dot && text) {
+    var hours = now.getHours() + now.getMinutes()/60;
+    var isOpen = today && today.open !== null && hours >= today.open && hours < today.close;
+    dot.classList.add(isOpen ? 'open' : 'closed');
+    if (isOpen) {
+      text.textContent = 'Открыто до ' + String(today.close).padStart(2,'0') + ':00';
+    } else if (today && today.open !== null) {
+      text.textContent = 'Откроется в ' + String(today.open).padStart(2,'0') + ':00';
+    } else {
+      text.textContent = 'Сегодня выходной';
+    }
+  }
+  var rows = document.querySelectorAll('#hours-table tr');
+  rows.forEach(function(tr){
+    var days = tr.getAttribute('data-days').split(',').map(Number);
+    if (days.indexOf(idx) !== -1) tr.classList.add('today');
+  });
+
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    document.querySelectorAll('.reveal').forEach(function(el){ el.classList.add('in'); });
+  } else if ('IntersectionObserver' in window) {
+    var io = new IntersectionObserver(function(entries){
+      entries.forEach(function(e){ if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } });
+    }, { threshold: 0.15 });
+    document.querySelectorAll('.reveal').forEach(function(el){ io.observe(el); });
+  } else {
+    document.querySelectorAll('.reveal').forEach(function(el){ el.classList.add('in'); });
+  }
+})();
+</script>
+
+</body>
+</html>
