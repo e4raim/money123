@@ -19,12 +19,13 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("config", help="Path to a client JSON config")
     parser.add_argument("--out", help="Output HTML path (default: output/<config-name>.html)")
+    parser.add_argument("--template", default="template", help="Template dir name under site-factory/ (default: template)")
     args = parser.parse_args()
 
     config_path = Path(args.config)
     data = json.loads(config_path.read_text(encoding="utf-8"))
 
-    env = Environment(loader=FileSystemLoader(str(ROOT / "template")))
+    env = Environment(loader=FileSystemLoader(str(ROOT / args.template)))
     template = env.get_template("index.html")
     html = template.render(**data)
 
