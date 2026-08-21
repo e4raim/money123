@@ -3,23 +3,23 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Барбершоп «Отто» — барбершоп в Краснодаре</title>
+<title>Барбершоп «Отто»: барбершоп в Краснодаре</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=PT+Sans:wght@400;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
   :root{
-    --ink:       #EFE8DC;
-    --ink-dim:   #B7ADA0;
-    --ink-faint: #7C7468;
-    --ground:    #17140F;
-    --surface:   #201B15;
-    --surface-2: #2A241C;
-    --line:      #3A3226;
-    --brass:     #C79A56;
-    --brass-hi:  #E4BD7E;
-    --steel:     #8E9BA3;
-    --red:       #8C3B32;
+    --ink:       #ECEDEF;
+    --ink-dim:   #A7ACB6;
+    --ink-faint: #6D727B;
+    --ground:    #121317;
+    --surface:   #1B1D22;
+    --surface-2: #24272E;
+    --line:      #33363D;
+    --accent:    #4A7FE8;
+    --accent-hi: #6E9AF2;
+    --steel:     #B9BFC8;
+    --red:       #A83A34;
     --radius: 2px;
     --wrap: 1180px;
     --edge: clamp(20px, 5vw, 64px);
@@ -68,13 +68,13 @@
     font-size:0.72rem;
     letter-spacing:0.16em;
     text-transform:uppercase;
-    color:var(--brass);
+    color:var(--accent);
   }
 
   /* ---------- top bar ---------- */
   .topbar{
     position:sticky; top:0; z-index:40;
-    background:rgba(23,20,15,0.92);
+    background:rgba(18,19,23,0.92);
     backdrop-filter:blur(6px);
     border-bottom:1px solid var(--line);
   }
@@ -90,7 +90,7 @@
     text-decoration:none;
     white-space:nowrap;
   }
-  .brand b{ color:var(--brass); font-weight:600; }
+  .brand b{ color:var(--accent); font-weight:600; }
   .topbar-right{ display:flex; align-items:center; gap:20px; }
   .status-pill{
     display:flex; align-items:center; gap:8px;
@@ -109,7 +109,7 @@
     font-family:'JetBrains Mono', monospace;
     font-size:0.92rem;
     text-decoration:none;
-    border-bottom:1px solid var(--brass);
+    border-bottom:1px solid var(--accent);
     padding-bottom:1px;
     white-space:nowrap;
   }
@@ -129,10 +129,10 @@
     transition:transform 0.15s ease, background-color 0.15s ease, border-color 0.15s ease;
   }
   .btn svg{ width:16px; height:16px; flex:none; }
-  .btn-primary{ background:var(--brass); color:#17140F; }
-  .btn-primary:hover{ background:var(--brass-hi); transform:translateY(-1px); }
+  .btn-primary{ background:var(--accent); color:#0A0E17; }
+  .btn-primary:hover{ background:var(--accent-hi); transform:translateY(-1px); }
   .btn-ghost{ border-color:var(--line); color:var(--ink); }
-  .btn-ghost:hover{ border-color:var(--brass); color:var(--brass-hi); transform:translateY(-1px); }
+  .btn-ghost:hover{ border-color:var(--accent); color:var(--accent-hi); transform:translateY(-1px); }
   @media (prefers-reduced-motion: reduce){ .btn:hover{ transform:none; } }
 
   /* ---------- hero ---------- */
@@ -154,7 +154,7 @@
     line-height:0.94;
   }
   .hero-title span{ display:block; }
-  .hero-title .accent{ color:var(--brass); }
+  .hero-title .accent{ color:var(--accent); }
   .hero-tagline{
     margin-top:22px;
     max-width:34ch;
@@ -162,15 +162,6 @@
     color:var(--ink-dim);
   }
   .hero-cta{ margin-top:32px; display:flex; flex-wrap:wrap; gap:14px; }
-  .hero-ticket{
-    margin-top:40px;
-    display:flex; flex-wrap:wrap; gap:6px 18px;
-    font-family:'JetBrains Mono', monospace;
-    font-size:0.82rem;
-    color:var(--ink-faint);
-  }
-  .hero-ticket span{ white-space:nowrap; }
-  .hero-ticket b{ color:var(--ink-dim); font-weight:400; }
 
   .pole{
     width:64px; height:220px;
@@ -214,20 +205,20 @@
     text-align:center;
     background:var(--surface);
   }
-  .plate .num{ font-family:'Oswald'; font-size:2.4rem; color:var(--brass); line-height:1; }
+  .plate .num{ font-family:'Oswald'; font-size:2.4rem; color:var(--accent); line-height:1; }
   .plate .label{ margin-top:8px; font-family:'JetBrains Mono', monospace; font-size:0.76rem; letter-spacing:0.1em; text-transform:uppercase; color:var(--ink-faint); }
   @media (max-width:760px){ .about-grid{ grid-template-columns:1fr; } }
 
   /* ---------- services ---------- */
   .svc-group + .svc-group{ margin-top:36px; }
-  .svc-group h3{ font-size:1.05rem; color:var(--brass); letter-spacing:0.06em; }
+  .svc-group h3{ font-size:1.05rem; color:var(--accent); letter-spacing:0.06em; }
   .svc-row{
     display:flex; align-items:baseline; justify-content:space-between; gap:16px;
     padding:16px 0;
     border-bottom:1px solid var(--line);
     transition:padding-left 0.2s ease, border-color 0.2s ease;
   }
-  .svc-row:hover{ padding-left:10px; border-color:var(--brass); }
+  .svc-row:hover{ padding-left:10px; border-color:var(--accent); }
   .svc-name{ font-size:1.02rem; }
   .svc-duration{ display:block; margin-top:2px; font-size:0.8rem; color:var(--ink-faint); font-family:'JetBrains Mono', monospace; }
   .svc-dots{ flex:1; border-bottom:1px dotted var(--line); margin:0 4px 6px; min-width:24px; }
@@ -239,19 +230,33 @@
   .team-card{ background:var(--surface); padding:28px 22px; }
   .badge{
     width:56px; height:56px; border-radius:50%;
-    border:1.5px solid var(--brass);
+    border:1.5px solid var(--accent);
     display:flex; align-items:center; justify-content:center;
-    font-family:'Oswald'; font-size:1.1rem; color:var(--brass);
+    font-family:'Oswald'; font-size:1.1rem; color:var(--accent);
     margin-bottom:16px;
   }
   .team-card h3{ font-size:1.05rem; text-transform:none; letter-spacing:0; }
   .team-card .role{ margin-top:4px; font-size:0.88rem; color:var(--ink-dim); }
   .team-card .years{ margin-top:10px; font-family:'JetBrains Mono', monospace; font-size:0.76rem; color:var(--ink-faint); }
 
+  /* ---------- gallery ---------- */
+  .gallery-grid{
+    display:grid;
+    grid-template-columns: 1.4fr 1fr 1fr;
+    grid-template-rows: repeat(2, 200px);
+    gap:4px;
+  }
+  .gallery-grid img{ width:100%; height:100%; object-fit:cover; }
+  .gallery-grid img:first-child{ grid-row: 1 / 3; }
+  @media (max-width:700px){
+    .gallery-grid{ grid-template-columns:1fr 1fr; grid-template-rows:repeat(3, 160px); }
+    .gallery-grid img:first-child{ grid-column: 1 / 3; grid-row: 1; }
+  }
+
   /* ---------- reviews ---------- */
   .review-grid{ display:grid; grid-template-columns:1fr 1fr; gap:1px; background:var(--line); border:1px solid var(--line); }
   .review{ background:var(--surface); padding:32px; position:relative; }
-  .review .mark{ font-family:'Oswald'; font-size:2.4rem; color:var(--brass); line-height:1; display:block; margin-bottom:4px; }
+  .review .mark{ font-family:'Oswald'; font-size:2.4rem; color:var(--accent); line-height:1; display:block; margin-bottom:4px; }
   .review p{ color:var(--ink); max-width:52ch; }
   .review footer{ margin-top:16px; font-family:'JetBrains Mono', monospace; font-size:0.78rem; color:var(--ink-faint); }
   @media (max-width:700px){ .review-grid{ grid-template-columns:1fr; } }
@@ -262,9 +267,9 @@
   .hours-table td{ padding:10px 0; border-bottom:1px solid var(--line); }
   .hours-table td:first-child{ color:var(--ink-dim); }
   .hours-table td:last-child{ text-align:right; font-family:'JetBrains Mono', monospace; }
-  .hours-table tr.today td{ color:var(--brass-hi); }
+  .hours-table tr.today td{ color:var(--accent-hi); }
   .addr-line{ display:flex; gap:12px; align-items:flex-start; margin-bottom:22px; }
-  .addr-line svg{ width:18px; height:18px; flex:none; margin-top:3px; color:var(--brass); }
+  .addr-line svg{ width:18px; height:18px; flex:none; margin-top:3px; color:var(--accent); }
   .cta-block{ margin-top:28px; display:flex; flex-wrap:wrap; gap:14px; }
   @media (max-width:760px){ .loc-grid{ grid-template-columns:1fr; } }
 
@@ -293,7 +298,6 @@
 <header class="hero" id="top">
   <div class="wrap">
     <div class="hero-head">
-      <p class="eyebrow">Краснодар · с 2016 года</p>
       <h1 class="hero-title">
         <span>СТРИЖКА,</span><span>БРИТЬЁ,</span><span class="accent">ХАРАКТЕР</span>
       </h1>
@@ -305,13 +309,8 @@
         </a>
         <a class="btn btn-ghost" href="https://wa.me/79181234567?text=Здравствуйте!%20Хочу%20записаться%20в%20барбершоп%20«Отто»" target="_blank" rel="noopener">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21l1.5-4.5A8 8 0 1 1 8.5 19.5L3 21z"/></svg>
-          Написать в WhatsApp
+          Записаться в WhatsApp
         </a>
-      </div>
-      <div class="hero-ticket">
-        <span><b>Адрес</b> ул. Красная, 14, Краснодар</span>
-        <span><b>Телефон</b> +7 918 123-45-67</span>
-        <span><b>Мастеров</b> 3</span>
       </div>
     </div>
     <div class="pole" aria-hidden="true"></div>
@@ -322,7 +321,6 @@
   <div class="wrap">
     <div class="section-head reveal">
       <div>
-        <p class="eyebrow">О нас</p>
         <h2 class="section-title">Школа старой закалки</h2>
       </div>
     </div>
@@ -342,7 +340,6 @@
   <div class="wrap">
     <div class="section-head reveal">
       <div>
-        <p class="eyebrow">Прайс</p>
         <h2 class="section-title">Услуги и цены</h2>
       </div>
     </div>
@@ -419,7 +416,6 @@
   <div class="wrap">
     <div class="section-head reveal">
       <div>
-        <p class="eyebrow">Команда</p>
         <h2 class="section-title">Мастера</h2>
       </div>
     </div>
@@ -450,11 +446,12 @@
   </div>
 </section>
 
+
+
 <section id="reviews">
   <div class="wrap">
     <div class="section-head reveal">
       <div>
-        <p class="eyebrow">Отзывы</p>
         <h2 class="section-title">Что говорят гости</h2>
       </div>
     </div>
@@ -480,7 +477,6 @@
   <div class="wrap">
     <div class="section-head reveal">
       <div>
-        <p class="eyebrow">Как добраться</p>
         <h2 class="section-title">Ждём вас</h2>
       </div>
     </div>
@@ -491,7 +487,7 @@
           <div>ул. Красная, 14, Краснодар<br><span class="mono" style="color:var(--ink-faint); font-size:0.85rem;">вход со двора, вывеска «ОТТО»</span></div>
         </div>
         <div class="cta-block">
-          <a class="btn btn-primary" href="tel:+79181234567">Позвонить сейчас</a>
+          <a class="btn btn-primary" href="tel:+79181234567">Позвонить</a>
           <a class="btn btn-ghost" href="https://wa.me/79181234567?text=Здравствуйте!%20Хочу%20записаться%20в%20барбершоп%20«Отто»" target="_blank" rel="noopener">Записаться в WhatsApp</a>
         </div>
       </div>
