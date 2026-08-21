@@ -1,0 +1,13 @@
+{
+  "name": "money123",
+  "private": true,
+  "description": "Рабочая панель — риелторский трекер объектов (статический index.html + Firebase)",
+  "scripts": {
+    "start": "http-server . -p 8080 -c-1",
+    "test": "playwright test"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.56.1",
+    "http-server": "^14.1.1"
+  }
+}
