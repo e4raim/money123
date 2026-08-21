@@ -9,6 +9,9 @@
   --paper:#F3F1EC;--card:#FFFFFF;--ink:#23211E;--ink-soft:#6E6A62;--line:#E6E2D9;
   --brass:#9C1B4C;--brass-tint:#FBE7EF;
   --ok:#2F8F5B;--think:#C79218;--no:#C24A3E;--base:#8A867E;
+  /* те же смыслы, но с контрастом 4.5+: -t для текста, -s для заливки под белым текстом */
+  --ok-t:#1F7A48;--think-t:#8A6410;--no-t:#A93B30;--base-t:#63605A;
+  --ok-s:#24774A;--think-s:#8A6410;--no-s:#A93B30;--base-s:#6E6A62;--on-solid:#fff;--on-brass:#fff;
   --surface2:#FBFAF7;--thumb:#EDEAE2;--danger-tint:#FBEEEC;
   --sbw:232px;--sb-bg:#211D1A;--today-tint:rgba(156,27,76,.055);
   --serif:Georgia,"Times New Roman",serif;
@@ -19,6 +22,8 @@ body.dark{
   --paper:#171512;--card:#241F1B;--ink:#F0EBE2;--ink-soft:#B3AA9C;--line:#3B352D;
   --brass:#E85C93;--brass-tint:#3A1F2A;
   --ok:#3FAE72;--think:#D9A53A;--no:#E06B5C;--base:#8A8F99;
+  --ok-t:#5FCB8F;--think-t:#E8BC5A;--no-t:#F08C7E;--base-t:#A9AEB8;
+  --ok-s:#3FAE72;--think-s:#D9A53A;--no-s:#E06B5C;--base-s:#8A8F99;--on-solid:#16110F;--on-brass:#1A0E13;
   --surface2:#2C2620;--thumb:#332C24;--danger-tint:#3A211D;--today-tint:rgba(232,92,147,.10);
   --shadow:0 1px 2px rgba(0,0,0,.35),0 6px 18px rgba(0,0,0,.45);
 }
@@ -30,6 +35,8 @@ body.dark img{filter:brightness(.92)}
     --paper:#171512;--card:#241F1B;--ink:#F0EBE2;--ink-soft:#B3AA9C;--line:#3B352D;
     --brass:#E85C93;--brass-tint:#3A1F2A;
     --ok:#3FAE72;--think:#D9A53A;--no:#E06B5C;--base:#8A8F99;
+    --ok-t:#5FCB8F;--think-t:#E8BC5A;--no-t:#F08C7E;--base-t:#A9AEB8;
+    --ok-s:#3FAE72;--think-s:#D9A53A;--no-s:#E06B5C;--base-s:#8A8F99;--on-solid:#16110F;--on-brass:#1A0E13;
     --surface2:#2C2620;--thumb:#332C24;--danger-tint:#3A211D;--today-tint:rgba(232,92,147,.10);
     --shadow:0 1px 2px rgba(0,0,0,.35),0 6px 18px rgba(0,0,0,.45);
   }
@@ -56,7 +63,7 @@ header.compact #filtersRow2{display:none}
 .search input{width:100%;border:1px solid var(--line);background:var(--card);border-radius:12px;padding:11px 14px 11px 38px;font-size:15px;color:var(--ink);outline:none}
 .search input:focus{border-color:var(--brass);box-shadow:0 0 0 3px var(--brass-tint)}
 .search svg{position:absolute;left:12px;top:50%;transform:translateY(-50%);width:17px;height:17px;stroke:var(--ink-soft);fill:none;stroke-width:2}
-.btn-add{border:none;background:var(--brass);color:#fff;font-weight:600;font-size:15px;padding:11px 16px;border-radius:12px;cursor:pointer;white-space:nowrap;display:inline-flex;align-items:center;gap:7px;transition:filter .15s}
+.btn-add{border:none;background:var(--brass);color:var(--on-brass);font-weight:600;font-size:15px;padding:11px 16px;border-radius:12px;cursor:pointer;white-space:nowrap;display:inline-flex;align-items:center;gap:7px;transition:filter .15s}
 .btn-add:hover{filter:brightness(1.07)}
 .btn-add .plus{font-size:19px;line-height:1;margin-top:-1px}
 
@@ -71,15 +78,18 @@ header.compact #filtersRow2{display:none}
 .chip.active{border-color:var(--ink);color:var(--ink)}
 .chip.active .cnt{color:var(--ink)}
 .chip.warn{border-style:dashed;border-color:#D9A0BC;color:#8E1642}
+body.dark .chip.warn{border-color:#7A4459;color:#F2A6C4}
 .chip.warn.active{background:var(--brass-tint);border-color:var(--brass);color:#7E1640}
+body.dark .chip.warn.active{color:#F6C6DA}
 .spacer{flex:1;min-width:12px}
 select.mini{border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:10px;padding:8px 30px 8px 12px;font-size:13.5px;font-family:var(--sans);cursor:pointer;outline:none;appearance:none;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 10 10'><path d='M1 3l4 4 4-4' stroke='%236E6A62' stroke-width='1.6' fill='none'/></svg>");background-repeat:no-repeat;background-position:right 11px center}
 select.mini:focus{border-color:var(--brass)}
 
 .cloud-note{max-width:1240px;margin:12px auto 0;font-size:12.5px;color:var(--ink-soft);background:var(--brass-tint);border:1px solid #F0C4D6;border-radius:10px;padding:8px 12px;display:flex;gap:8px;align-items:center}
 .cloud-note b{color:#7E1640}
+body.dark .cloud-note b{color:#F6C6DA}
 .cloud-note.live{background:#E7F3EC;border-color:#CBE6D5}
-.cloud-note.live b{color:var(--ok)}
+.cloud-note.live b{color:var(--ok-t)}
 
 main{max-width:1240px;margin:0 auto;padding:18px}
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(258px,1fr));gap:18px}
@@ -126,15 +136,15 @@ main{max-width:1240px;margin:0 auto;padding:18px}
 .thumb img{width:100%;height:100%;object-fit:cover;display:block}
 .thumb .placeholder{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#C3BFB4}
 .thumb .placeholder svg{width:44px;height:44px;stroke:currentColor;fill:none;stroke-width:1.4}
-.pill{position:absolute;top:10px;left:10px;font-size:11.5px;font-weight:600;color:#fff;padding:4px 9px;border-radius:999px;letter-spacing:.2px;box-shadow:0 1px 4px rgba(0,0,0,.2)}
-.pill.works{background:var(--ok)} .pill.thinking{background:var(--think)} .pill.refusal{background:var(--no)} .pill.base{background:var(--base)}
+.pill{position:absolute;top:10px;left:10px;font-size:11.5px;font-weight:700;color:var(--on-solid);padding:4px 9px;border-radius:999px;letter-spacing:.2px;box-shadow:0 1px 4px rgba(0,0,0,.2)}
+.pill.works{background:var(--ok-s)} .pill.thinking{background:var(--think-s)} .pill.refusal{background:var(--no-s)} .pill.base{background:var(--base-s)}
 .card.closed .thumb img,.card.closed .thumb .placeholder{filter:grayscale(1);opacity:.5}
 .card.closed .body{opacity:.55}
 .card.closed{border-color:#DAD6CC}
 .sold-overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;z-index:3}
 .sold-overlay span{background:rgba(192,74,62,.94);color:#fff;font-weight:800;font-size:19px;letter-spacing:3px;padding:6px 18px;border-radius:8px;transform:rotate(-8deg);box-shadow:0 4px 14px rgba(0,0,0,.3)}
 .deal-badge{position:absolute;bottom:10px;left:10px;background:rgba(35,33,30,.72);color:#fff;font-size:10.5px;font-weight:700;padding:3px 8px;border-radius:999px;letter-spacing:.3px}
-.deal-badge.rent{background:rgba(47,111,143,.85)}
+.deal-badge.rent{background:rgba(31,83,110,.92)}
 .pay-badge{position:absolute;top:10px;right:10px;background:rgba(35,33,30,.82);color:#F2EAD6;font-size:11px;font-weight:700;padding:4px 8px;border-radius:999px;letter-spacing:.3px}
 .todo-badge{position:absolute;bottom:10px;right:10px;background:rgba(154,109,43,.92);color:#fff;font-size:10.5px;font-weight:700;padding:3px 8px;border-radius:999px;letter-spacing:.3px}
 .body{padding:12px 14px 14px;display:flex;flex-direction:column;gap:5px;flex:1}
@@ -143,7 +153,7 @@ main{max-width:1240px;margin:0 auto;padding:18px}
 .price{font-size:16px;font-weight:700;color:var(--ink);margin-top:1px}
 .ppm{font-size:12px;color:var(--brass);font-weight:600}
 .row{display:flex;align-items:center;gap:6px;font-size:12.5px;color:var(--ink-soft)}
-.row .k{color:#A8A296}
+.row .k{color:var(--ink-soft)}
 .owner{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:6px;padding-top:9px;border-top:1px solid var(--line)}
 .owner .who{min-width:0}
 .owner .name{font-size:13.5px;font-weight:600;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -153,7 +163,7 @@ main{max-width:1240px;margin:0 auto;padding:18px}
 .next{font-size:12px;color:var(--brass);font-weight:600;margin-top:4px;display:flex;gap:5px;align-items:baseline}
 .next.overdue{color:var(--no)}
 .next.overdue .k{color:var(--no)}
-.next .k{color:#B8AC8A}
+.next .k{color:var(--ink-soft)}
 
 .empty{text-align:center;padding:70px 20px;color:var(--ink-soft)}
 .empty .big{font-family:var(--serif);font-size:22px;color:var(--ink);margin-bottom:8px}
@@ -169,7 +179,8 @@ main{max-width:1240px;margin:0 auto;padding:18px}
 @keyframes pop{from{opacity:0;transform:translateY(10px) scale(.98)}to{opacity:1;transform:none}}
 .modal-head{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--paper);z-index:2}
 .modal-head h2{margin:0;font-family:var(--serif);font-size:19px}
-.x{border:none;background:none;font-size:24px;color:var(--ink-soft);cursor:pointer;line-height:1;padding:2px 6px}
+.x{border:none;background:none;font-size:24px;color:var(--ink-soft);cursor:pointer;line-height:1;width:36px;height:36px;display:flex;align-items:center;justify-content:center;border-radius:9px;flex:none}
+.x:hover{background:var(--surface2);color:var(--brass)}
 .modal-body{padding:18px 20px 4px}
 .photo-drop{height:180px;border:1.5px dashed #CFC9BC;border-radius:14px;background:var(--card);display:flex;align-items:center;justify-content:center;text-align:center;color:var(--ink-soft);cursor:pointer;overflow:hidden;position:relative;margin-bottom:16px;transition:.15s}
 .photo-drop:hover{border-color:var(--brass);color:var(--brass)}
@@ -191,12 +202,15 @@ label.f .lb{font-size:12.5px;font-weight:600;color:var(--ink-soft);margin-bottom
 .cv-photo img{width:100%;height:100%;object-fit:cover}
 .cv-num{font-family:var(--serif);font-size:26px;font-weight:700;line-height:1}
 .cv-sub{font-size:13.5px;color:var(--ink-soft);margin-top:6px}
-.cv-cad{font-size:11.5px;color:#A8A296;margin-top:4px;font-family:ui-monospace,Menlo,monospace;word-break:break-all}
-.cv-dates{text-align:right;font-size:11px;color:#A8A296;line-height:1.6;flex:none}
+.cv-cad{font-size:11.5px;color:var(--ink-soft);margin-top:4px;font-family:ui-monospace,Menlo,monospace;word-break:break-all}
+.cv-dates{text-align:right;font-size:11.5px;color:var(--ink-soft);line-height:1.6;flex:none}
 .cv-next{background:var(--brass-tint);border:1px solid #F0C4D6;border-radius:12px;padding:11px 14px;display:flex;align-items:center;gap:11px;margin-bottom:14px}
-.cv-next.over{background:#FBEEEC;border-color:#EBD3CF}
+.cv-next.over{background:var(--danger-tint);border-color:#EBD3CF}
+body.dark .cv-next.over{border-color:#5A342E}
 .cv-next b{font-size:13.5px;color:#8E1642;display:block}
-.cv-next.over b{color:var(--no)}
+.cv-next.over b{color:var(--no-t)}
+body.dark .cv-next b{color:#F6C6DA}
+body.dark .cv-next.over b{color:var(--no-t)}
 .cv-next small{font-size:12px;color:var(--ink-soft);display:block;margin-top:2px}
 .cv-facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:9px;margin-bottom:14px}
 .cv-fact{background:var(--surface2);border:1px solid var(--line);border-radius:11px;padding:9px 12px}
@@ -206,8 +220,8 @@ label.f .lb{font-size:12.5px;font-weight:600;color:var(--ink-soft);margin-bottom
 .cv-acts{display:flex;gap:8px;margin-top:13px}
 .cv-act{border:none;border-radius:11px;padding:11px 14px;font-size:14px;font-weight:700;cursor:pointer;font-family:var(--sans);display:flex;align-items:center;justify-content:center;gap:8px;flex:1;text-decoration:none}
 .cv-act svg{width:16px;height:16px}
-.cv-act.cv-tel{background:var(--brass);color:#fff}
-.cv-act.wa{background:#E7F3EC;color:#2F8F5B;border:1px solid #CBE6D5}
+.cv-act.cv-tel{background:var(--brass);color:var(--on-brass)}
+.cv-act.wa{background:#E7F3EC;color:var(--ok-t);border:1px solid #CBE6D5}
 body.dark .cv-act.wa{background:#1E2E24;border-color:#2E4636;color:#3FAE72}
 .cv-mini{display:flex;align-items:center;gap:10px;padding:9px 11px;border:1px solid var(--line);border-radius:10px;background:var(--card);margin-bottom:6px;cursor:pointer;font-size:13.5px}
 .cv-mini:hover{border-color:var(--brass)}
@@ -216,7 +230,7 @@ body.dark .cv-act.wa{background:#1E2E24;border-color:#2E4636;color:#3FAE72}
 .cv-comp{display:flex;gap:8px;margin-bottom:16px}
 .cv-comp input{flex:1;min-width:0;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:11px;padding:11px 13px;font-size:14.5px;font-family:var(--sans);outline:none}
 .cv-comp input:focus{border-color:var(--brass);box-shadow:0 0 0 3px var(--brass-tint)}
-.cv-comp button{flex:none;border:none;background:var(--brass);color:#fff;border-radius:11px;padding:11px 16px;font-size:14px;font-weight:700;cursor:pointer;font-family:var(--sans)}
+.cv-comp button{flex:none;border:none;background:var(--brass);color:var(--on-brass);border-radius:11px;padding:11px 16px;font-size:14px;font-weight:700;cursor:pointer;font-family:var(--sans)}
 .cv-feed{position:relative;padding-left:24px}
 .cv-feed:before{content:"";position:absolute;left:6px;top:7px;bottom:7px;width:2px;background:var(--line)}
 .cv-ev{position:relative;margin-bottom:15px}
@@ -244,7 +258,7 @@ body.dark{--fam:#B79BE0;--fam-tint:#312A3D}
 .fsec>summary small{font-weight:500;color:var(--ink-soft);font-size:11.5px}
 .fsec>summary:hover{color:var(--brass)}
 .fsec-body{padding:2px 14px 6px}
-.autofill-note{font-size:12.5px;color:var(--ok);background:#E7F3EC;border:1px solid #CBE6D5;border-radius:10px;padding:8px 11px;margin:-6px 0 13px}
+.autofill-note{font-size:12.5px;color:var(--ok-t);background:#E7F3EC;border:1px solid #CBE6D5;border-radius:10px;padding:8px 11px;margin:-6px 0 13px}
 body.dark .autofill-note{background:#1E2E24;border-color:#2E4636}
 @media (max-width:760px){
   /* 16px — иначе iOS зумит страницу при фокусе на поле */
@@ -263,21 +277,21 @@ body.dark .autofill-note{background:#1E2E24;border-color:#2E4636}
 .add-link:hover{border-color:var(--brass)}
 @media (max-width:480px){.link-row{grid-template-columns:1fr auto}.link-row .ol-url{grid-column:1/-1}}
 .modal-foot{display:flex;gap:10px;padding:14px 20px 20px;position:sticky;bottom:0;background:var(--paper);border-top:1px solid var(--line)}
-.cadline{font-size:11px;color:#B0AB9F;font-family:ui-monospace,Menlo,monospace;margin-top:-1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cadline{font-size:11px;color:var(--ink-soft);font-family:ui-monospace,Menlo,monospace;margin-top:-1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 #egrnStatus{font-size:12.5px;color:var(--ink-soft)}
-#egrnStatus.egrn-ok{color:var(--ok);font-weight:600}
+#egrnStatus.egrn-ok{color:var(--ok-t);font-weight:600}
 .egrn-result{margin-bottom:13px}
 .egrn-result:empty{margin:0}
 .egrn-hint{font-size:12.5px;color:var(--ink-soft);padding:9px 11px;background:var(--card);border:1px dashed var(--line);border-radius:10px}
-.dup-warn{font-size:12.5px;color:#8E1642;background:#FBE7EF;border:1px solid #F0C4D6;border-radius:10px;padding:8px 11px;margin:-6px 0 13px}
+.dup-warn{font-size:12.5px;color:#8E1642;background:var(--brass-tint);border:1px solid #F0C4D6;border-radius:10px;padding:8px 11px;margin:-6px 0 13px}
 .egrn-card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin-bottom:8px}
 .egrn-top{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
 .egrn-fio{font-size:14px;font-weight:700;color:var(--ink)}
 .egrn-meta{font-size:12px;color:var(--ink-soft);margin-top:2px}
-.egrn-fill{flex:none;border:none;background:var(--brass);color:#fff;border-radius:9px;padding:8px 12px;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--sans)}
+.egrn-fill{flex:none;border:none;background:var(--brass);color:var(--on-brass);border-radius:9px;padding:8px 12px;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--sans)}
 .egrn-fill:hover{filter:brightness(1.07)}
 .egrn-others{margin-top:8px;padding-top:8px;border-top:1px dashed var(--line);font-size:11.5px;color:var(--ink-soft);line-height:1.45}
-.modal-foot .save{flex:1;background:var(--brass);color:#fff;border:none;border-radius:12px;padding:13px;font-size:15.5px;font-weight:600;cursor:pointer}
+.modal-foot .save{flex:1;background:var(--brass);color:var(--on-brass);border:none;border-radius:12px;padding:13px;font-size:15.5px;font-weight:600;cursor:pointer}
 .modal-foot .save:hover{filter:brightness(1.07)}
 .modal-foot .del{border:1px solid #E7C9C4;background:var(--card);color:var(--no);border-radius:12px;padding:13px 16px;font-size:14px;cursor:pointer}
 .modal-foot .del:hover{background:var(--danger-tint)}
@@ -313,16 +327,16 @@ body.dark .autofill-note{background:#1E2E24;border-color:#2E4636}
 /* --- боковая навигация --- */
 .sidebar{position:fixed;left:0;top:0;bottom:0;width:var(--sbw);background:var(--sb-bg);display:flex;flex-direction:column;z-index:50;overflow-y:auto;overscroll-behavior:contain}
 .sb-brand{display:flex;align-items:center;gap:10px;padding:17px 16px 15px;border-bottom:1px solid rgba(255,255,255,.08)}
-.sb-mark{width:32px;height:32px;border-radius:9px;background:var(--brass);display:flex;align-items:center;justify-content:center;color:#fff;font-family:var(--serif);font-weight:700;font-size:16px;flex:none}
+.sb-mark{width:32px;height:32px;border-radius:9px;background:var(--brass);display:flex;align-items:center;justify-content:center;color:var(--on-brass);font-family:var(--serif);font-weight:700;font-size:16px;flex:none}
 .sb-name{min-width:0}
 .sb-name b{display:block;color:#F0EBE2;font-family:var(--serif);font-size:16.5px;font-weight:700;line-height:1.1}
-.sb-name small{display:block;color:rgba(240,235,226,.45);font-size:11.5px;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sb-name small{display:block;color:rgba(240,235,226,.66);font-size:11.5px;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .sb-nav{flex:1;padding:0 10px 14px;display:flex;flex-direction:column;gap:2px}
-.sb-group{font-size:10px;font-weight:700;letter-spacing:.6px;color:rgba(240,235,226,.36);text-transform:uppercase;padding:14px 6px 6px}
-.navi{display:flex;align-items:center;gap:11px;padding:9px 12px;border-radius:10px;border:none;background:none;color:rgba(240,235,226,.72);font-size:13.5px;font-weight:600;font-family:var(--sans);cursor:pointer;text-align:left;width:100%}
+.sb-group{font-size:11px;font-weight:700;letter-spacing:.6px;color:rgba(240,235,226,.6);text-transform:uppercase;padding:14px 6px 6px}
+.navi{display:flex;align-items:center;gap:11px;padding:9px 12px;border-radius:10px;border:none;background:none;color:rgba(240,235,226,.82);font-size:13.5px;font-weight:600;font-family:var(--sans);cursor:pointer;text-align:left;width:100%}
 .navi svg{width:17px;height:17px;stroke:currentColor;fill:none;stroke-width:1.7;flex:none}
 .navi:hover{background:rgba(255,255,255,.07);color:#F0EBE2}
-.navi.active{background:var(--brass);color:#fff}
+.navi.active{background:var(--brass);color:var(--on-brass)}
 /* гостю (руководителю) — только Актуалка и Архив; чисто декларативно, чтобы состояние не «залипало» при смене аккаунта */
 body.guest #tabDb,body.guest #tabSchema,body.guest #tabDeals,body.guest .sb-group-acct,body.guest .owner-only{display:none}
 .chip,.navi,.btn-add,.call,.modal-foot .save,.privbtn,.floatlock{transition-property:transform,background-color,border-color,color,box-shadow,filter;transition-duration:.15s;transition-timing-function:ease}
@@ -378,7 +392,7 @@ body.guest #tabDb,body.guest #tabSchema,body.guest #tabDeals,body.guest .sb-grou
 .port{margin-top:14px;border-top:1px solid var(--line);padding-top:11px}
 .port-h{display:flex;justify-content:space-between;align-items:center;margin-bottom:7px}
 .port-h b{font-size:13.5px}
-.pbadge{background:var(--brass);color:#fff;font-size:11px;font-weight:700;padding:3px 10px;border-radius:999px}
+.pbadge{background:var(--brass);color:var(--on-brass);font-size:11px;font-weight:700;padding:3px 10px;border-radius:999px}
 .pobj{display:flex;align-items:center;gap:9px;padding:8px 0;border-bottom:1px solid var(--line);font-size:13.5px;cursor:pointer}
 .pobj:hover{background:var(--surface2)}
 .pobj.cur{cursor:default;background:var(--brass-tint);border-radius:8px;padding-left:8px;padding-right:8px}
@@ -393,11 +407,11 @@ body.guest #tabDb,body.guest #tabSchema,body.guest #tabDeals,body.guest .sb-grou
 .auth-box{width:100%;max-width:340px;background:var(--card);border:1px solid var(--line);border-radius:18px;padding:32px 24px 26px;box-shadow:0 18px 50px rgba(30,28,24,.14)}
 .auth-box input{width:100%;border:1px solid var(--line);border-radius:11px;padding:13px 14px;font-size:16px;font-family:var(--sans);outline:none;margin-bottom:10px;background:var(--card);color:var(--ink)}
 .auth-box input:focus{border-color:var(--brass);box-shadow:0 0 0 3px var(--brass-tint)}
-.auth-box button{width:100%;border:none;background:var(--brass);color:#fff;border-radius:11px;padding:13px;font-size:15.5px;font-weight:600;cursor:pointer;font-family:var(--sans);margin-top:4px}
+.auth-box button{width:100%;border:none;background:var(--brass);color:var(--on-brass);border-radius:11px;padding:13px;font-size:15.5px;font-weight:600;cursor:pointer;font-family:var(--sans);margin-top:4px}
 .auth-box button:hover{filter:brightness(1.07)}
 #authErr{font-size:13px;text-align:center;margin-top:11px;min-height:17px;color:var(--no)}
 .auth-foot{font-size:11.5px;color:var(--ink-soft);text-align:center;margin-top:16px;line-height:1.5}
-:root{--fam:#7B5EA7;--fam-tint:#EFEAF7}
+:root{--fam:#6B4E97;--fam-tint:#EFEAF7}
 .sug-box{position:absolute;top:calc(100% + 6px);left:0;right:0;background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:0 14px 40px rgba(30,28,24,.16);z-index:90;display:none;max-height:60vh;overflow-y:auto;padding:6px}
 .sug-box.show{display:block}
 .sg-h{font-size:10.5px;font-weight:700;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.4px;padding:8px 10px 4px}
@@ -441,9 +455,9 @@ body.privacy .pii:active,
 body.privacy .owner .name:active,
 body.privacy .pers-name:active{filter:none}
 .privbtn{border:1px solid var(--line);background:var(--card);color:var(--ink-soft);border-radius:11px;width:42px;height:42px;flex:none;cursor:pointer;font-size:17px;display:flex;align-items:center;justify-content:center}
-.privbtn.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.privbtn.on{background:var(--ink);color:var(--paper);border-color:var(--ink)}
 .bell-wrap{position:relative;flex:none}
-.bell-dot{position:absolute;top:-5px;right:-5px;min-width:18px;height:18px;border-radius:9px;background:var(--brass);color:#fff;font-size:10.5px;font-weight:800;display:none;align-items:center;justify-content:center;padding:0 5px;border:2px solid var(--paper)}
+.bell-dot{position:absolute;top:-5px;right:-5px;min-width:18px;height:18px;border-radius:9px;background:var(--brass);color:var(--on-brass);font-size:10.5px;font-weight:800;display:none;align-items:center;justify-content:center;padding:0 5px;border:2px solid var(--paper)}
 .bell-dot.on{display:flex}
 .bell-panel{display:none;position:absolute;right:0;top:50px;z-index:96;width:min(92vw,360px);max-height:60vh;overflow:auto;background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:0 16px 44px rgba(30,28,24,.22);padding:8px}
 .bell-panel.show{display:block}
@@ -459,8 +473,31 @@ body.privacy .pers-name:active{filter:none}
 .bell-item .bt b{color:var(--brass)}
 .bell-item .bw{font-size:11px;color:var(--ink-soft);margin-top:3px}
 .bell-empty{font-size:12.5px;color:var(--ink-soft);padding:10px 8px 14px;line-height:1.5}
-@media (max-width:760px){.bell-panel{position:fixed;left:10px;right:10px;top:62px;width:auto;max-height:66vh}
-  #lockBtn{display:none}}   /* на телефоне замок уже висит кружком внизу справа */
+@media (max-width:760px){
+  .bell-panel{position:fixed;left:10px;right:10px;top:62px;width:auto;max-height:66vh}
+  #lockBtn{display:none}   /* на телефоне замок уже висит кружком внизу справа */
+  /* пальцем целиться тяжелее, чем мышью: доводим кликабельное до 44px */
+  .chip{min-height:44px;padding:7px 15px}
+  select.mini{min-height:44px}
+  .tools button,.bulk-bar button,.bulk-bar select{min-height:44px}
+  .viewtog button{width:44px;height:40px}
+  .call{width:44px;height:44px}
+  .navi{padding:12px}
+  .undo-toast button,.device-alert button{min-height:44px;padding:8px 14px}
+  .plan-chips button,.bell-h button{min-height:44px}
+  .mem .rm,.cv-ev .when .rm{min-width:34px;min-height:34px}
+  .link-row .rm{min-width:44px;min-height:44px}
+  .st-btn{min-height:44px}
+  .navi{min-height:44px}
+  .menu-btn,.privbtn{width:44px;height:44px}
+  .btn-add{min-width:44px;min-height:44px}
+  .viewtog button{height:44px}
+  .td-seg button{min-height:44px}
+  .td-btn{width:44px;height:44px}
+  .search input{padding-top:13px;padding-bottom:13px}
+  .cv-comp input,.cv-planbtn{min-height:44px}
+  .x{width:44px;height:44px}
+}
 /* планировщик звонка прямо в карточке */
 .cv-plan{margin-bottom:16px}
 .cv-planbtn{width:100%;border:1px dashed #CFC9BC;background:var(--card);color:var(--brass);border-radius:11px;padding:11px;font-size:13.5px;font-weight:700;cursor:pointer;font-family:var(--sans);display:flex;align-items:center;justify-content:center;gap:8px}
@@ -475,7 +512,7 @@ body.privacy .pers-name:active{filter:none}
 .cv-planbox input{width:100%;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:10px;padding:10px 11px;font-size:14.5px;font-family:var(--sans);outline:none}
 .cv-planbox input:focus{border-color:var(--brass);box-shadow:0 0 0 3px var(--brass-tint)}
 .plan-acts{display:flex;gap:8px;margin-top:10px}
-.plan-acts .ok{flex:1;border:none;background:var(--brass);color:#fff;border-radius:10px;padding:11px;font-size:14px;font-weight:700;cursor:pointer;font-family:var(--sans)}
+.plan-acts .ok{flex:1;border:none;background:var(--brass);color:var(--on-brass);border-radius:10px;padding:11px;font-size:14px;font-weight:700;cursor:pointer;font-family:var(--sans)}
 .plan-acts .no{border:1px solid var(--line);background:var(--card);color:var(--ink-soft);border-radius:10px;padding:11px 14px;font-size:13.5px;cursor:pointer;font-family:var(--sans)}
 .plan-acts .no:hover{border-color:var(--no);color:var(--no)}
 .cv-next.clickable{cursor:pointer}
@@ -495,11 +532,11 @@ body.privacy .pers-name:active{filter:none}
 .fam-hint{font-size:12px;color:var(--ink-soft);background:var(--surface2);border:1px dashed var(--line);border-radius:10px;padding:8px 10px;line-height:1.5}
 .cv-ev.boss:before{border-color:var(--fam)}
 .cv-ev .au{color:var(--fam);font-weight:700}
-.floatlock{position:fixed;right:16px;bottom:16px;z-index:70;width:52px;height:52px;border-radius:50%;border:none;background:var(--ink);color:#fff;font-size:20px;cursor:pointer;box-shadow:0 6px 20px rgba(30,28,24,.3)}
+.floatlock{position:fixed;right:16px;bottom:16px;z-index:70;width:52px;height:52px;border-radius:50%;border:none;background:var(--ink);color:var(--paper);font-size:20px;cursor:pointer;box-shadow:0 6px 20px rgba(30,28,24,.3)}
 .floatlock:active{transform:scale(.93)}
 .undo-toast{position:fixed;left:calc(50% + var(--sbw)/2);bottom:24px;transform:translate(-50%,16px);z-index:90;background:#23211E;color:#F2EAD6;padding:12px 12px 12px 18px;border-radius:14px;box-shadow:0 12px 32px rgba(0,0,0,.28);display:flex;align-items:center;gap:14px;font-size:14px;opacity:0;pointer-events:none;transition:.2s ease;max-width:calc(100vw - 32px)}
 .undo-toast.show{opacity:1;transform:translate(-50%,0);pointer-events:auto}
-.undo-toast button{border:none;background:none;color:var(--brass-tint);font-weight:700;font-size:14px;cursor:pointer;padding:6px 8px;border-radius:8px;flex:none}
+.undo-toast button{border:none;background:none;color:#F6C6DA;font-weight:700;font-size:14px;cursor:pointer;padding:6px 8px;border-radius:8px;flex:none}
 .undo-toast button:hover{background:rgba(255,255,255,.1)}
 .device-alert{position:fixed;top:14px;left:calc(50% + var(--sbw)/2);transform:translate(-50%,-160%);z-index:95;background:#3A1B1B;color:#FCE8E4;padding:12px 16px;border-radius:14px;box-shadow:0 12px 32px rgba(0,0,0,.3);display:flex;gap:12px;align-items:center;font-size:13.5px;max-width:calc(100vw - 24px);transition:.25s ease}
 .device-alert.show{transform:translate(-50%,0)}
@@ -545,7 +582,8 @@ body.privacy .pers-name:active{filter:none}
 .st-btn.danger:hover{background:var(--danger-tint);color:var(--no)}
 .tgl{width:46px;height:27px;border-radius:999px;border:none;background:#DAD6CC;cursor:pointer;position:relative;flex:none;transition:.15s}
 .tgl i{position:absolute;top:3px;left:3px;width:21px;height:21px;border-radius:50%;background:#fff;transition:.15s;box-shadow:0 1px 3px rgba(0,0,0,.2)}
-.tgl.on{background:var(--ok)}
+.tgl.on{background:var(--ok-s)}
+.tgl::after{content:"";position:absolute;inset:-9px -6px}   /* зона нажатия 44px, вид прежний */
 .tgl.on i{left:22px}
 body.guest .btn-add,body.guest .empty button,body.guest .modal-foot .save,body.guest .modal-foot .del{display:none!important}
 body.guest .f input,body.guest .f select,body.guest .f textarea,body.guest .photo-drop{pointer-events:none;opacity:.75}
@@ -556,7 +594,7 @@ body.guest .f input,body.guest .f select,body.guest .f textarea,body.guest .phot
 .bld.w .bld-base{background:#EDEAE2;border-color:#D8D3C7;color:#4a463f}
 .bld.b .bld-base{background:#2B2A28;border-color:#141312;color:#EDE7D9}
 .bld.g .bld-base{background:#D6BB77;border-color:#C6A648;color:#3a2f12}
-.bld-base small{display:block;font-weight:500;font-size:9.5px;opacity:.8;margin-top:1px}
+.bld-base small{display:block;font-weight:500;font-size:11px;opacity:.9;margin-top:1px}
 #schemaTip{position:fixed;z-index:80;pointer-events:none;background:rgba(35,33,30,.96);color:#fff;font-size:12px;padding:7px 10px;border-radius:9px;box-shadow:0 6px 20px rgba(0,0,0,.3);display:none;max-width:220px;line-height:1.35}
 #schemaTip b{color:#F2EAD6}
 #schemaTip .st-st{display:inline-block;margin-top:3px;font-size:11px;opacity:.9}
@@ -577,6 +615,10 @@ body.guest .f input,body.guest .f select,body.guest .f textarea,body.guest .phot
 .nb.occ{background:var(--brass-tint);border-color:#EFB9D2}
 .nb.mid{background:#2B2A28;color:#F2EAD6;border-color:#2B2A28}
 .nb.mid b{color:#fff}
+/* фокус с клавиатуры виден везде: у части полей outline снят ради своей рамки */
+:focus-visible{outline:2px solid var(--brass);outline-offset:2px;border-radius:4px}
+select.mini:focus-visible,.f input:focus-visible,.f select:focus-visible,.f textarea:focus-visible,
+.search input:focus-visible,.cv-comp input:focus-visible,.cv-planbox input:focus-visible{outline-offset:0}
 /* ---------- карточка собственника (новый вид) ---------- */
 .pv-head{display:flex;align-items:flex-start;gap:14px}
 .pv-av{width:54px;height:54px;border-radius:50%;background:var(--fam-tint);color:var(--fam);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:16px;flex:none}
@@ -604,7 +646,7 @@ body.guest .f input,body.guest .f select,body.guest .f textarea,body.guest .phot
 .td-sum{font-size:13.5px;color:var(--ink-soft);margin-bottom:16px}
 .td-seg{display:inline-flex;border:1px solid var(--line);background:var(--card);border-radius:11px;padding:3px;gap:2px}
 .td-seg button{border:none;background:none;color:var(--ink-soft);border-radius:8px;padding:7px 14px;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--sans)}
-.td-seg button.on{background:var(--brass);color:#fff}
+.td-seg button.on{background:var(--brass);color:var(--on-brass)}
 .td-bar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:14px 0}
 .td-nav{display:inline-flex;gap:6px}
 .td-nav button{border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:9px;padding:7px 12px;font-size:13px;cursor:pointer;font-family:var(--sans)}
@@ -624,7 +666,7 @@ body.guest .f input,body.guest .f select,body.guest .f textarea,body.guest .phot
 .td-row.hot .why{color:var(--no)}
 .td-btn{border:none;border-radius:10px;width:42px;height:42px;flex:none;cursor:pointer;display:flex;align-items:center;justify-content:center;text-decoration:none}
 .td-btn svg{width:17px;height:17px}
-.td-btn.call{background:var(--brass);color:#fff}
+.td-btn.call{background:var(--brass);color:var(--on-brass)}
 .td-btn.note{background:var(--card);border:1px solid var(--line);color:var(--ink-soft)}
 .td-btn.note:hover{border-color:var(--brass);color:var(--brass)}
 /* сетка недели / дня */
@@ -667,9 +709,8 @@ body.guest .f input,body.guest .f select,body.guest .f textarea,body.guest .phot
 .cal-month .mc.today .dn{color:var(--brass)}
 .cal-more{font-size:11px;color:var(--brass);cursor:pointer;font-weight:600}
 @media (max-width:480px){
-  .td-row .num .pr,.td-row .meta .ph{display:none}
+  .td-row .num .pr,.td-row .meta .tel{display:none}
   .td-row{gap:9px;padding:10px}
-  .td-btn{width:38px;height:38px}
 }
 @media (max-width:760px){
   .cal-month .mc{min-height:74px}
@@ -714,7 +755,7 @@ body.guest .f input,body.guest .f select,body.guest .f textarea,body.guest .phot
     </button>
     <div class="search">
       <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
-      <input id="q" type="search" placeholder="Поиск: ФИО, № квартиры, кадастр, телефон…" autocomplete="off">
+      <input id="q" type="search" aria-label="Поиск по актуалке" placeholder="Поиск: ФИО, № квартиры, кадастр, телефон…" autocomplete="off">
       <div id="sugBox" class="sug-box"></div>
     </div>
     <div class="bell-wrap owner-only">
@@ -731,13 +772,13 @@ body.guest .f input,body.guest .f select,body.guest .f textarea,body.guest .phot
 
   <div class="filters" id="statusChips"></div>
   <div class="filters" id="filtersRow2" style="margin-top:8px">
-    <select class="mini" id="fDeal" onchange="onDealFilter()">
+    <select class="mini" id="fDeal" aria-label="Фильтр: тип сделки" onchange="onDealFilter()">
       <option value="all">Продажа + аренда</option>
       <option value="sale">Только продажа</option>
       <option value="rent">Только аренда</option>
     </select>
-    <select class="mini" id="fState"></select>
-    <select class="mini" id="fPay">
+    <select class="mini" id="fState" aria-label="Фильтр: состояние объекта"></select>
+    <select class="mini" id="fPay" aria-label="Фильтр: оплата нам">
       <option value="all">Оплата — любая</option>
       <option value="yes">Платит</option>
       <option value="split">Делится с агентом</option>
@@ -745,7 +786,7 @@ body.guest .f input,body.guest .f select,body.guest .f textarea,body.guest .phot
       <option value="no">Не платит</option>
     </select>
     <span class="spacer"></span>
-    <select class="mini" id="fSort">
+    <select class="mini" id="fSort" aria-label="Сортировка списка">
       <option value="new">Сначала новые</option>
       <option value="area_desc">Метраж: большие → меньшие</option>
       <option value="area_asc">Метраж: меньшие → большие</option>
@@ -784,9 +825,9 @@ body.guest .f input,body.guest .f select,body.guest .f textarea,body.guest .phot
   </div>
   <div class="bulk-bar" id="bulkBar">
     <span id="bulkCount"></span>
-    <select class="mini" id="bulkStatus"><option value="">Статус…</option><option value="works">Работает</option><option value="thinking">Думает</option><option value="refusal">Отказ</option><option value="base">Не общались</option></select>
+    <select class="mini" id="bulkStatus" aria-label="Массово: статус"><option value="">Статус…</option><option value="works">Работает</option><option value="thinking">Думает</option><option value="refusal">Отказ</option><option value="base">Не общались</option></select>
     <button onclick="bulkApplyStatus()">Применить</button>
-    <select class="mini" id="bulkPay"><option value="">Оплата…</option><option value="yes">Платит</option><option value="split">Делится с агентом</option><option value="low">Мало платит</option><option value="no">Не платит</option></select>
+    <select class="mini" id="bulkPay" aria-label="Массово: оплата"><option value="">Оплата…</option><option value="yes">Платит</option><option value="split">Делится с агентом</option><option value="low">Мало платит</option><option value="no">Не платит</option></select>
     <button onclick="bulkApplyPay()">Применить</button>
     <span class="spacer"></span>
     <button onclick="bulkExport()">📄 Экспорт подборки</button>
@@ -1103,7 +1144,7 @@ function startCloud(user){
   applyGuestUI();
   const note=document.getElementById('cloudNote');
   note.className="cloud-note live";
-  note.innerHTML=`<b>● Облако подключено</b>${isGuest?' · только просмотр':''} — ${esc(user.email||'')} · <a href="#" onclick="doLogout();return false" style="color:var(--ok);font-weight:600">выйти</a>`;
+  note.innerHTML=`<b>● Облако подключено</b>${isGuest?' · только просмотр':''} — ${esc(user.email||'')} · <a href="#" onclick="doLogout();return false" style="color:var(--ok-t);font-weight:600">выйти</a>`;
 }
 function applyGuestUI(){
   /* какие вкладки видит гость — решает CSS по классу body.guest, поэтому при смене
@@ -1517,7 +1558,7 @@ function renderDeals(){
   const sorted=deals.slice().sort((a,b)=>(b.closedDate||'').localeCompare(a.closedDate||''));
   const rows=sorted.map(o=>{
     const dl=stateOf(o)==='rented'?'Аренда':'Продажа';
-    const wonLabel=o.wonByUs==='yes'?'<span style="color:var(--ok);font-weight:700">✓ наша</span>':o.wonByUs==='no'?'<span style="color:var(--ink-soft)">не наша</span>':'<span style="color:var(--brass)">не отмечено</span>';
+    const wonLabel=o.wonByUs==='yes'?'<span style="color:var(--ok-t);font-weight:700">✓ наша</span>':o.wonByUs==='no'?'<span style="color:var(--ink-soft)">не наша</span>':'<span style="color:var(--brass)">не отмечено</span>';
     const isRentDeal=stateOf(o)==='rented';
     const suf=isRentDeal?' / мес.':'';
     const realSum=num(o.dealSum),adPrice=num(o.price);
@@ -1608,9 +1649,9 @@ const SVG_PHOTO='<svg width="18" height="18" viewBox="0 0 24 24" fill="none" str
 function todayRow(o,hot,whyOverride){
   const tel=(o.ownerPhone||'').replace(/[^\d+]/g,'');
   const meta=(o.ownerName?esc(o.ownerName):'собственник не указан')
-    +(o.ownerPhone?` <span class="ph">· ${esc(o.ownerPhone)}</span>`:'');
+    +(o.ownerPhone?` <span class="tel">· ${esc(o.ownerPhone)}</span>`:'');
   return `<div class="td-row${hot?' hot':''}">
-    <div class="ph" onclick="openModal('${o.id}')">${o.photo?`<img src="${esc(o.photo)}" alt="">`:SVG_PHOTO}</div>
+    <div class="ph" role="button" tabindex="0" aria-label="Открыть карточку ${esc(o.apartment)||'объекта'}" onclick="openModal('${o.id}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openModal('${o.id}')}">${o.photo?`<img src="${esc(o.photo)}" alt="">`:SVG_PHOTO}</div>
     <div class="mid" onclick="openModal('${o.id}')">
       <div class="num">${esc(o.apartment)||'Без номера'} ${shortMeta(o)}</div>
       <div class="meta pii">${meta}</div>
@@ -2199,10 +2240,10 @@ function renderCardView(o){
           <button onclick="planQuick(30)">Через месяц</button>
         </div>
         <div class="plan-row">
-          <input id="planDate" type="date" value="${esc(o.nextDate||'')}">
-          <input id="planTime" type="time" value="${esc(o.nextTime||'')}">
+          <input id="planDate" type="date" aria-label="Дата звонка" value="${esc(o.nextDate||'')}">
+          <input id="planTime" type="time" aria-label="Время звонка" value="${esc(o.nextTime||'')}">
         </div>
-        <input id="planStep" placeholder="Зачем звоним — дожать по комиссии…" value="${esc(o.nextStep||'')}">
+        <input id="planStep" aria-label="Зачем звоним" placeholder="Зачем звоним — дожать по комиссии…" value="${esc(o.nextStep||'')}">
         <div class="plan-acts">
           <button class="ok" onclick="savePlan()">Сохранить</button>
           ${o.nextDate?`<button class="no" onclick="clearPlan()">Убрать</button>`:''}
@@ -2212,7 +2253,7 @@ function renderCardView(o){
     </div>`}
     <div style="font-size:11px;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.3px;font-weight:700;margin-bottom:9px">Хронология</div>
     <div class="cv-comp">
-      <input id="logInput" placeholder="${isGuest?'Комментарий руководителя…':'Что сказал собственник?'}" onkeydown="if(event.key==='Enter')addLogEntry()">
+      <input id="logInput" aria-label="${isGuest?'Комментарий руководителя':'Запись в хронологию'}" placeholder="${isGuest?'Комментарий руководителя…':'Что сказал собственник?'}" onkeydown="if(event.key==='Enter')addLogEntry()">
       <button onclick="addLogEntry()">${isGuest?'Оставить':'Записать'}</button>
     </div>
     <div id="cvFeed"></div>`;
@@ -2861,7 +2902,7 @@ function renderDb(){
   document.getElementById('viewDb').innerHTML=`
     <div class="db-bar">
       <input id="dbQ" placeholder="Поиск: № квартиры, ФИО, кадастр, телефон, заметка…" value="${esc(dbState.q)}">
-      <select class="mini" id="dbType">
+      <select class="mini" id="dbType" aria-label="База: тип объекта">
         <option value="all" ${dbState.type==='all'?'selected':''}>Все (${Object.keys(HYDE_OBJ).length})</option>
         <option value="kv" ${dbState.type==='kv'?'selected':''}>🏠 Квартиры (${cnt.kv})</option>
         <option value="mm" ${dbState.type==='mm'?'selected':''}>🚗 Машино-места (${cnt.mm})</option>
@@ -2919,7 +2960,7 @@ function renderSettings(){
       <div class="st-card">
         <div class="st-h">Внешний вид</div>
         <div class="st-row"><div class="st-l"><b>Тема</b><small>«Системная» подстраивается под настройки устройства</small></div>
-          <select class="mini" onchange="setTheme(this.value)">
+          <select class="mini" aria-label="Тема оформления" onchange="setTheme(this.value)">
             <option value="system" ${themePref()==='system'?'selected':''}>Системная</option>
             <option value="light" ${themePref()==='light'?'selected':''}>Светлая</option>
             <option value="dark" ${themePref()==='dark'?'selected':''}>Тёмная</option>
@@ -2929,13 +2970,13 @@ function renderSettings(){
       <div class="st-card">
         <div class="st-h">Безопасность</div>
         <div class="st-row"><div class="st-l"><b>Режим инкогнито</b><small>Скрывает ФИО и телефоны. Нажать и удерживать — подсмотреть.</small></div>
-          <button class="tgl ${priv?'on':''}" onclick="togglePrivacy();renderSettings()"><i></i></button></div>
+          <button class="tgl ${priv?'on':''}" role="switch" aria-checked="${priv}" aria-label="Режим инкогнито" onclick="togglePrivacy();renderSettings()"><i></i></button></div>
         <div class="st-row"><div class="st-l"><b>Автоблокировка</b><small>Выход при бездействии</small></div>
-          <select class="mini" onchange="localStorage.setItem('actualka_idle',this.value);touchIdle(true);renderSettings()">
+          <select class="mini" aria-label="Автоблокировка при бездействии" onchange="localStorage.setItem('actualka_idle',this.value);touchIdle(true);renderSettings()">
             ${[5,15,30,60,120].map(m=>`<option value="${m}" ${idleMins()===m?'selected':''}>${m>=60?(m/60)+' ч':m+' мин'}</option>`).join('')}
           </select></div>
         <div class="st-row"><div class="st-l"><b>Не запоминать вход</b><small>Спрашивать пароль при каждом открытии</small></div>
-          <button class="tgl ${noRemember?'on':''}" onclick="toggleRemember();renderSettings()"><i></i></button></div>
+          <button class="tgl ${noRemember?'on':''}" role="switch" aria-checked="${noRemember}" aria-label="Не запоминать вход" onclick="toggleRemember();renderSettings()"><i></i></button></div>
         <button class="st-btn danger" onclick="lockNow()">🔒 Заблокировать сейчас</button>
         ${loginLog.length?`<div class="sec"><div class="sec-h"><b>История входов</b></div>${loginLog.slice().reverse().slice(0,8).map(l=>{
           const dt=new Date(l.ts);
@@ -3023,9 +3064,9 @@ function renderSchema(){
         const noObj=cadOfNum(num)?'':'noobj';
         if(o){const cls=CLOSED.includes(stateOf(o))?'closed':(o.dealStatus||'base');cnt++;
           rowTotal++; if(!CLOSED.includes(stateOf(o))&&(o.dealStatus==='works'||o.dealStatus==='thinking'))rowActive++;
-          cells+=`<div class="brick ${cls} ${idx.multi[key]?'multi':''} ${kinCls}" data-k="${t.k}" data-f="${f}" data-p="${p}" onclick="openCell(${t.k},${f},${p})"></div>`;}
+          cells+=`<div class="brick ${cls} ${idx.multi[key]?'multi':''} ${kinCls}" role="button" aria-label="Квартира ${num}, ${(STATUS[o.dealStatus||'base']||{}).label||''}" data-k="${t.k}" data-f="${f}" data-p="${p}" onclick="openCell(${t.k},${f},${p})"></div>`;}
         else {const ni=schemaInfo[num];const nc=ni&&(ni.note||ni.cad)?'noted':'e';
-          cells+=`<div class="brick ${nc} ${kinCls} ${noObj}" data-k="${t.k}" data-f="${f}" data-p="${p}" onclick="openCell(${t.k},${f},${p})"></div>`;}
+          cells+=`<div class="brick ${nc} ${kinCls} ${noObj}" role="button" aria-label="Квартира ${num}" data-k="${t.k}" data-f="${f}" data-p="${p}" onclick="openCell(${t.k},${f},${p})"></div>`;}
       }
       const density=rowTotal?rowActive/rowTotal:0;
       const heatStyle=heatMode&&density>0?` style="box-shadow:0 0 0 3px rgba(156,27,76,${(0.15+density*0.45).toFixed(2)});border-radius:3px"`:'';
