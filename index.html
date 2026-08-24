@@ -906,6 +906,8 @@ select.mini:focus-visible,.f input:focus-visible,.f select:focus-visible,.f text
 .ca-when-ok{min-height:44px;padding:0 14px;border:0;border-radius:10px;background:var(--think-s);color:var(--on-solid);font:inherit;font-size:13px;font-weight:700;cursor:pointer}
 .ca-when-no{min-height:44px;padding:0 12px;border:1px solid var(--line);border-radius:10px;background:var(--card);color:var(--ink-soft);font:inherit;font-size:13px;cursor:pointer}
 .cguess{font-size:11px}
+.cb.fresh{background:var(--think-s);color:var(--on-solid);border-color:transparent}
+.cobj .cco{display:block;font-size:11.5px;color:var(--fam);margin-top:2px}
 </style>
 </head>
 <body>
@@ -1330,7 +1332,7 @@ function startCloud(user){
   dbRef=firebase.database().ref('actualka');
   cloud=true;
   dbRef.off();
-  dbRef.on('value',s=>{const v=s.val()||{};items=Object.keys(v).map(k=>({...v[k],id:k}));_callPool=null;render();if(state.view==='schema')renderSchema();if(state.view==='calls')renderCalls();if(!isGuest)offerMigration();},
+  dbRef.on('value',s=>{const v=s.val()||{};items=Object.keys(v).map(k=>({...v[k],id:k}));_callPool=null;_callOpts=null;render();if(state.view==='schema')renderSchema();if(state.view==='calls')renderCalls();if(!isGuest)offerMigration();},
     err=>{const n=document.getElementById('cloudNote');n.className='cloud-note';n.innerHTML='<b>Нет доступа к базе.</b> Проверь правила Firebase.';console.error(err);});
   claimSession(user);
   checkDeviceAlert();
@@ -2835,7 +2837,7 @@ function buildEgrnIndex(){
     const k=normFio(r.fio);if(k){(egrn.byOwner[k]=egrn.byOwner[k]||[]).push(r);}
     if(r.inn){(egrn.byInn[r.inn]=egrn.byInn[r.inn]||[]).push(r);}
   });
-  _homeSig=null;_livesCache=null;_callPool=null;
+  _homeSig=null;_livesCache=null;_callPool=null;_callOpts=null;
 }
 /* ---------- «живёт здесь»: сверяем адрес прописки с адресом самого дома ----------
    Эталон берём из самой базы — самый частый адрес объекта. Никаких зашитых улиц. */
@@ -3021,7 +3023,7 @@ function applyComplex(c){
   TOWERS=(c.towers||[]).map(t=>({k:t.k,ru:t.ru,name:t.en,en:t.en,cls:t.cls,max:t.max,rules:t.rules||[]}));
   HYDE_BY_NUM={};
   Object.keys(HYDE_OBJ).forEach(suf=>{HYDE_BY_NUM[HYDE_OBJ[suf][0]]=suf;});
-  _livesCache=null;_callPool=null;
+  _livesCache=null;_callPool=null;_callOpts=null;
   if(c.name){try{localStorage.setItem('actualka_jk',c.name);}catch(e){}}
 }
 function hasComplex(){return !!(COMPLEX&&TOWERS.length)}
@@ -3127,7 +3129,7 @@ function startAux(){
     applyComplex(v.complex||null);
     schemaInfo=v.schema||{};
     groups=Array.isArray(v.groups)?v.groups:(v.groups?Object.values(v.groups):[]);
-    ownerFix=v.owners||{};_callPool=null;_livesCache=null;
+    ownerFix=v.owners||{};_callPool=null;_callOpts=null;_livesCache=null;
     loginLog=Array.isArray(v.loginLog)?v.loginLog:(v.loginLog?Object.values(v.loginLog):[]);
     calls=v.calls||{};
     /* первый заход: поднимаем заметки с устройства в облако, ничего не теряя */
@@ -3271,6 +3273,9 @@ function buildCallPool(){
     const p=by[k];
     p.region=mjRegion(p.mj);
     p.objs=p.rows.map(r=>({r,o:objOfCad(r.cad)}));
+    p.regOf={};p.objs.forEach(x=>{if(x.o&&x.r.reg)p.regOf[x.o.num]=x.r.reg;});
+    const yrs=p.objs.map(x=>ownYears(x.r.reg)).filter(v=>v!=null);
+    p.own=yrs.length?Math.max.apply(null,yrs):null;   /* сколько владеет дольше всего */
     p.flats=p.objs.filter(x=>x.o&&x.o.type==='kv').map(x=>x.o)
              .sort((a,b)=>(a.num>b.num?1:-1));
     p.rest=p.objs.filter(x=>!x.o||x.o.type!=='kv');
@@ -3282,9 +3287,19 @@ function buildCallPool(){
     p.share=p.rows.some(r=>r.share&&r.share!=='1/1');
     return p;
   });
-  _callPool=pool;
+  _callPool=pool;_callOpts=null;
   return pool;
 }
+/* «Дата регистрации владения» приходит как дд.мм.гггг — берём год и считаем срок */
+function ownYears(reg){
+  const m=/(\d{4})/.exec((reg||'').toString().slice(-10));
+  if(!m)return null;
+  const y=+m[1];if(y<1990||y>2100)return null;
+  const d=/^(\d{2})\.(\d{2})\.(\d{4})/.exec((reg||'').toString().trim());
+  const from=d?new Date(+d[3],+d[2]-1,+d[1]):new Date(y,0,1);
+  return Math.max(0,(Date.now()-from.getTime())/(365.25*86400000));
+}
+function ownSince(reg){const m=/(\d{4})/.exec((reg||'').toString().slice(-10));return m?m[1]:''}
 function callRec(p){return calls[p.ckey]||null}
 function callDue(p){
   const c=callRec(p);
@@ -3293,7 +3308,7 @@ function callDue(p){
   return 'done';
 }
 /* ---- фильтры очереди ---- */
-const callState={flats:'all',live:'all',region:'all',phone:'yes',ads:'all',status:'new',
+const callState={flats:'all',live:'all',region:'all',phone:'yes',ads:'all',status:'new',own:'all',
                  tower:'all',areaMin:'',areaMax:'',floorMin:'',floorMax:'',idx:0,open:null};
 function callQueue(){
   const t=todayStr();
@@ -3307,6 +3322,10 @@ function callQueue(){
     if(callState.live==='yes'&&!p.live)return false;
     if(callState.region!=='all'&&p.region!==callState.region)return false;
     if(callState.ads==='yes'&&!p.ads)return false;
+    if(callState.own!=='all'){
+      if(p.own==null)return false;
+      if(!ownBucket(callState.own)(p.own))return false;
+    }
     if(callState.ads==='no'&&p.ads)return false;
     if(callState.tower!=='all'&&!p.flats.some(f=>String(f.num).charAt(0)===callState.tower))return false;
     const aMin=parseFloat(callState.areaMin)||0,aMax=parseFloat(callState.areaMax)||0;
@@ -3331,12 +3350,31 @@ function callQueue(){
   });
   return q;
 }
-function callRegions(){
-  const m={};buildCallPool().forEach(p=>{if(p.region)m[p.region]=(m[p.region]||0)+1;});
-  return Object.keys(m).sort((a,b)=>m[b]-m[a]||a.localeCompare(b,'ru')).map(r=>({r,n:m[r]}));
+/* пороги под новостройку: тут вся собственность оформлена за последние пару лет */
+const OWN_BUCKETS=[['all','Владеет — сколько угодно',()=>true],
+  ['m6','Оформил меньше полугода назад',v=>v*12<6],
+  ['m12','От полугода до года',v=>v*12>=6&&v*12<12],
+  ['y1','Больше года',v=>v>=1],
+  ['y2','Больше 2 лет',v=>v>=2],
+  ['y3','Больше 3 лет — налога с продажи нет',v=>v>=3]];
+function ownBucket(k){const b=OWN_BUCKETS.find(x=>x[0]===k);return b?b[2]:(()=>true)}
+/* подписи к критериям зависят только от базы, не от текущего отбора —
+   пересчитывать их на каждый переход к следующему контакту незачем */
+let _callOpts=null;
+function callOptions(){
+  if(_callOpts)return _callOpts;
+  const pool=buildCallPool(),withOwn=pool.filter(x=>x.own!=null);
+  const m={};pool.forEach(p=>{if(p.region)m[p.region]=(m[p.region]||0)+1;});
+  _callOpts={
+    own:OWN_BUCKETS.map(([k,t,f])=>[k,k==='all'?t:(t+' · '+withOwn.filter(x=>f(x.own)).length)]),
+    regions:Object.keys(m).sort((a,b)=>m[b]-m[a]||a.localeCompare(b,'ru')).map(r=>({r,n:m[r]}))
+  };
+  return _callOpts;
 }
+function ownOptions(){return callOptions().own}
+function callRegions(){return callOptions().regions}
 function onCallFilter(){
-  ['flats','live','region','phone','ads','status','tower'].forEach(k=>{
+  ['flats','live','region','phone','ads','status','tower','own'].forEach(k=>{
     const el=document.getElementById('cf_'+k);if(el)callState[k]=el.value;});
   ['areaMin','areaMax','floorMin','floorMax'].forEach(k=>{
     const el=document.getElementById('cf_'+k);if(el)callState[k]=el.value;});
@@ -3386,6 +3424,7 @@ function callFiltersHtml(q){
       ${sel('flats',callState.flats,{label:'Сколько квартир',list:[['all','Любая недвижимость'],['kv','У кого есть квартира'],['1','Ровно одна квартира'],['2','Инвесторы: 2 и больше']]})}
       ${sel('live',callState.live,{label:'Прописка',list:[['all','Живут здесь и нет'],['no','Кто здесь не прописан'],['yes','Только кто живёт здесь']]})}
       ${sel('region',callState.region,{label:'Регион прописки',list:[['all','Любой регион']].concat(regs.map(x=>[x.r,x.r+' · '+x.n]))})}
+      ${sel('own',callState.own,{label:'Срок владения',list:ownOptions()})}
       ${sel('ads',callState.ads,{label:'Реклама',list:[['all','Неважно, в рекламе или нет'],['yes','Чья квартира сейчас в рекламе'],['no','Кого нет в рекламе']]})}
       ${sel('phone',callState.phone,{label:'Телефон',list:[['yes','Только с телефоном'],['all','Даже без телефона']]})}
       ${sel('tower',callState.tower,{label:'Корпус',list:[['all','Все корпуса']].concat(TOWERS.map(t=>[String(t.k),t.ru]))})}
@@ -3419,6 +3458,12 @@ function callCardHtml(p,total){
   else if(p.region)badges.push(`<span class="cb">прописка: ${esc(p.region)}</span>`);
   if(p.ads)badges.push(`<span class="cb ads">сейчас в рекламе</span>`);
   if(p.share)badges.push(`<span class="cb">долевая собственность</span>`);
+  if(p.own!=null){
+    const mo=Math.round(p.own*12), yr=Math.floor(p.own);
+    const txt=mo<12?('оформил '+mo+' '+plural(mo,'месяц','месяца','месяцев')+' назад')
+                   :('владеет '+yr+' '+plural(yr,'год','года','лет'));
+    badges.push(`<span class="cb${mo<12?' fresh':''}">${txt}</span>`);
+  }
   if(c&&c.res)badges.push(`<span class="cb ${CALLRES[c.res]?CALLRES[c.res].cls:''}">${esc(CALLRES[c.res]?CALLRES[c.res].label:c.res)} · ${fmtDateY(c.last||'')}</span>`);
 
   const CAP=8, more=p.flats.length-CAP;
@@ -3429,9 +3474,12 @@ function callCardHtml(p,total){
     const lab=card?(closed?STATE_LABEL[stateOf(card)]:((STATUS[card.dealStatus||'base']||STATUS.base).label)):'не в актуалке';
     const price=card&&num(card.price)?(dealOf(card)==='rent'?fmtMoney(card.price)+' / мес.':fmtMoney(card.price)):'';
     const col=card?statusColor(card):'#8f9aa8';
+    const yr=ownSince(p.regOf[f.num]);
+    const co=(egrn.byCad[f.cad]||[]).filter(x=>normFio(x.fio)!==normFio(p.fio)&&x.fio);
     return `<div class="cobj" onclick="callGo('${jq(f.num)}')">
       <span class="dot" style="background:${col}"></span>
-      <div class="cm"><b>кв. ${esc(f.num)}</b><small>${f.area} м² · ${f.floor} этаж${price?' · '+esc(price):''}</small></div>
+      <div class="cm"><b>кв. ${esc(f.num)}</b><small>${f.area} м² · ${f.floor} этаж${yr?' · с '+yr+' г.':''}${price?' · '+esc(price):''}</small>
+        ${co.length?`<span class="cco pii">в долях с: ${co.map(x=>esc(x.fio)+(x.share&&x.share!=='1/1'?' ('+esc(x.share)+')':'')).join(', ')}</span>`:''}</div>
       <span class="cs">${esc(lab)}</span></div>`;}).join('')
     +((more>0&&!callState.allObj)?`<button class="cmore" onclick="callState.allObj=true;renderCalls()">Показать ещё ${more} ${plural(more,'квартиру','квартиры','квартир')}</button>`:'');
   const cntRest={};p.rest.forEach(x=>{const t=x.o?x.o.type:'?';cntRest[t]=(cntRest[t]||0)+1});
