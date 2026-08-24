@@ -33,7 +33,7 @@ test('index.html открывается без ошибок (онлайн или
   }
 
   // Основные вкладки присутствуют в разметке независимо от режима.
-  for (const id of ['viewActualka', 'viewToday', 'viewSchema', 'viewDb', 'viewDeals', 'viewArchive', 'viewSettings']) {
+  for (const id of ['viewActualka', 'viewToday', 'viewCalls', 'viewSchema', 'viewDb', 'viewDeals', 'viewArchive', 'viewSettings']) {
     await expect(page.locator(`#${id}`)).toHaveCount(1);
   }
 
