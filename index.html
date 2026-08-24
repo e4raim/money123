@@ -778,6 +778,138 @@ select.mini:focus-visible,.f input:focus-visible,.f select:focus-visible,.f text
   .cal-scroll .cal-inner{min-width:640px}
   .td-row .ph{width:44px;height:44px}
 }
+/* ---------- вкладка «Обзвон» ---------- */
+.call-top{margin-bottom:14px}
+.call-stats{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px}
+.cst{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:8px 14px;min-width:86px}
+.cst b{display:block;font-family:var(--serif);font-size:22px;line-height:1.1;color:var(--ink)}
+.cst span{font-size:11px;color:var(--ink-soft);letter-spacing:.2px}
+.cst.ok b{color:var(--ok-t)}
+.cf-toggle{margin-left:auto;min-height:44px;padding:0 16px;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:11px;font:inherit;font-size:13px;font-weight:600;cursor:pointer;transition:border-color .18s var(--ease-out)}
+.cf-toggle:hover{border-color:var(--brass);color:var(--brass)}
+.call-filters{display:flex;flex-wrap:wrap;gap:8px;align-items:center;background:var(--surface2);border:1px solid var(--line);border-radius:14px;padding:12px}
+.cf-range{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;color:var(--ink-soft)}
+.cf-range .nn{width:74px;text-align:center}
+.call-wrap{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:16px;align-items:start}
+.call-card{background:var(--card);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);padding:18px;min-width:0}
+.cc-head{display:flex;gap:14px;align-items:flex-start}
+.cc-av{width:54px;height:54px;flex:none;border-radius:50%;background:var(--brass-tint);color:var(--brass);display:flex;align-items:center;justify-content:center;font-family:var(--serif);font-size:19px;font-weight:700}
+.cc-id{flex:1;min-width:0}
+.cc-name{font-family:var(--serif);font-size:23px;line-height:1.2;color:var(--ink);word-break:break-word}
+.cc-sub{font-size:12.5px;color:var(--ink-soft);margin-top:3px}
+.cc-pos{flex:none;font-size:12px;color:var(--ink-soft);background:var(--surface2);border:1px solid var(--line);border-radius:9px;padding:5px 9px;font-variant-numeric:tabular-nums}
+.cc-badges{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.cb{font-size:11.5px;font-weight:600;padding:4px 9px;border-radius:999px;background:var(--surface2);color:var(--ink-soft);border:1px solid var(--line)}
+.cb.inv{background:var(--brass-tint);color:var(--brass);border-color:transparent}
+.cb.live{background:var(--fam-tint);color:var(--fam);border-color:transparent;display:inline-flex;align-items:center;gap:4px}
+.cb.live .ico{width:13px;height:13px}
+.cb.ads{background:var(--think-s);color:var(--on-solid);border-color:transparent}
+.cb.ci{background:var(--ok-s);color:var(--on-solid);border-color:transparent}
+.cb.cr,.cb.cs{background:var(--base-s);color:var(--on-solid);border-color:transparent}
+.cc-phone{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin:14px 0 4px}
+.cc-phone.none{font-size:13px;color:var(--ink-soft);background:var(--surface2);border:1px dashed var(--line);border-radius:12px;padding:12px}
+.cc-call{display:inline-flex;align-items:center;gap:9px;min-height:48px;padding:0 20px;border-radius:13px;background:var(--ok-s);color:var(--on-solid);text-decoration:none;font-size:17px;font-weight:700;font-variant-numeric:tabular-nums;transition:transform .16s var(--ease-out),filter .16s var(--ease-out)}
+.cc-call svg{width:19px;height:19px;flex:none}
+.cc-call:hover{filter:brightness(1.07)}
+.cc-call:active{transform:scale(.98)}
+.cc-wa{display:inline-flex;align-items:center;justify-content:center;width:48px;height:48px;border-radius:13px;border:1px solid var(--line);color:var(--ok-t);background:var(--card)}
+.cc-wa svg{width:20px;height:20px}
+.cc-alt{font-size:12.5px;color:var(--ink-soft)}
+.cc-alt a{color:var(--brass)}
+.cc-note{font-size:11.5px;color:var(--think-t);font-weight:600}
+.cwarn{margin-top:10px;font-size:12.5px;color:var(--think-t);background:var(--surface2);border-left:3px solid var(--think-s);border-radius:0 8px 8px 0;padding:8px 11px}
+.cc-sec{margin-top:16px;border-top:1px solid var(--line);padding-top:12px}
+.cc-sech{font-size:11.5px;font-weight:700;letter-spacing:.3px;text-transform:uppercase;color:var(--brass);margin-bottom:8px}
+.cobj,.cfam{display:flex;align-items:center;gap:10px;padding:9px 10px;border:1px solid var(--line);border-radius:12px;margin-bottom:6px;cursor:pointer;background:var(--card);transition:border-color .16s var(--ease-out),background .16s var(--ease-out)}
+.cobj:hover,.cfam:hover{border-color:var(--brass);background:var(--surface2)}
+.cobj .dot{width:9px;height:9px;border-radius:50%;flex:none}
+.cobj .cm,.cfam .cm{flex:1;min-width:0}
+.cobj .cm b,.cfam .cm b{display:block;font-size:14px;color:var(--ink)}
+.cobj .cm small,.cfam .cm small{display:block;font-size:11.5px;color:var(--ink-soft)}
+.cobj .cs{font-size:11.5px;color:var(--ink-soft);flex:none;text-align:right;max-width:40%}
+.cfam .av{width:32px;height:32px;flex:none;border-radius:50%;background:var(--fam-tint);color:var(--fam);display:flex;align-items:center;justify-content:center;font-size:11.5px;font-weight:700}
+.cguess{font-size:10.5px;color:var(--think-t);border:1px solid var(--think-s);border-radius:999px;padding:2px 7px;flex:none}
+.crest{font-size:12px;color:var(--ink-soft);background:var(--surface2);border-radius:10px;padding:8px 11px;margin-top:4px}
+.crest .ico{width:13px;height:13px;vertical-align:-2px}
+.crest .cnums{display:block;opacity:.75;margin-top:2px}
+.chist{margin-top:16px;border-top:1px solid var(--line);padding-top:12px}
+.chist>b{display:block;font-size:11.5px;font-weight:700;letter-spacing:.3px;text-transform:uppercase;color:var(--brass);margin-bottom:8px}
+.chl{display:flex;flex-wrap:wrap;align-items:baseline;gap:8px;font-size:12.5px;padding:6px 0;border-bottom:1px dashed var(--line)}
+.chl:last-child{border-bottom:0}
+.chl .cd{color:var(--ink-soft);font-variant-numeric:tabular-nums;flex:none}
+.chl .cr{font-weight:600;color:var(--ink)}
+.chl .cr.ci{color:var(--ok-t)} .chl .cr.cn{color:var(--think-t)} .chl .cr.cr{color:var(--no-t)}
+.chl .cn2{flex:1;min-width:140px;color:var(--ink-soft)}
+.chl .cby{font-size:11px;color:var(--brass)}
+.call-act{position:sticky;top:96px;background:var(--card);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);padding:16px}
+.ca-h{font-size:11.5px;font-weight:700;letter-spacing:.3px;text-transform:uppercase;color:var(--brass);margin-bottom:10px}
+.ca-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.ca-btn{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;min-height:64px;padding:10px 6px;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:13px;font:inherit;font-size:12.5px;font-weight:600;cursor:pointer;text-align:center;transition:border-color .16s var(--ease-out),background .16s var(--ease-out),transform .12s var(--ease-out)}
+.ca-btn .ico{width:19px;height:19px}
+.ca-btn:hover{background:var(--surface2)}
+.ca-btn:active{transform:scale(.97)}
+.ca-btn.ci{border-color:var(--ok-s);color:var(--ok-t)}
+.ca-btn.ci:hover{background:var(--ok-s);color:var(--on-solid)}
+.ca-btn.ct,.ca-btn.cl{border-color:var(--think-s);color:var(--think-t)}
+.ca-btn.ct:hover,.ca-btn.cl:hover{background:var(--think-s);color:var(--on-solid)}
+.ca-btn.cn{grid-column:1/-1;flex-direction:row;min-height:52px;border-color:var(--brass);color:var(--brass)}
+.ca-btn.cn:hover{background:var(--brass);color:var(--on-brass)}
+.ca-btn.cr{border-color:var(--no-s);color:var(--no-t)}
+.ca-btn.cr:hover{background:var(--no-s);color:var(--on-solid)}
+.ca-note{width:100%;margin-top:10px;min-height:76px;resize:vertical;padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:var(--surface2);color:var(--ink);font:inherit;font-size:13.5px}
+.ca-note:focus{outline:2px solid var(--brass);outline-offset:1px;background:var(--card)}
+.ca-foot{display:flex;gap:8px;margin-top:10px}
+.ca-skip{flex:1;min-height:44px;border:1px solid var(--line);background:var(--card);color:var(--ink-soft);border-radius:11px;font:inherit;font-size:13px;font-weight:600;cursor:pointer}
+.ca-skip:hover:not(:disabled){border-color:var(--brass);color:var(--brass)}
+.ca-skip:disabled{opacity:.45;cursor:default}
+.ca-hint{margin-top:12px;font-size:11px;line-height:1.5;color:var(--ink-soft);display:flex;gap:6px;align-items:flex-start}
+.ca-hint .ico{width:13px;height:13px;flex:none;margin-top:1px}
+.call-done{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:34px 22px;text-align:center;box-shadow:var(--shadow)}
+.call-done b{display:block;font-family:var(--serif);font-size:21px;color:var(--ink);margin-bottom:6px}
+.call-done div{font-size:13.5px;color:var(--ink-soft);max-width:460px;margin:0 auto 14px}
+/* «живёт здесь» на схеме и в карточках */
+.brick.lives::after{content:"";position:absolute;left:2px;bottom:2px;width:4px;height:4px;border-radius:50%;background:var(--fam);opacity:.85}
+.lives-badge{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;font-weight:600;padding:4px 9px;border-radius:999px;background:var(--fam-tint);color:var(--fam)}
+.lives-badge .ico{width:13px;height:13px}
+@media (max-width:900px){
+  .call-wrap{grid-template-columns:minmax(0,1fr)}
+  .call-act{position:static}
+}
+@media (max-width:480px){
+  .cc-name{font-size:20px}
+  .cc-av{width:44px;height:44px;font-size:16px}
+  .call-card,.call-act{padding:14px;border-radius:16px}
+  .cc-call{flex:1;justify-content:center;font-size:16px;padding:0 14px}
+  .cst{flex:1;min-width:0;padding:8px 10px}
+  .cf-toggle{flex:1 0 100%;margin-left:0}
+}
+.ca-btn{position:relative}
+.ca-key{position:absolute;top:5px;right:7px;font-style:normal;font-size:10px;font-weight:700;color:var(--ink-soft);opacity:.5;font-variant-numeric:tabular-nums}
+.ca-btn:hover .ca-key{opacity:.8;color:inherit}
+.call-filters .mini{max-width:100%;min-width:0}
+.call-filters>*{min-width:0}
+@media (max-width:760px){
+  .call-filters{flex-direction:column;align-items:stretch}
+  .call-filters .mini{width:100%}
+  .cf-range{justify-content:space-between}
+  .cf-range .nn{flex:1;width:auto}
+}
+@media (max-width:760px){
+  .cf-range{display:grid;grid-template-columns:auto 1fr 1fr;gap:6px;align-items:center}
+  .cf-range .nn{width:100%}
+}
+.cmore{width:100%;min-height:44px;border:1px dashed var(--line);background:var(--surface2);color:var(--brass);border-radius:12px;font:inherit;font-size:13px;font-weight:600;cursor:pointer;margin-top:2px}
+.cmore:hover{border-color:var(--brass)}
+.ca-when{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:10px;padding:11px;border:1px solid var(--think-s);border-radius:12px;background:var(--surface2)}
+.ca-when label{flex:1 0 100%;font-size:11.5px;font-weight:700;letter-spacing:.3px;text-transform:uppercase;color:var(--think-t)}
+.ca-when input{flex:1;min-width:0;min-height:44px;padding:0 10px;border:1px solid var(--line);border-radius:10px;background:var(--card);color:var(--ink);font:inherit;font-size:14px}
+.ca-when-ok{min-height:44px;padding:0 14px;border:0;border-radius:10px;background:var(--think-s);color:var(--on-solid);font:inherit;font-size:13px;font-weight:700;cursor:pointer}
+.ca-when-no{min-height:44px;padding:0 12px;border:1px solid var(--line);border-radius:10px;background:var(--card);color:var(--ink-soft);font:inherit;font-size:13px;cursor:pointer}
+.cguess{font-size:11px}
+.cb.fresh{background:var(--think-s);color:var(--on-solid);border-color:transparent}
+.cobj .cco{display:block;font-size:11.5px;color:var(--fam);margin-top:2px}
+.pii-note{display:flex;gap:5px;align-items:flex-start;margin-top:5px;font-size:11px;line-height:1.45;color:var(--ink-soft)}
+.pii-note .ico{width:12px;height:12px;flex:none;margin-top:1px}
 </style>
 </head>
 <body>
@@ -799,6 +931,8 @@ select.mini:focus-visible,.f input:focus-visible,.f select:focus-visible,.f text
       <svg viewBox="0 0 24 24"><ellipse cx="12" cy="6" rx="8" ry="3"/><path d="M4 6v6c0 1.7 3.6 3 8 3s8-1.3 8-3V6"/><path d="M4 12v6c0 1.7 3.6 3 8 3s8-1.3 8-3v-6"/></svg>База</button>
     <button class="navi" id="tabSchema" onclick="switchView('schema')">
       <svg viewBox="0 0 24 24"><path d="M4 21V9l8-5 8 5v12"/><path d="M9 21v-7h6v7"/><path d="M9 12h.01M15 12h.01M9 8h.01M15 8h.01"/></svg>Схема дома</button>
+    <button class="navi owner-only" id="tabCalls" onclick="switchView('calls')">
+      <svg viewBox="0 0 24 24"><path d="M7.4 4.2H4.6c-.8 0-1.4.6-1.4 1.4C3.2 13.6 10.4 20.8 18.4 20.8c.8 0 1.4-.6 1.4-1.4v-2.8c0-.7-.5-1.3-1.2-1.4l-2.9-.4c-.5-.1-1 .1-1.3.5l-1.2 1.4a13.6 13.6 0 01-5.5-5.5l1.4-1.2c.4-.3.6-.8.5-1.3l-.4-2.9c-.1-.7-.7-1.2-1.4-1.2z"/><path d="M16 3.4l4.6 4.6M20.6 3.4L16 8"/></svg>Обзвон</button>
     <button class="navi" id="tabDeals" onclick="switchView('deals')">
       <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9 12l2 2 4-4"/></svg>Сделки</button>
     <button class="navi" id="tabArchive" onclick="switchView('archive')">
@@ -895,6 +1029,7 @@ select.mini:focus-visible,.f input:focus-visible,.f select:focus-visible,.f text
     <button onclick="toggleSelectMode()">Готово</button>
   </div>
   <div id="viewToday" style="display:none"></div>
+  <div id="viewCalls" style="display:none"></div>
   <div id="viewSchema" style="display:none"></div>
   <div id="viewDb" style="display:none"></div>
   <div id="viewDeals" style="display:none"></div>
@@ -1140,7 +1275,7 @@ const FIREBASE_CONFIG = { apiKey:"AIzaSyAe2prvX263zrbliZQzO5WEfytekEU0raM", auth
    Вставь сюда UID гостевого пользователя из Firebase → Authentication → Users. */
 const GUEST_UIDS = ['nI6NuJMgu1ca2BRNpvzw1ClZ6qu1'];
 let isGuest=false;
-const ICONS={eye:"<path d=\"M2.5 12S6 5.8 12 5.8 21.5 12 21.5 12 18 18.2 12 18.2 2.5 12 2.5 12z\"/><circle cx=\"12\" cy=\"12\" r=\"3\"/>",lock:"<rect x=\"4.5\" y=\"10\" width=\"15\" height=\"10.5\" rx=\"2.2\"/><path d=\"M8.2 10V7a3.8 3.8 0 017.6 0v3\"/>",shield:"<path d=\"M12 3.2l7.5 2.8v5c0 4.7-3.2 8.1-7.5 9.5C7.7 19.1 4.5 15.7 4.5 11V6z\"/><path d=\"M9.2 12.2l2 2 3.6-3.8\"/>",doc:"<path d=\"M14 3.2H7.2a2 2 0 00-2 2v13.6a2 2 0 002 2h9.6a2 2 0 002-2V8z\"/><path d=\"M14 3.2V8h4.8M8.6 13h6.8M8.6 16.4h4.6\"/>",check:"<rect x=\"3.2\" y=\"3.2\" width=\"17.6\" height=\"17.6\" rx=\"3.4\"/><path d=\"M7.8 12.2l3 3 5.4-6\"/>",download:"<path d=\"M12 4v11M7.8 10.8L12 15l4.2-4.2M4.2 19.8h15.6\"/>",upload:"<path d=\"M12 19.8V8.8M7.8 13L12 8.8l4.2 4.2M4.2 4.2h15.6\"/>",clock:"<circle cx=\"12\" cy=\"12\" r=\"8.8\"/><path d=\"M12 6.8V12l3.6 2.1\"/>",moon:"<path d=\"M20 14.6A8.6 8.6 0 019.4 4 8.6 8.6 0 1020 14.6z\"/>",phone:"<path d=\"M7.4 4.2H4.6c-.8 0-1.4.6-1.4 1.4C3.2 13.6 10.4 20.8 18.4 20.8c.8 0 1.4-.6 1.4-1.4v-2.8c0-.7-.5-1.3-1.2-1.4l-2.9-.4c-.5-.1-1 .1-1.3.5l-1.2 1.4a13.6 13.6 0 01-5.5-5.5l1.4-1.2c.4-.3.6-.8.5-1.3l-.4-2.9c-.1-.7-.7-1.2-1.4-1.2z\"/>",calendar:"<rect x=\"3.4\" y=\"5\" width=\"17.2\" height=\"15.6\" rx=\"2.2\"/><path d=\"M8 3v4M16 3v4M3.4 10.4h17.2\"/>",chat:"<path d=\"M20.8 11.6a8.4 8.4 0 01-12.2 7.5L3.2 20.8l1.7-5.4A8.4 8.4 0 1120.8 11.6z\"/>",pencil:"<path d=\"M12.4 20.4h8.2\"/><path d=\"M16.6 3.6a2.1 2.1 0 013 3L7.2 19 3.2 20l1-4z\"/>",plan:"<rect x=\"3.4\" y=\"4\" width=\"17.2\" height=\"16\" rx=\"2.2\"/><path d=\"M3.4 9.2h17.2M8.8 9.2V20M14 14.6h6.6\"/>",flame:"<path d=\"M12 3.2s4.8 4.2 4.8 8.6a4.8 4.8 0 11-9.6 0c0-1.9.9-3.4 1.9-4.4 0 1.5.9 2.5 1.9 2.5s1.4-1 .9-2.9 0-3.8 0-3.8z\"/>",db:"<ellipse cx=\"12\" cy=\"6\" rx=\"7.6\" ry=\"2.9\"/><path d=\"M4.4 6v6c0 1.6 3.4 2.9 7.6 2.9s7.6-1.3 7.6-2.9V6\"/><path d=\"M4.4 12v6c0 1.6 3.4 2.9 7.6 2.9s7.6-1.3 7.6-2.9v-6\"/>",warn:"<path d=\"M12 3.8l8.6 15.2a1 1 0 01-.9 1.5H4.3a1 1 0 01-.9-1.5z\"/><path d=\"M12 9.6v4.2M12 17h.01\"/>",note:"<path d=\"M4.6 5.4h14.8M4.6 10.4h14.8M4.6 15.4h9.4\"/><path d=\"M17 14.6l3.4 3.4-3 1.2-1.2-3z\"/>",home:"<path d=\"M3.4 10.4L12 3.4l8.6 7v9.2a1.4 1.4 0 01-1.4 1.4H4.8a1.4 1.4 0 01-1.4-1.4z\"/><path d=\"M9.2 21v-6.2h5.6V21\"/>",car:"<path d=\"M5 11.4l1.6-4.2a2 2 0 011.9-1.3h7a2 2 0 011.9 1.3L19 11.4\"/><rect x=\"3.2\" y=\"11.4\" width=\"17.6\" height=\"5.6\" rx=\"1.6\"/><path d=\"M6.6 17v1.8M17.4 17v1.8M6.4 14.2h.01M17.6 14.2h.01\"/>",box:"<path d=\"M3.4 7.4L12 3.4l8.6 4v9.2L12 20.6l-8.6-4z\"/><path d=\"M3.4 7.4L12 11.4l8.6-4M12 11.4v9.2\"/>",office:"<path d=\"M4.2 20.6V5.4a1.4 1.4 0 011.4-1.4h6a1.4 1.4 0 011.4 1.4v15.2\"/><path d=\"M13 10.2h5.4a1.4 1.4 0 011.4 1.4v9M7 8h2.4M7 12h2.4M7 16h2.4M16 14h1.4\"/>",user:"<circle cx=\"12\" cy=\"8\" r=\"3.6\"/><path d=\"M4.6 20.4a7.4 7.4 0 0114.8 0\"/>",users:"<circle cx=\"9.4\" cy=\"8.4\" r=\"3.2\"/><path d=\"M3.4 20a6 6 0 0112 0\"/><path d=\"M16 5.6a3.2 3.2 0 010 6.2M17.4 14.8a6 6 0 013.2 5.2\"/>",dot:"<circle cx=\"12\" cy=\"12\" r=\"3.4\" fill=\"currentColor\" stroke=\"none\"/>"};
+const ICONS={eye:"<path d=\"M2.5 12S6 5.8 12 5.8 21.5 12 21.5 12 18 18.2 12 18.2 2.5 12 2.5 12z\"/><circle cx=\"12\" cy=\"12\" r=\"3\"/>",lock:"<rect x=\"4.5\" y=\"10\" width=\"15\" height=\"10.5\" rx=\"2.2\"/><path d=\"M8.2 10V7a3.8 3.8 0 017.6 0v3\"/>",shield:"<path d=\"M12 3.2l7.5 2.8v5c0 4.7-3.2 8.1-7.5 9.5C7.7 19.1 4.5 15.7 4.5 11V6z\"/><path d=\"M9.2 12.2l2 2 3.6-3.8\"/>",doc:"<path d=\"M14 3.2H7.2a2 2 0 00-2 2v13.6a2 2 0 002 2h9.6a2 2 0 002-2V8z\"/><path d=\"M14 3.2V8h4.8M8.6 13h6.8M8.6 16.4h4.6\"/>",check:"<rect x=\"3.2\" y=\"3.2\" width=\"17.6\" height=\"17.6\" rx=\"3.4\"/><path d=\"M7.8 12.2l3 3 5.4-6\"/>",download:"<path d=\"M12 4v11M7.8 10.8L12 15l4.2-4.2M4.2 19.8h15.6\"/>",upload:"<path d=\"M12 19.8V8.8M7.8 13L12 8.8l4.2 4.2M4.2 4.2h15.6\"/>",clock:"<circle cx=\"12\" cy=\"12\" r=\"8.8\"/><path d=\"M12 6.8V12l3.6 2.1\"/>",moon:"<path d=\"M20 14.6A8.6 8.6 0 019.4 4 8.6 8.6 0 1020 14.6z\"/>",phone:"<path d=\"M7.4 4.2H4.6c-.8 0-1.4.6-1.4 1.4C3.2 13.6 10.4 20.8 18.4 20.8c.8 0 1.4-.6 1.4-1.4v-2.8c0-.7-.5-1.3-1.2-1.4l-2.9-.4c-.5-.1-1 .1-1.3.5l-1.2 1.4a13.6 13.6 0 01-5.5-5.5l1.4-1.2c.4-.3.6-.8.5-1.3l-.4-2.9c-.1-.7-.7-1.2-1.4-1.2z\"/>",calendar:"<rect x=\"3.4\" y=\"5\" width=\"17.2\" height=\"15.6\" rx=\"2.2\"/><path d=\"M8 3v4M16 3v4M3.4 10.4h17.2\"/>",chat:"<path d=\"M20.8 11.6a8.4 8.4 0 01-12.2 7.5L3.2 20.8l1.7-5.4A8.4 8.4 0 1120.8 11.6z\"/>",pencil:"<path d=\"M12.4 20.4h8.2\"/><path d=\"M16.6 3.6a2.1 2.1 0 013 3L7.2 19 3.2 20l1-4z\"/>",plan:"<rect x=\"3.4\" y=\"4\" width=\"17.2\" height=\"16\" rx=\"2.2\"/><path d=\"M3.4 9.2h17.2M8.8 9.2V20M14 14.6h6.6\"/>",flame:"<path d=\"M12 3.2s4.8 4.2 4.8 8.6a4.8 4.8 0 11-9.6 0c0-1.9.9-3.4 1.9-4.4 0 1.5.9 2.5 1.9 2.5s1.4-1 .9-2.9 0-3.8 0-3.8z\"/>",db:"<ellipse cx=\"12\" cy=\"6\" rx=\"7.6\" ry=\"2.9\"/><path d=\"M4.4 6v6c0 1.6 3.4 2.9 7.6 2.9s7.6-1.3 7.6-2.9V6\"/><path d=\"M4.4 12v6c0 1.6 3.4 2.9 7.6 2.9s7.6-1.3 7.6-2.9v-6\"/>",warn:"<path d=\"M12 3.8l8.6 15.2a1 1 0 01-.9 1.5H4.3a1 1 0 01-.9-1.5z\"/><path d=\"M12 9.6v4.2M12 17h.01\"/>",note:"<path d=\"M4.6 5.4h14.8M4.6 10.4h14.8M4.6 15.4h9.4\"/><path d=\"M17 14.6l3.4 3.4-3 1.2-1.2-3z\"/>",home:"<path d=\"M3.4 10.4L12 3.4l8.6 7v9.2a1.4 1.4 0 01-1.4 1.4H4.8a1.4 1.4 0 01-1.4-1.4z\"/><path d=\"M9.2 21v-6.2h5.6V21\"/>",car:"<path d=\"M5 11.4l1.6-4.2a2 2 0 011.9-1.3h7a2 2 0 011.9 1.3L19 11.4\"/><rect x=\"3.2\" y=\"11.4\" width=\"17.6\" height=\"5.6\" rx=\"1.6\"/><path d=\"M6.6 17v1.8M17.4 17v1.8M6.4 14.2h.01M17.6 14.2h.01\"/>",box:"<path d=\"M3.4 7.4L12 3.4l8.6 4v9.2L12 20.6l-8.6-4z\"/><path d=\"M3.4 7.4L12 11.4l8.6-4M12 11.4v9.2\"/>",office:"<path d=\"M4.2 20.6V5.4a1.4 1.4 0 011.4-1.4h6a1.4 1.4 0 011.4 1.4v15.2\"/><path d=\"M13 10.2h5.4a1.4 1.4 0 011.4 1.4v9M7 8h2.4M7 12h2.4M7 16h2.4M16 14h1.4\"/>",user:"<circle cx=\"12\" cy=\"8\" r=\"3.6\"/><path d=\"M4.6 20.4a7.4 7.4 0 0114.8 0\"/>",users:"<circle cx=\"9.4\" cy=\"8.4\" r=\"3.2\"/><path d=\"M3.4 20a6 6 0 0112 0\"/><path d=\"M16 5.6a3.2 3.2 0 010 6.2M17.4 14.8a6 6 0 013.2 5.2\"/>",dot:"<circle cx=\"12\" cy=\"12\" r=\"3.4\" fill=\"currentColor\" stroke=\"none\"/>",star:"<path d=\"M12 3.6l2.6 5.3 5.8.8-4.2 4.1 1 5.8L12 16.9l-5.2 2.7 1-5.8-4.2-4.1 5.8-.8z\"/>",close:"<circle cx=\"12\" cy=\"12\" r=\"8.8\"/><path d=\"M9.2 9.2l5.6 5.6M14.8 9.2l-5.6 5.6\"/>"};
 function ico(n){return ICONS[n]?`<svg class="ico" viewBox="0 0 24 24" aria-hidden="true">${ICONS[n]}</svg>`:'';}
 /* ============================================================ */
 
@@ -1199,7 +1334,7 @@ function startCloud(user){
   dbRef=firebase.database().ref('actualka');
   cloud=true;
   dbRef.off();
-  dbRef.on('value',s=>{const v=s.val()||{};items=Object.keys(v).map(k=>({...v[k],id:k}));render();if(state.view==='schema')renderSchema();if(!isGuest)offerMigration();},
+  dbRef.on('value',s=>{const v=s.val()||{};items=Object.keys(v).map(k=>resolvePii({...v[k],id:k}));_callPool=null;_callOpts=null;render();if(state.view==='schema')renderSchema();if(state.view==='calls')renderCalls();if(!isGuest)offerMigration();},
     err=>{const n=document.getElementById('cloudNote');n.className='cloud-note';n.innerHTML='<b>Нет доступа к базе.</b> Проверь правила Firebase.';console.error(err);});
   claimSession(user);
   checkDeviceAlert();
@@ -1357,7 +1492,7 @@ function doLogin(){
     });
 }
 function doLogout(){if(confirm('Выйти из аккаунта?')){localStorage.removeItem('actualka_seen');if(sessRef){try{sessRef.off();sessRef.remove();}catch(e){}sessRef=null;}firebase.auth().signOut();}}
-function loadLocal(){try{items=JSON.parse(localStorage.getItem('actualka')||'[]')}catch(e){items=[]}}
+function loadLocal(){try{items=JSON.parse(localStorage.getItem('actualka')||'[]')}catch(e){items=[]}resolveAllPii();}
 function saveLocal(){localStorage.setItem('actualka',JSON.stringify(items))}
 function upsert(item){
   if(cloud){dbRef.child(item.id).set(strip(item));}
@@ -1376,7 +1511,23 @@ function logWriteFailed(e){
   console.error(e);
   alert('Не удалось сохранить запись — база её не приняла.\n\nЕсли это гостевой доступ, в правилах Firebase нужно разрешить запись в поле log.');
 }
-function strip(o){const c={...o};delete c.id;return c;}
+function strip(o){
+  const c={...o};delete c.id;
+  /* карточка, заведённая из обзвона: ФИО и телефон в общую базу не уходят —
+     на устройстве они подставляются из локальной базы ЕГРН по кадастру */
+  if(c.noPii){c.ownerName='';c.ownerPhone='';}
+  return c;
+}
+function resolvePii(o){
+  if(!o||!o.noPii)return o;
+  const rec=ownerRecOfCad(o.cadastral||cadOfApt(o.apartment));
+  if(rec){
+    if(!o.ownerName)o.ownerName=rec.fio||'';
+    if(!o.ownerPhone){const t=normPhone(rec.phone);o.ownerPhone=t?fmtPhone(t):(rec.phone||'');}
+  }
+  return o;
+}
+function resolveAllPii(){items.forEach(resolvePii);}
 function genId(){return 'o'+Date.now().toString(36)+Math.random().toString(36).slice(2,6)}
 
 /* ---------- отмена последнего действия ---------- */
@@ -1522,7 +1673,7 @@ function renderBulkBar(){
   const bar=document.getElementById('bulkBar');
   const btn=document.getElementById('selectModeBtn');
   if(!bar||!btn)return;
-  bar.classList.toggle('show',selectMode&&selectedIds.size>0);
+  bar.classList.toggle('show',selectMode&&selectedIds.size>0&&state.view==='actualka');
   btn.innerHTML=selectMode?'✕ Отменить выбор':ico('check')+' Выбрать несколько';
   document.getElementById('bulkCount').textContent='Выбрано: '+selectedIds.size;
 }
@@ -2322,8 +2473,10 @@ function renderCardView(o){
       <div style="display:flex;align-items:center;gap:12px">
         <div style="width:40px;height:40px;border-radius:50%;background:var(--fam-tint);color:var(--fam);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex:none">${esc(initials(o.ownerName))}</div>
         <div style="flex:1;min-width:0">
-          <div class="name" style="font-size:15px;font-weight:700">${esc(o.ownerName)||'Собственник не указан'}</div>
-          <div class="ph" style="font-size:13px;color:var(--ink-soft);margin-top:1px">${esc(o.ownerPhone)||'телефон не указан'}</div>
+          <div class="name" style="font-size:15px;font-weight:700">${esc(o.ownerName)||(o.noPii?'ФИО есть у агента':'Собственник не указан')}</div>
+          <div class="ph" style="font-size:13px;color:var(--ink-soft);margin-top:1px">${esc(o.ownerPhone)||(o.noPii?'телефон есть у агента':'телефон не указан')}</div>
+          ${o.noPii?`<div class="pii-note">${ico('lock')} ${o.ownerName?'ФИО и телефон подставлены из базы ЕГРН на этом устройстве — в общую базу они не уходят'
+              :'карточка из обзвона: ФИО и телефон хранятся только у агента'}</div>`:''}
         </div>
         ${fam?`<span class="pv-badge" style="flex:none" title="${esc(fam.g.name)}">в семье</span>`:''}
         ${others.length?`<span style="background:var(--fam);color:#fff;font-size:11px;font-weight:700;padding:3px 10px;border-radius:999px;flex:none">ещё ${others.length} кв.</span>`:''}
@@ -2603,6 +2756,14 @@ function saveCard(){
     createdAt:existing?existing.createdAt:Date.now()
   };
   if(!item.apartment && !item.ownerName && !item.listingUrl){alert('Заполни хотя бы квартиру, ФИО или ссылку на объявление');return;}
+  /* форма подставила ФИО из локальной базы — это не повод отправить его в облако.
+     А вот если вписали другое имя вручную, значит, его хотят хранить в общей базе. */
+  if(item.noPii){
+    const rec=ownerRecOfCad(item.cadastral||cadOfApt(item.apartment));
+    const same=rec&&normFio(rec.fio||'')===normFio(item.ownerName||'');
+    const samePhone=!item.ownerPhone||(rec&&normPhone(rec.phone)===normPhone(item.ownerPhone));
+    if(!same||!samePhone)delete item.noPii;
+  }
   const prevSnap=existing?(typeof structuredClone==='function'?structuredClone(existing):JSON.parse(JSON.stringify(existing))):null;
   const histEntry=existing?buildHistoryEntry(existing,item):null;
   item.history=(existing?(existing.history||[]):[]).concat(histEntry?[histEntry]:[]).slice(-30);
@@ -2694,15 +2855,84 @@ function importJSON(input){
 }
 
 /* ---------- база ЕГРН (только локально, в браузере) ---------- */
-let egrn={rows:[],byCad:{},byOwner:{}}, egrnMatches=[], egrnTimer=null;
+let egrn={rows:[],byCad:{},byOwner:{},byInn:{}}, egrnMatches=[], egrnTimer=null;
 function normFio(s){return (s||'').toString().trim().toUpperCase().replace(/\s+/g,' ')}
 function shortType(t){t=(t||'').toString();if(/кварт/i.test(t))return ico('home')+' кв';if(/машином/i.test(t))return ico('car')+' мм';if(/кладов/i.test(t))return ico('box')+' клад';if(/помещ/i.test(t))return 'помещ';return t.replace(/^\d+\s*-\s*/,'')||'объект';}
 function buildEgrnIndex(){
-  egrn.byCad={};egrn.byOwner={};
+  egrn.byCad={};egrn.byOwner={};egrn.byInn={};
   egrn.rows.forEach(r=>{
     if(r.cad){(egrn.byCad[r.cad]=egrn.byCad[r.cad]||[]).push(r);}
     const k=normFio(r.fio);if(k){(egrn.byOwner[k]=egrn.byOwner[k]||[]).push(r);}
+    if(r.inn){(egrn.byInn[r.inn]=egrn.byInn[r.inn]||[]).push(r);}
   });
+  _homeSig=null;_livesCache=null;_callPool=null;_callOpts=null;
+}
+/* ---------- «живёт здесь»: сверяем адрес прописки с адресом самого дома ----------
+   Эталон берём из самой базы — самый частый адрес объекта. Никаких зашитых улиц. */
+const _ADR_STOP=new Set('россия москва город федерального значения область обл респ край район муниципальный округ улица переулок проезд проспект шоссе бульвар корпус строение помещение квартира литера деревня поселок городской'.split(' '));
+let _homeSig=null,_livesCache=null;
+function adrParse(a){
+  let t=(a||'').toString().toLowerCase().replace(/[ёË]/g,'е');
+  t=t.replace(/\b(кв|квартира|пом|помещение|оф|офис)\b\.?\s*\d+[а-я]?/g,' ');
+  const zip=(t.match(/\b(\d{6})\b/)||[])[1]||'';
+  const words=[];let house='';
+  t.split(',').forEach(part=>{
+    part.split(/[\s.]+/).forEach(w=>{
+      w=w.replace(/^-+|-+$/g,'');if(!w)return;
+      if(/^\d{6}$/.test(w))return;
+      if(/^\d+[а-я]?$/.test(w)){const n=parseInt(w,10);if(!house&&n>0&&n<400)house=String(n);return;}
+      const wl=w.replace(/[^а-я]/g,'');
+      if(wl.length>=5&&!_ADR_STOP.has(wl))words.push(wl.slice(0,7));
+    });
+  });
+  return {zip,words,house};
+}
+function homeSig(){
+  if(_homeSig)return _homeSig;
+  const cnt={};let best='',bn=0;
+  egrn.rows.forEach(r=>{if(!r.addr)return;const c=(cnt[r.addr]=(cnt[r.addr]||0)+1);if(c>bn){bn=c;best=r.addr;}});
+  _homeSig=best?adrParse(best):{zip:'',words:[],house:''};
+  return _homeSig;
+}
+function livesHere(mj){
+  if(!mj||!mj.trim())return false;
+  const h=homeSig();if(!h.words.length&&!h.house)return false;
+  const m=adrParse(mj);
+  if(h.words.length&&!h.words.some(w=>m.words.includes(w)))return false;
+  if(h.house&&m.house&&m.house!==h.house)return false;
+  if(h.zip&&m.zip&&m.zip!==h.zip)return false;
+  return true;
+}
+/* номера квартир, чей собственник прописан здесь же — для схемы (считаем один раз) */
+function livesSet(){
+  if(_livesCache)return _livesCache;
+  const s=new Set();
+  if(egrn.rows.length&&hasComplex()){
+    const ok={};
+    egrn.rows.forEach(r=>{const k=normFio(r.fio);if(!k||ok[k]!==undefined)return;ok[k]=false;});
+    egrn.rows.forEach(r=>{const k=normFio(r.fio);if(k&&!ok[k]&&livesHere(r.mj))ok[k]=true;});
+    egrn.rows.forEach(r=>{
+      if(!ok[normFio(r.fio)])return;
+      const o=objOfCad(r.cad);if(o&&o.type==='kv')s.add(o.num);
+    });
+  }
+  _livesCache=s;return s;
+}
+function ownerLivesHere(fio){
+  const k=normFio(fio);if(!k)return false;
+  return (egrn.byOwner[k]||[]).some(r=>livesHere(r.mj));
+}
+/* регион прописки — короткой строкой */
+function mjRegion(mj){
+  const p=(mj||'').split(',').map(x=>x.trim());
+  if(p.length<3)return '';
+  let v=(p[2]||p[4]||p[3]||'').replace(/\s+/g,' ').replace(/^[.\s]+|[.\s]+$/g,'');
+  if(!v)return '';
+  const low=v.toLowerCase();
+  if(low.includes('москов'))return 'Подмосковье';
+  if(low.includes('москва'))return 'Москва';
+  v=v.replace(/^(г|гор)[\s.]+/i,'').replace(/[\s.]+(г|обл|респ|край|ао)\.?$/i,'');
+  return v?v.charAt(0).toUpperCase()+v.slice(1).toLowerCase():'';
 }
 function updateEgrnStatus(){
   const el=document.getElementById('egrnStatus');if(!el)return;
@@ -2710,7 +2940,7 @@ function updateEgrnStatus(){
   else{el.textContent='база ЕГРН не загружена';el.className='';}
 }
 function loadEgrnFromStorage(){
-  try{const raw=localStorage.getItem('actualka_egrn');if(raw){const o=JSON.parse(raw);egrn.rows=o.rows||[];buildEgrnIndex();}}catch(e){}
+  try{const raw=localStorage.getItem('actualka_egrn');if(raw){const o=JSON.parse(raw);egrn.rows=o.rows||[];buildEgrnIndex();resolveAllPii();}}catch(e){}
   updateEgrnStatus();
 }
 function colFinder(headers){
@@ -2718,7 +2948,9 @@ function colFinder(headers){
   const find=(...keys)=>{for(let i=0;i<H.length;i++){if(keys.some(k=>H[i].includes(k)))return i;}return -1;};
   return {cad:find('кадастровый № объекта','кадастровый номер','кадастр'),fio:find('фио правооблад','фио'),
     phone:find('телефон'),area:find('площадь'),share:find('доли','доля'),type:find('вид он','тип объект','тип'),
-    addr:find('адрес объект','адрес'),email:find('email','почта'),birth:find('дата рожд')};
+    addr:find('адрес объект','адрес объекта','адрес по кладр'),email:find('email','почта'),birth:find('дата рожд'),
+    inn:find('инн'),mj:find('адрес мж','адрес места жит','место жительства','прописк','адрес регистрации'),
+    reg:find('дата регистрации влад','дата регистрации права','дата регистрации')};
 }
 function rowsFromAoa(aoa){
   let hi=aoa.findIndex(r=>r&&r.some(c=>/кадастров/i.test((c==null?'':c).toString())));
@@ -2729,7 +2961,7 @@ function rowsFromAoa(aoa){
     const row=aoa[i];if(!row)continue;
     const cad=g(row,cols.cad),fio=g(row,cols.fio);
     if(!cad&&!fio)continue;
-    out.push({cad,fio,phone:g(row,cols.phone),area:g(row,cols.area),share:g(row,cols.share),type:g(row,cols.type),addr:g(row,cols.addr),email:g(row,cols.email),birth:g(row,cols.birth)});
+    out.push({cad,fio,phone:g(row,cols.phone),area:g(row,cols.area),share:g(row,cols.share),type:g(row,cols.type),addr:g(row,cols.addr),email:g(row,cols.email),birth:g(row,cols.birth),inn:g(row,cols.inn).replace(/\D/g,''),mj:g(row,cols.mj),reg:g(row,cols.reg)});
   }
   return out;
 }
@@ -2752,7 +2984,7 @@ function loadEgrn(input){
       if(name.endsWith('.csv'))rows=parseEgrnCsv(e.target.result);
       else{if(!window.XLSX){alert('Не загрузилась библиотека чтения Excel — проверь интернет и обнови страницу.');return;}rows=parseEgrnWb(XLSX.read(new Uint8Array(e.target.result),{type:'array'}));}
       if(!rows.length){alert('Не нашёл данные. Нужен лист «Данные» с колонками: кадастровый №, ФИО, телефон, площадь.');input.value='';return;}
-      egrn.rows=rows;buildEgrnIndex();
+      egrn.rows=rows;buildEgrnIndex();resolveAllPii();render();
       try{localStorage.setItem('actualka_egrn',JSON.stringify({rows,loadedAt:Date.now(),count:rows.length}));}
       catch(err){alert('База прочитана ('+rows.length+'), но не поместилась в память браузера. Работает в этой сессии.');}
       updateEgrnStatus();
@@ -2819,6 +3051,7 @@ function applyComplex(c){
   TOWERS=(c.towers||[]).map(t=>({k:t.k,ru:t.ru,name:t.en,en:t.en,cls:t.cls,max:t.max,rules:t.rules||[]}));
   HYDE_BY_NUM={};
   Object.keys(HYDE_OBJ).forEach(suf=>{HYDE_BY_NUM[HYDE_OBJ[suf][0]]=suf;});
+  _livesCache=null;_callPool=null;_callOpts=null;
   if(c.name){try{localStorage.setItem('actualka_jk',c.name);}catch(e){}}
 }
 function hasComplex(){return !!(COMPLEX&&TOWERS.length)}
@@ -2912,7 +3145,7 @@ function kinApts(fio,exceptApt){
   const s=familyApts(fio);s.delete(exceptApt);return s;
 }
 /* ---------- доп. слои в облаке: заметки, семьи, правки собственников ---------- */
-let groups=[], ownerFix={}, auxRef=null, loginLog=[];
+let groups=[], ownerFix={}, auxRef=null, loginLog=[], calls={};
 function startAux(){
   let localSchema={};
   try{localSchema=JSON.parse(localStorage.getItem('actualka_schema')||'{}')||{}}catch(e){}
@@ -2924,8 +3157,9 @@ function startAux(){
     applyComplex(v.complex||null);
     schemaInfo=v.schema||{};
     groups=Array.isArray(v.groups)?v.groups:(v.groups?Object.values(v.groups):[]);
-    ownerFix=v.owners||{};
+    ownerFix=v.owners||{};_callPool=null;_callOpts=null;_livesCache=null;
     loginLog=Array.isArray(v.loginLog)?v.loginLog:(v.loginLog?Object.values(v.loginLog):[]);
+    calls=v.calls||{};
     /* первый заход: поднимаем заметки с устройства в облако, ничего не теряя */
     if(auxFirst){
       auxFirst=false;
@@ -2939,6 +3173,7 @@ function startAux(){
     if(state.view==='schema')renderSchema();
     if(state.view==='db')renderDb();
     if(state.view==='settings')renderSettings();
+    if(state.view==='calls')renderCalls();
     if(_cell)refreshCellIfOpen();
   });
 }
@@ -2964,6 +3199,7 @@ function loadAuxLocal(){
   try{schemaInfo=JSON.parse(localStorage.getItem('actualka_schema')||'{}')||{}}catch(e){schemaInfo={}}
   try{groups=JSON.parse(localStorage.getItem('actualka_groups')||'[]')||[]}catch(e){groups=[]}
   try{ownerFix=JSON.parse(localStorage.getItem('actualka_owners')||'{}')||{}}catch(e){ownerFix={}}
+  try{calls=JSON.parse(localStorage.getItem('actualka_calls')||'{}')||{}}catch(e){calls={}}
 }
 function schemaIndex(){
   const map={},owners={};
@@ -2979,10 +3215,11 @@ function switchView(v){
   closeMenu();
   if(isGuest&&v!=='actualka'&&v!=='archive'&&v!=='today')v='actualka';
   state.view=v;
-  [['actualka','tabActualka'],['today','tabToday'],['db','tabDb'],['schema','tabSchema'],['deals','tabDeals'],['archive','tabArchive'],['settings','tabSettings']]
+  [['actualka','tabActualka'],['today','tabToday'],['db','tabDb'],['schema','tabSchema'],['calls','tabCalls'],['deals','tabDeals'],['archive','tabArchive'],['settings','tabSettings']]
     .forEach(([k,id])=>{const b=document.getElementById(id);if(b)b.classList.toggle('active',v===k);});
   document.getElementById('viewActualka').style.display=v==='actualka'?'':'none';
   document.getElementById('viewToday').style.display=v==='today'?'':'none';
+  document.getElementById('viewCalls').style.display=v==='calls'?'':'none';
   document.getElementById('viewSchema').style.display=v==='schema'?'':'none';
   document.getElementById('viewDb').style.display=v==='db'?'':'none';
   document.getElementById('viewDeals').style.display=v==='deals'?'':'none';
@@ -2992,11 +3229,438 @@ function switchView(v){
   document.getElementById('statusChips').style.display=act?'':'none';
   document.getElementById('filtersRow2').style.display=act?'':'none';
   if(v==='today')renderToday();
+  if(v==='calls')renderCalls();
   if(v==='schema')renderSchema();
   if(v==='db')renderDb();
   if(v==='deals')renderDeals();
   if(v==='archive')renderArchive();
   if(v==='settings')renderSettings();
+}
+
+/* ---------- вкладка «Обзвон»: холодный прозвон по базе ЕГРН ----------
+   ФИО и телефоны живут только в этом браузере (база ЕГРН).
+   В облако уходит обезличенно: номер объекта, итог звонка и комментарий. */
+const CALLRES={
+  interest:{label:'Интересно',      short:'интерес',  cls:'ci', ico:'star'},
+  think:   {label:'Думает',         short:'думает',   cls:'ct', ico:'clock', days:30},
+  later:   {label:'Перезвонить',    short:'перезвон', cls:'cl', ico:'clock', ask:true},
+  noans:   {label:'Не дозвонился',  short:'недозвон', cls:'cn', ico:'phone', days:3, max:3},
+  refuse:  {label:'Отказ',          short:'отказ',    cls:'cr', ico:'close'},
+  sold:    {label:'Уже продал',     short:'продал',   cls:'cs', ico:'check'},
+  notowner:{label:'Не собственник', short:'не он',    cls:'cw', ico:'user'}
+};
+const CALL_ORDER=['noans','interest','think','later','refuse','sold','notowner'];
+function normPhone(s){
+  let d=(s||'').toString().replace(/\D/g,'');
+  if(d.length===11&&d[0]==='8')d='7'+d.slice(1);
+  if(d.length===10)d='7'+d;
+  return (d.length===11&&d[0]==='7'&&d!=='70000000000')?d:'';
+}
+function fmtPhone(d){return d&&d.length===11?'+7 '+d.slice(1,4)+' '+d.slice(4,7)+'-'+d.slice(7,9)+'-'+d.slice(9):''}
+function phoneNote(d){
+  if(!d)return '';
+  if(d.slice(0,2)==='79')return '';
+  if(d.slice(0,2)==='77')return 'номер Казахстана';
+  return 'городской номер';
+}
+function saveCall(key,rec){
+  calls[key]=rec;
+  if(cloud&&auxRef)auxRef.child('calls').child(key).set(rec);
+  else{try{localStorage.setItem('actualka_calls',JSON.stringify(calls));}catch(e){}}
+}
+/* короткая необратимая метка: у двух совладельцев одной квартиры записи не сольются,
+   а сам ключ по-прежнему не содержит ни ФИО, ни ИНН */
+function callHash(s){
+  let h=2166136261;
+  for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619);}
+  return (h>>>0).toString(36).slice(0,5);
+}
+function callDatePlus(n){return addDays(todayStr(),n)}
+
+/* ---- собираем людей из базы ЕГРН (с учётом ручных правок собственника) ---- */
+let _callPool=null;
+function buildCallPool(){
+  if(_callPool)return _callPool;
+  const by={},fixed={};
+  egrn.rows.forEach(r=>{
+    let fio=r.fio,phone=r.phone;
+    const fx=ownerFix[cadKey(r.cad)];
+    if(fx&&!fixed[r.cad]){fixed[r.cad]=1;if(fx.fio)fio=fx.fio;if(fx.phone)phone=fx.phone;}
+    const k=(fx&&fx.fio)?normFio(fio):(r.inn||normFio(fio));
+    if(!k)return;
+    let p=by[k];
+    if(!p)p=by[k]={key:k,inn:r.inn||'',fio:fio,phones:[],mj:r.mj||'',born:r.birth||'',rows:[],live:false};
+    if(!p.fio&&fio)p.fio=fio;
+    if(!p.mj&&r.mj)p.mj=r.mj;
+    if(!p.born&&r.birth)p.born=r.birth;
+    const t=normPhone(phone);if(t&&p.phones.indexOf(t)<0)p.phones.push(t);
+    if(r.mj&&livesHere(r.mj))p.live=true;
+    p.rows.push(r);
+  });
+  const pool=Object.keys(by).map(k=>{
+    const p=by[k];
+    p.region=mjRegion(p.mj);
+    p.objs=p.rows.map(r=>({r,o:objOfCad(r.cad)}));
+    p.regOf={};p.objs.forEach(x=>{if(x.o&&x.r.reg)p.regOf[x.o.num]=x.r.reg;});
+    const yrs=p.objs.map(x=>ownYears(x.r.reg)).filter(v=>v!=null);
+    p.own=yrs.length?Math.max.apply(null,yrs):null;   /* сколько владеет дольше всего */
+    p.flats=p.objs.filter(x=>x.o&&x.o.type==='kv').map(x=>x.o)
+             .sort((a,b)=>(a.num>b.num?1:-1));
+    p.rest=p.objs.filter(x=>!x.o||x.o.type!=='kv');
+    const cads=p.rows.map(r=>cadKey(r.cad)).filter(Boolean).sort();
+    const tag=callHash(k);
+    p.ckey=(p.flats.length?('n'+p.flats[0].num):(cads.length?('c'+cads[0]):'x'))+'-'+tag;
+    p.cards=p.flats.map(f=>items.find(o=>o.apartment===f.num)).filter(Boolean);
+    p.ads=p.cards.some(o=>!CLOSED.includes(stateOf(o)));
+    p.share=p.rows.some(r=>r.share&&r.share!=='1/1');
+    return p;
+  });
+  _callPool=pool;_callOpts=null;
+  return pool;
+}
+/* «Дата регистрации владения» приходит как дд.мм.гггг — берём год и считаем срок */
+function ownYears(reg){
+  const m=/(\d{4})/.exec((reg||'').toString().slice(-10));
+  if(!m)return null;
+  const y=+m[1];if(y<1990||y>2100)return null;
+  const d=/^(\d{2})\.(\d{2})\.(\d{4})/.exec((reg||'').toString().trim());
+  const from=d?new Date(+d[3],+d[2]-1,+d[1]):new Date(y,0,1);
+  return Math.max(0,(Date.now()-from.getTime())/(365.25*86400000));
+}
+function ownSince(reg){const m=/(\d{4})/.exec((reg||'').toString().slice(-10));return m?m[1]:''}
+function callRec(p){return calls[p.ckey]||null}
+function callDue(p){
+  const c=callRec(p);
+  if(!c)return 'never';
+  if(c.next&&c.next<=todayStr())return 'due';
+  return 'done';
+}
+/* ---- фильтры очереди ---- */
+const callState={flats:'all',live:'all',region:'all',phone:'yes',ads:'all',status:'new',own:'all',
+                 tower:'all',areaMin:'',areaMax:'',floorMin:'',floorMax:'',idx:0,open:null};
+function callQueue(){
+  const t=todayStr();
+  let q=buildCallPool().filter(p=>{
+    if(!p.fio)return false;
+    if(callState.phone==='yes'&&!p.phones.length)return false;
+    if(callState.flats==='1'&&p.flats.length!==1)return false;
+    if(callState.flats==='2'&&p.flats.length<2)return false;
+    if(callState.flats==='kv'&&!p.flats.length)return false;
+    if(callState.live==='no'&&p.live)return false;
+    if(callState.live==='yes'&&!p.live)return false;
+    if(callState.region!=='all'&&p.region!==callState.region)return false;
+    if(callState.ads==='yes'&&!p.ads)return false;
+    if(callState.own!=='all'){
+      if(p.own==null)return false;
+      if(!ownBucket(callState.own)(p.own))return false;
+    }
+    if(callState.ads==='no'&&p.ads)return false;
+    if(callState.tower!=='all'&&!p.flats.some(f=>String(f.num).charAt(0)===callState.tower))return false;
+    const aMin=parseFloat(callState.areaMin)||0,aMax=parseFloat(callState.areaMax)||0;
+    if(aMin&&!p.flats.some(f=>+f.area>=aMin))return false;
+    if(aMax&&!p.flats.some(f=>+f.area<=aMax))return false;
+    const fMin=parseInt(callState.floorMin,10)||0,fMax=parseInt(callState.floorMax,10)||0;
+    if(fMin&&!p.flats.some(f=>+f.floor>=fMin))return false;
+    if(fMax&&!p.flats.some(f=>+f.floor<=fMax))return false;
+    const d=callDue(p);
+    if(callState.status==='new'&&d==='done')return false;
+    if(callState.status==='never'&&d!=='never')return false;
+    if(callState.status==='due'&&d!=='due')return false;
+    return true;
+  });
+  /* прописанные здесь — в конец очереди: они живут в квартире, продают редко */
+  const rank=p=>{const d=callDue(p);return (p.live?2:0)+(d==='never'?0:1)};
+  q.sort((a,b)=>{
+    const r=rank(a)-rank(b);if(r)return r;
+    if(b.flats.length!==a.flats.length)return b.flats.length-a.flats.length;
+    const an=a.flats[0]?a.flats[0].num:'я',bn=b.flats[0]?b.flats[0].num:'я';
+    return an>bn?1:(an<bn?-1:0);
+  });
+  return q;
+}
+/* пороги под новостройку: тут вся собственность оформлена за последние пару лет */
+const OWN_BUCKETS=[['all','Владеет — сколько угодно',()=>true],
+  ['m6','Оформил меньше полугода назад',v=>v*12<6],
+  ['m12','От полугода до года',v=>v*12>=6&&v*12<12],
+  ['y1','Больше года',v=>v>=1],
+  ['y2','Больше 2 лет',v=>v>=2],
+  ['y3','Больше 3 лет — налога с продажи нет',v=>v>=3]];
+function ownBucket(k){const b=OWN_BUCKETS.find(x=>x[0]===k);return b?b[2]:(()=>true)}
+/* подписи к критериям зависят только от базы, не от текущего отбора —
+   пересчитывать их на каждый переход к следующему контакту незачем */
+let _callOpts=null;
+function callOptions(){
+  if(_callOpts)return _callOpts;
+  const pool=buildCallPool(),withOwn=pool.filter(x=>x.own!=null);
+  const m={};pool.forEach(p=>{if(p.region)m[p.region]=(m[p.region]||0)+1;});
+  _callOpts={
+    own:OWN_BUCKETS.map(([k,t,f])=>[k,k==='all'?t:(t+' · '+withOwn.filter(x=>f(x.own)).length)]),
+    regions:Object.keys(m).sort((a,b)=>m[b]-m[a]||a.localeCompare(b,'ru')).map(r=>({r,n:m[r]}))
+  };
+  return _callOpts;
+}
+function ownOptions(){return callOptions().own}
+function callRegions(){return callOptions().regions}
+function onCallFilter(){
+  ['flats','live','region','phone','ads','status','tower','own'].forEach(k=>{
+    const el=document.getElementById('cf_'+k);if(el)callState[k]=el.value;});
+  ['areaMin','areaMax','floorMin','floorMax'].forEach(k=>{
+    const el=document.getElementById('cf_'+k);if(el)callState[k]=el.value;});
+  callState.idx=0;renderCalls();
+}
+/* на телефоне критерии свёрнуты: карточка должна быть первым, что видно */
+function callFiltersOpen(){
+  if(callState.open===null)callState.open=!(window.matchMedia&&window.matchMedia('(max-width:760px)').matches);
+  return callState.open;
+}
+function callToggleFilters(){callState.open=!callFiltersOpen();renderCalls();}
+function callNext(){callState.idx++;callState.allObj=false;callState.askDate=null;renderCalls();}
+function callPrev(){if(callState.idx>0)callState.idx--;callState.allObj=false;callState.askDate=null;renderCalls();}
+
+function renderCalls(){
+  const box=document.getElementById('viewCalls');if(!box)return;
+  if(!egrn.rows.length){
+    box.innerHTML='<div class="empty"><div class="big">Нет базы ЕГРН</div>Обзвон берёт ФИО и телефоны из базы ЕГРН. Она хранится только в этом браузере и никуда не уходит.<div><button class="btn-add" onclick="switchView(\'settings\')">Загрузить базу</button></div></div>';
+    return;
+  }
+  if(!hasComplex()){
+    box.innerHTML='<div class="empty"><div class="big">Не настроен комплекс</div>Загрузи конфигурацию дома в «Настройках» — без неё не видно, что за квартиры у собственника.<div><button class="btn-add" onclick="switchView(\'settings\')">Открыть настройки</button></div></div>';
+    return;
+  }
+  const q=callQueue();
+  if(callState.idx>=q.length)callState.idx=Math.max(0,q.length?q.length:0);
+  const p=q[callState.idx]||null;
+  box.innerHTML=callFiltersHtml(q)+(q.length
+    ? (p?callCardHtml(p,q.length):'<div class="call-done"><b>Очередь пройдена</b><div>Все '+q.length+' контактов по этим критериям обработаны. Смени критерии или загляни завтра — недозвоны вернутся сами.</div><button class="btn-add" onclick="callState.idx=0;renderCalls()">В начало очереди</button></div>')
+    : '<div class="call-done"><b>Под эти критерии никто не подходит</b><div>Ослабь фильтры — например, включи тех, кто уже прописан в доме, или убери требование телефона.</div></div>');
+}
+function callFiltersHtml(q){
+  const regs=callRegions();
+  const sel=(id,val,opts)=>`<select class="mini" id="cf_${id}" onchange="onCallFilter()" aria-label="${esc(opts.label)}">`+
+    opts.list.map(([v,t])=>`<option value="${v}"${v===val?' selected':''}>${esc(t)}</option>`).join('')+'</select>';
+  const stats=callStats();
+  return `<div class="call-top">
+    <div class="call-stats">
+      <div class="cst"><b>${q.length}</b><span>в очереди</span></div>
+      <div class="cst"><b>${stats.today}</b><span>звонков сегодня</span></div>
+      <div class="cst ok"><b>${stats.interest}</b><span>интересно</span></div>
+      <div class="cst"><b>${stats.total}</b><span>всего обработано</span></div>
+      <button class="cf-toggle" onclick="callToggleFilters()" aria-expanded="${callFiltersOpen()}">${callFiltersOpen()?'Скрыть критерии':'Критерии отбора'}</button>
+    </div>
+    <div class="call-filters" style="${callFiltersOpen()?'':'display:none'}">
+      ${sel('status',callState.status,{label:'Кого показывать',list:[['new','Не звонили + пора перезвонить'],['never','Только кому не звонили'],['due','Только перезвоны на сегодня'],['all','Всех подряд']]})}
+      ${sel('flats',callState.flats,{label:'Сколько квартир',list:[['all','Любая недвижимость'],['kv','У кого есть квартира'],['1','Ровно одна квартира'],['2','Инвесторы: 2 и больше']]})}
+      ${sel('live',callState.live,{label:'Прописка',list:[['all','Живут здесь и нет'],['no','Кто здесь не прописан'],['yes','Только кто живёт здесь']]})}
+      ${sel('region',callState.region,{label:'Регион прописки',list:[['all','Любой регион']].concat(regs.map(x=>[x.r,x.r+' · '+x.n]))})}
+      ${sel('own',callState.own,{label:'Срок владения',list:ownOptions()})}
+      ${sel('ads',callState.ads,{label:'Реклама',list:[['all','Неважно, в рекламе или нет'],['yes','Чья квартира сейчас в рекламе'],['no','Кого нет в рекламе']]})}
+      ${sel('phone',callState.phone,{label:'Телефон',list:[['yes','Только с телефоном'],['all','Даже без телефона']]})}
+      ${sel('tower',callState.tower,{label:'Корпус',list:[['all','Все корпуса']].concat(TOWERS.map(t=>[String(t.k),t.ru]))})}
+      <span class="cf-range">Метраж
+        <input class="mini nn" id="cf_areaMin" type="number" inputmode="decimal" placeholder="от" value="${esc(callState.areaMin)}" aria-label="Метраж от" onchange="onCallFilter()">
+        <input class="mini nn" id="cf_areaMax" type="number" inputmode="decimal" placeholder="до" value="${esc(callState.areaMax)}" aria-label="Метраж до" onchange="onCallFilter()">м²</span>
+      <span class="cf-range">Этаж
+        <input class="mini nn" id="cf_floorMin" type="number" inputmode="numeric" placeholder="от" value="${esc(callState.floorMin)}" aria-label="Этаж от" onchange="onCallFilter()">
+        <input class="mini nn" id="cf_floorMax" type="number" inputmode="numeric" placeholder="до" value="${esc(callState.floorMax)}" aria-label="Этаж до" onchange="onCallFilter()">
+      </span>
+    </div>
+  </div>`;
+}
+function callStats(){
+  const t=todayStr();let today=0,interest=0,total=0;
+  Object.keys(calls).forEach(k=>{
+    const c=calls[k];if(!c)return;total++;
+    if(c.last===t)today++;
+    if(c.res==='interest')interest++;
+  });
+  return {today,interest,total};
+}
+function callCardHtml(p,total){
+  const c=callRec(p);
+  const tel=p.phones[0]||'';
+  const note=phoneNote(tel);
+  const wa=tel?waLink('+'+tel):'';
+  const badges=[];
+  if(p.flats.length>1)badges.push(`<span class="cb inv">инвестор · ${p.flats.length} кв.</span>`);
+  if(p.live)badges.push(`<span class="cb live">${ico('home')} живёт здесь</span>`);
+  else if(p.region)badges.push(`<span class="cb">прописка: ${esc(p.region)}</span>`);
+  if(p.ads)badges.push(`<span class="cb ads">сейчас в рекламе</span>`);
+  if(p.share)badges.push(`<span class="cb">долевая собственность</span>`);
+  if(p.own!=null){
+    const mo=Math.round(p.own*12), yr=Math.floor(p.own);
+    const txt=mo<12?('оформил '+mo+' '+plural(mo,'месяц','месяца','месяцев')+' назад')
+                   :('владеет '+yr+' '+plural(yr,'год','года','лет'));
+    badges.push(`<span class="cb${mo<12?' fresh':''}">${txt}</span>`);
+  }
+  if(c&&c.res)badges.push(`<span class="cb ${CALLRES[c.res]?CALLRES[c.res].cls:''}">${esc(CALLRES[c.res]?CALLRES[c.res].label:c.res)} · ${fmtDateY(c.last||'')}</span>`);
+
+  const CAP=8, more=p.flats.length-CAP;
+  const shown=(callState.allObj||more<=0)?p.flats:p.flats.slice(0,CAP);
+  const objRows=shown.map(f=>{
+    const card=items.find(o=>o.apartment===f.num);
+    const closed=card&&CLOSED.includes(stateOf(card));
+    const lab=card?(closed?STATE_LABEL[stateOf(card)]:((STATUS[card.dealStatus||'base']||STATUS.base).label)):'не в актуалке';
+    const price=card&&num(card.price)?(dealOf(card)==='rent'?fmtMoney(card.price)+' / мес.':fmtMoney(card.price)):'';
+    const col=card?statusColor(card):'#8f9aa8';
+    const yr=ownSince(p.regOf[f.num]);
+    const co=(egrn.byCad[f.cad]||[]).filter(x=>normFio(x.fio)!==normFio(p.fio)&&x.fio);
+    return `<div class="cobj" onclick="callGo('${jq(f.num)}')">
+      <span class="dot" style="background:${col}"></span>
+      <div class="cm"><b>кв. ${esc(f.num)}</b><small>${f.area} м² · ${f.floor} этаж${yr?' · с '+yr+' г.':''}${price?' · '+esc(price):''}</small>
+        ${co.length?`<span class="cco pii">в долях с: ${co.map(x=>esc(x.fio)+(x.share&&x.share!=='1/1'?' ('+esc(x.share)+')':'')).join(', ')}</span>`:''}</div>
+      <span class="cs">${esc(lab)}</span></div>`;}).join('')
+    +((more>0&&!callState.allObj)?`<button class="cmore" onclick="callState.allObj=true;renderCalls()">Показать ещё ${more} ${plural(more,'квартиру','квартиры','квартир')}</button>`:'');
+  const cntRest={};p.rest.forEach(x=>{const t=x.o?x.o.type:'?';cntRest[t]=(cntRest[t]||0)+1});
+  const restLine=Object.keys(cntRest).length
+    ? `<div class="crest">${Object.keys(cntRest).map(t=>`${typeIcon(t)} ${typeLabel(t)} — ${cntRest[t]}`).join(' · ')}<span class="cnums">${p.rest.map(x=>x.o?x.o.num:'—').join(', ')}</span></div>`:'';
+
+  /* семья: и ручные группы, и однофамильцы с тем же адресом прописки */
+  const fam=callFamilyHtml(p);
+
+  const hist=(c&&c.hist&&c.hist.length)
+    ? `<div class="chist"><b>История звонков</b>${c.hist.slice().reverse().map(h=>
+        `<div class="chl"><span class="cd">${fmtDateY(h.d||'')}</span><span class="cr ${CALLRES[h.res]?CALLRES[h.res].cls:''}">${esc(CALLRES[h.res]?CALLRES[h.res].label:h.res)}</span>${h.note?`<span class="cn2">${esc(h.note)}</span>`:''}${h.byName&&h.by==='guest'?`<span class="cby">${esc(h.byName)}</span>`:''}</div>`).join('')}</div>`:'';
+  const attempts=(c&&c.res==='noans'&&c.n)?`<div class="cwarn">Не дозвонились ${c.n} ${plural(c.n,'раз','раза','раз')}${c.n>=3?' — дальше номер выпадет из очереди':''}</div>`:'';
+
+  return `<div class="call-wrap">
+    <div class="call-card">
+      <div class="cc-head">
+        <div class="cc-av">${esc(initials(p.fio))}</div>
+        <div class="cc-id">
+          <div class="cc-name pii">${esc(p.fio)}</div>
+          <div class="cc-sub">${p.born?'р. '+esc(String(p.born).slice(0,10))+' · ':''}${p.flats.length?p.flats.length+' '+plural(p.flats.length,'квартира','квартиры','квартир'):'без квартир'}${p.rest.length?' + '+p.rest.length+' '+plural(p.rest.length,'объект','объекта','объектов'):''}</div>
+          <div class="cc-badges">${badges.join('')}</div>
+        </div>
+        <div class="cc-pos">${callState.idx+1} / ${total}</div>
+      </div>
+      ${tel?`<div class="cc-phone">
+          <a class="cc-call pii" href="tel:+${tel}">${SVG_CALL}<span>${fmtPhone(tel)}</span></a>
+          ${wa?`<a class="cc-wa" href="${wa}" target="_blank" rel="noopener" aria-label="Написать в WhatsApp"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.4 8.4 0 01-12.3 7.5L3 20.5l1.6-5.5A8.4 8.4 0 1121 11.5z"/></svg></a>`:''}
+          ${p.phones.length>1?`<span class="cc-alt pii">ещё: ${p.phones.slice(1).map(x=>`<a href="tel:+${x}">${fmtPhone(x)}</a>`).join(', ')}</span>`:''}
+          ${note?`<span class="cc-note">${esc(note)}</span>`:''}
+        </div>`
+       :`<div class="cc-phone none">Телефона в базе нет — пропусти или найди контакт вручную</div>`}
+      ${attempts}
+      <div class="cc-sec"><div class="cc-sech">Что у него в доме</div>${objRows||'<div class="empty2">квартир в доме нет</div>'}${restLine}</div>
+      ${fam}
+      ${hist}
+    </div>
+    <div class="call-act">
+      <div class="ca-h">Итог звонка</div>
+      <div class="ca-grid">${CALL_ORDER.map((k,i)=>{const r=CALLRES[k];
+        return `<button class="ca-btn ${r.cls}" onclick="callAnswer('${k}')" title="Клавиша ${i+1}">${ico(r.ico)}<span>${esc(r.label)}</span><i class="ca-key">${i+1}</i></button>`;}).join('')}</div>
+      ${callState.askDate?`<div class="ca-when">
+        <label for="callWhen">Когда перезвонить</label>
+        <input type="date" id="callWhen" value="${esc(callState.askDate)}" min="${todayStr()}">
+        <button class="ca-when-ok" onclick="callAnswer('later')">Поставить перезвон</button>
+        <button class="ca-when-no" onclick="callState.askDate=null;renderCalls()">Отмена</button>
+      </div>`:''}
+      <textarea id="callNote" class="ca-note" placeholder="Что сказал: «продам весной», «сдана до июня», «звоните сыну»…" aria-label="Комментарий к звонку">${esc(c&&c.note?c.note:'')}</textarea>
+      <div class="ca-foot">
+        <button class="ca-skip" onclick="callPrev()" ${callState.idx?'':'disabled'}>← назад</button>
+        <button class="ca-skip" onclick="callNext()" title="Клавиша 0 или →">Пропустить →</button>
+      </div>
+      <div class="ca-hint">${ico('lock')} ФИО и телефон видны только на этом устройстве. В общую базу уходит номер квартиры, итог и комментарий.</div>
+      <div class="ca-hint">${ico('flame')} Быстрый режим: цифры 1–7 ставят итог, 0 или → пропускают. В поле комментария клавиши работают как обычно.</div>
+    </div>
+  </div>`;
+}
+function callFamilyHtml(p){
+  const rows=[];
+  const seen={};seen[normFio(p.fio)]=1;
+  const g=groupOf(p.fio);
+  if(g)g.members.forEach(m=>{if(seen[normFio(m)])return;seen[normFio(m)]=1;
+    const fl=ownerObjects(m).map(r=>objOfCad(r.cad)).filter(o=>o&&o.type==='kv');
+    rows.push({fio:m,flats:fl,why:'в группе «'+g.name+'»'});});
+  /* автоподсказка: та же фамилия и тот же адрес прописки */
+  const sur=(p.fio||'').trim().split(/\s+/)[0].toUpperCase();
+  if(sur.length>3&&p.mj){
+    const mine=adrParse(p.mj);
+    buildCallPool().forEach(o=>{
+      if(seen[normFio(o.fio)])return;
+      if((o.fio||'').trim().split(/\s+/)[0].toUpperCase()!==sur)return;
+      if(!o.mj)return;
+      const a=adrParse(o.mj);
+      if(a.house!==mine.house||!a.words.length||!a.words.some(w=>mine.words.includes(w)))return;
+      seen[normFio(o.fio)]=1;
+      rows.push({fio:o.fio,flats:o.flats,why:'та же фамилия и адрес прописки',guess:true});
+    });
+  }
+  if(!rows.length)return '';
+  return `<div class="cc-sec"><div class="cc-sech">Родня и связанные лица</div>
+    ${rows.map(r=>`<div class="cfam" onclick="openPerson('${jq(r.fio)}')">
+      <span class="av">${esc(initials(r.fio))}</span>
+      <div class="cm pii"><b>${esc(r.fio)}</b><small>${r.flats.length?'кв. '+r.flats.map(f=>f.num).join(', '):'квартир нет'} · ${esc(r.why)}</small></div>
+      ${r.guess?'<span class="cguess">похоже</span>':''}<span class="pgo">→</span></div>`).join('')}</div>`;
+}
+document.addEventListener('keydown',e=>{
+  if(state.view!=='calls')return;
+  const t=e.target;
+  if(t&&(t.tagName==='INPUT'||t.tagName==='TEXTAREA'||t.tagName==='SELECT'||t.isContentEditable))return;
+  if(e.metaKey||e.ctrlKey||e.altKey)return;
+  if(document.querySelector('.overlay.show'))return;
+  if(e.key>='1'&&e.key<='7'){const k=CALL_ORDER[+e.key-1];if(k){e.preventDefault();callAnswer(k);}return;}
+  if(e.key==='0'||e.key==='ArrowRight'){e.preventDefault();callNext();return;}
+  if(e.key==='ArrowLeft'){e.preventDefault();callPrev();return;}
+});
+function callGo(numStr){
+  const card=items.find(o=>o.apartment===numStr);
+  if(card){openModal(card.id);return;}
+  jumpTo(numStr);
+}
+function callAnswer(res){
+  const q=callQueue(),p=q[callState.idx];
+  if(!p)return;
+  const r=CALLRES[res];if(!r)return;
+  const noteEl=document.getElementById('callNote');
+  const note=noteEl?noteEl.value.trim().slice(0,400):'';
+  const prev=callRec(p);
+  const t=todayStr();
+  let next='';
+  if(r.ask){
+    if(!callState.askDate){callState.askDate=callDatePlus(7);renderCalls();
+      const el=document.getElementById('callWhen');if(el)el.focus();return;}
+    const el=document.getElementById('callWhen');
+    next=(el&&/^\d{4}-\d{2}-\d{2}$/.test(el.value))?el.value:callDatePlus(7);
+    callState.askDate=null;
+  }else if(r.days){
+    const n=(res==='noans'&&prev&&prev.res==='noans')?(prev.n||1)+1:1;
+    if(!r.max||n<r.max)next=callDatePlus(r.days);
+  }
+  const rec={
+    res,note,last:t,at:Date.now(),
+    n:(res==='noans'&&prev&&prev.res==='noans')?(prev.n||1)+1:1,
+    next,
+    by:whoAmI(),byName:myLabel(),
+    hist:((prev&&prev.hist)||[]).concat([stamp({d:t,res,note})]).slice(-20)
+  };
+  saveCall(p.ckey,rec);
+  if(res==='interest')callMakeCard(p,note);
+  const undo=prev?()=>{saveCall(p.ckey,prev);renderCalls();}
+                 :()=>{delete calls[p.ckey];if(cloud&&auxRef)auxRef.child('calls').child(p.ckey).remove();else{try{localStorage.setItem('actualka_calls',JSON.stringify(calls));}catch(e){}}renderCalls();};
+  showUndo(r.label+' · '+(p.flats[0]?'кв. '+p.flats[0].num:'записано')+(next?' · перезвон '+fmtDateY(next):''),undo);
+  callState.idx++;callState.allObj=false;callState.askDate=null;renderCalls();
+}
+/* «Интересно» — сразу заводим карточку в актуалке, чтобы не потерять контакт */
+function callMakeCard(p,note){
+  if(isGuest)return;
+  const f=p.flats[0];
+  const exist=f?items.find(o=>o.apartment===f.num):null;
+  if(exist){
+    const log=(exist.log||[]).concat([stamp({t:Date.now(),text:'Холодный звонок: '+(note||'интересно, готов обсуждать')})]).slice(-60);
+    upsertLog(exist.id,log);
+    return;
+  }
+  const it={
+    id:genId(),apartment:f?f.num:'',area:f?String(f.area):'',cadastral:f?f.cad:'',
+    ownerName:p.fio,ownerPhone:p.phones[0]?fmtPhone(p.phones[0]):'',noPii:true,
+    dealStatus:'thinking',dealType:'sale',objState:'active',
+    lastContact:todayStr(),price:'',willPay:'unknown',
+    notes:'Заведён из обзвона.',
+    log:[stamp({t:Date.now(),text:'Холодный звонок: '+(note||'интересно, готов обсуждать')})],
+    history:[],createdAt:Date.now()
+  };
+  upsert(it);
 }
 
 /* ---------- вкладка «База» ---------- */
@@ -3174,11 +3838,13 @@ function renderSchema(){
   const box=document.getElementById('viewSchema'),idx=schemaIndex();
   const _selNum=_cell?encodeApt(_cell.k,_cell.f,_cell.p):null;
   const _kin=(_cell&&_kinFio)?kinApts(_kinFio,_selNum):new Set();
+  const _live=livesSet();
   _sidx=idx;
   const legend=`<div class="legend">
     <span><i style="background:var(--ok)"></i>работает</span><span><i style="background:var(--think)"></i>думает</span>
     <span><i style="background:var(--no)"></i>отказ</span><span><i style="background:#8f9aa8"></i>не общались</span>
-    <span><i style="background:#6f6b64"></i>продано/сдано</span><span><i style="background:#fff;box-shadow:0 0 0 1.5px rgba(0,0,0,.3)"></i>неск. квартир</span></div>`;
+    <span><i style="background:#6f6b64"></i>продано/сдано</span><span><i style="background:#fff;box-shadow:0 0 0 1.5px rgba(0,0,0,.3)"></i>неск. квартир</span>
+    <span><i style="background:var(--fam)"></i>собственник тут же прописан</span></div>`;
   const gutter=()=>{let g='';for(let f=FLOORS;f>=2;f--)g+=`<div class="g">${f}</div>`;return `<div class="gutter">${g}</div>`;};
   const tower=t=>{
     const cols=maxPos(t.k);let floors='';let cnt=0;
@@ -3188,7 +3854,7 @@ function renderSchema(){
         if(!aptExists(t.k,f,p)){cells+=`<div class="brick void"></div>`;continue;}
         const key=`${t.k}-${f}-${p}`,o=idx.map[key];
         const num=encodeApt(t.k,f,p);
-        const kinCls=(num===_selNum?'sel':'')||(_kin.has(num)?'kin':'');
+        const kinCls=((num===_selNum?'sel':'')||(_kin.has(num)?'kin':''))+(_live.has(num)?' lives':'');
         const noObj=cadOfNum(num)?'':'noobj';
         if(o){const cls=CLOSED.includes(stateOf(o))?'closed':(o.dealStatus||'base');cnt++;
           rowTotal++; if(!CLOSED.includes(stateOf(o))&&(o.dealStatus==='works'||o.dealStatus==='thinking'))rowActive++;
@@ -3236,6 +3902,7 @@ function schemaTip(e){
     const ni=schemaInfo[num], fo=ownerOfApt(num), ob=objOfNum(num);
     if(ob)html+=`<br>${ob.area} м²`;
     if(fo)html+=`<br>${esc(fo)}`;
+    if(livesSet().has(num))html+='<br>◦ собственник здесь прописан';
     if(ni&&ni.note)html+=`<br>${ico('note')} ${esc(ni.note)}`;
     if(!fo&&!ni&&!ob)html+='<br>нет данных';
   }
@@ -3258,7 +3925,9 @@ function openCell(k,f,p){
       ${cad?`<div class="ci-row"><span>Кадастр</span><b style="font-size:11px">${esc(cad)}</b></div>`:'<div class="ci-row"><span>Кадастр</span><b style="color:var(--ink-soft)">нет в реестре</b></div>'}
       ${rec?`<div class="ci-row"><span>Собственник</span><b class="pii">${esc(rec.fio)}</b></div>
              ${rec.phone?`<div class="ci-row"><span>Телефон</span><b class="pii">${esc(rec.phone)}</b></div>`:''}
-             ${rec.share&&rec.share!=='1/1'?`<div class="ci-row"><span>Доля</span><b>${esc(rec.share)}</b></div>`:''}`
+             ${rec.share&&rec.share!=='1/1'?`<div class="ci-row"><span>Доля</span><b>${esc(rec.share)}</b></div>`:''}
+             ${ownerLivesHere(rec.fio)?`<div class="ci-row"><span>Прописка</span><b><span class="lives-badge">${ico('home')} живёт здесь</span></b></div>`
+               :(mjRegion(rec.mj)?`<div class="ci-row"><span>Прописка</span><b>${esc(mjRegion(rec.mj))}</b></div>`:'')}`
            :(cad?`<div class="ci-row"><span>Собственник</span><b style="color:var(--ink-soft)">${egrn.rows.length?'нет в базе ЕГРН':'загрузи базу ЕГРН'}</b></div>`:'')}
       ${o?`<div class="ci-row"><span>В актуалке</span><b>${(STATUS[o.dealStatus||'base']||{}).label} · ${STATE_LABEL[stateOf(o)]}</b></div>`:''}
     </div>`;
@@ -3344,6 +4013,8 @@ function openPerson(fio){
           ${g?`<span class="pv-badge${isGuest?'':' link'}" ${isGuest?'':`onclick="renameGroup('${jq(fio)}');openPerson('${jq(fio)}')"`}>${esc(g.name)} · ${famTotal} кв.</span>`
              :`<span class="pv-badge off">не связан с семьёй</span>`}
           ${flats.length>1?`<span class="pv-badge inv">инвестор · ${flats.length} кв.</span>`:''}
+          ${ownerLivesHere(fio)?`<span class="lives-badge">${ico('home')} живёт здесь</span>`
+            :(mjRegion(rec.mj)?`<span class="pv-badge off">прописка: ${esc(mjRegion(rec.mj))}</span>`:'')}
         </div>
         ${ownerFix[cadKey(rec.cad||'')]?'<span class="fixmark">данные скорректированы вручную</span>':''}
       </div>
@@ -3627,12 +4298,20 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeModal();closeR
 (function(){
   const header=document.querySelector('header');
   if(!header)return;
-  let lastY=window.scrollY, ticking=false;
+  let lastY=window.scrollY, ticking=false, shrankAt=-1e9;
   function onScroll(){
     const y=Math.max(0,window.scrollY);
-    header.classList.toggle('compact',y>10);
-    if(y>lastY+4 && y>90) header.classList.add('hide-scroll');
-    else if(y<lastY-4 || y<90) header.classList.remove('hide-scroll');
+    const was=header.classList.contains('compact'), now=y>10;
+    header.classList.toggle('compact',now);
+    /* когда шапка сжимается, она забирает у страницы полсотни пикселей — браузер
+       подтягивает прокрутку сам, и это прилетает как «скролл вверх». Не жест
+       пользователя: иначе шапка выпрыгивает обратно на каждом первом движении вниз. */
+    if(was!==now)shrankAt=Date.now();
+    const settling=(y<lastY)&&(Date.now()-shrankAt<250)&&y>90;
+    if(!settling){
+      if(y>lastY+4 && y>90) header.classList.add('hide-scroll');
+      else if(y<lastY-4 || y<90) header.classList.remove('hide-scroll');
+    }
     lastY=y; ticking=false;
   }
   window.addEventListener('scroll',()=>{
