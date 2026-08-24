@@ -908,6 +908,8 @@ select.mini:focus-visible,.f input:focus-visible,.f select:focus-visible,.f text
 .cguess{font-size:11px}
 .cb.fresh{background:var(--think-s);color:var(--on-solid);border-color:transparent}
 .cobj .cco{display:block;font-size:11.5px;color:var(--fam);margin-top:2px}
+.pii-note{display:flex;gap:5px;align-items:flex-start;margin-top:5px;font-size:11px;line-height:1.45;color:var(--ink-soft)}
+.pii-note .ico{width:12px;height:12px;flex:none;margin-top:1px}
 </style>
 </head>
 <body>
@@ -1332,7 +1334,7 @@ function startCloud(user){
   dbRef=firebase.database().ref('actualka');
   cloud=true;
   dbRef.off();
-  dbRef.on('value',s=>{const v=s.val()||{};items=Object.keys(v).map(k=>({...v[k],id:k}));_callPool=null;_callOpts=null;render();if(state.view==='schema')renderSchema();if(state.view==='calls')renderCalls();if(!isGuest)offerMigration();},
+  dbRef.on('value',s=>{const v=s.val()||{};items=Object.keys(v).map(k=>resolvePii({...v[k],id:k}));_callPool=null;_callOpts=null;render();if(state.view==='schema')renderSchema();if(state.view==='calls')renderCalls();if(!isGuest)offerMigration();},
     err=>{const n=document.getElementById('cloudNote');n.className='cloud-note';n.innerHTML='<b>Нет доступа к базе.</b> Проверь правила Firebase.';console.error(err);});
   claimSession(user);
   checkDeviceAlert();
@@ -1490,7 +1492,7 @@ function doLogin(){
     });
 }
 function doLogout(){if(confirm('Выйти из аккаунта?')){localStorage.removeItem('actualka_seen');if(sessRef){try{sessRef.off();sessRef.remove();}catch(e){}sessRef=null;}firebase.auth().signOut();}}
-function loadLocal(){try{items=JSON.parse(localStorage.getItem('actualka')||'[]')}catch(e){items=[]}}
+function loadLocal(){try{items=JSON.parse(localStorage.getItem('actualka')||'[]')}catch(e){items=[]}resolveAllPii();}
 function saveLocal(){localStorage.setItem('actualka',JSON.stringify(items))}
 function upsert(item){
   if(cloud){dbRef.child(item.id).set(strip(item));}
@@ -1509,7 +1511,23 @@ function logWriteFailed(e){
   console.error(e);
   alert('Не удалось сохранить запись — база её не приняла.\n\nЕсли это гостевой доступ, в правилах Firebase нужно разрешить запись в поле log.');
 }
-function strip(o){const c={...o};delete c.id;return c;}
+function strip(o){
+  const c={...o};delete c.id;
+  /* карточка, заведённая из обзвона: ФИО и телефон в общую базу не уходят —
+     на устройстве они подставляются из локальной базы ЕГРН по кадастру */
+  if(c.noPii){c.ownerName='';c.ownerPhone='';}
+  return c;
+}
+function resolvePii(o){
+  if(!o||!o.noPii)return o;
+  const rec=ownerRecOfCad(o.cadastral||cadOfApt(o.apartment));
+  if(rec){
+    if(!o.ownerName)o.ownerName=rec.fio||'';
+    if(!o.ownerPhone){const t=normPhone(rec.phone);o.ownerPhone=t?fmtPhone(t):(rec.phone||'');}
+  }
+  return o;
+}
+function resolveAllPii(){items.forEach(resolvePii);}
 function genId(){return 'o'+Date.now().toString(36)+Math.random().toString(36).slice(2,6)}
 
 /* ---------- отмена последнего действия ---------- */
@@ -2455,8 +2473,10 @@ function renderCardView(o){
       <div style="display:flex;align-items:center;gap:12px">
         <div style="width:40px;height:40px;border-radius:50%;background:var(--fam-tint);color:var(--fam);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex:none">${esc(initials(o.ownerName))}</div>
         <div style="flex:1;min-width:0">
-          <div class="name" style="font-size:15px;font-weight:700">${esc(o.ownerName)||'Собственник не указан'}</div>
-          <div class="ph" style="font-size:13px;color:var(--ink-soft);margin-top:1px">${esc(o.ownerPhone)||'телефон не указан'}</div>
+          <div class="name" style="font-size:15px;font-weight:700">${esc(o.ownerName)||(o.noPii?'ФИО есть у агента':'Собственник не указан')}</div>
+          <div class="ph" style="font-size:13px;color:var(--ink-soft);margin-top:1px">${esc(o.ownerPhone)||(o.noPii?'телефон есть у агента':'телефон не указан')}</div>
+          ${o.noPii?`<div class="pii-note">${ico('lock')} ${o.ownerName?'ФИО и телефон подставлены из базы ЕГРН на этом устройстве — в общую базу они не уходят'
+              :'карточка из обзвона: ФИО и телефон хранятся только у агента'}</div>`:''}
         </div>
         ${fam?`<span class="pv-badge" style="flex:none" title="${esc(fam.g.name)}">в семье</span>`:''}
         ${others.length?`<span style="background:var(--fam);color:#fff;font-size:11px;font-weight:700;padding:3px 10px;border-radius:999px;flex:none">ещё ${others.length} кв.</span>`:''}
@@ -2736,6 +2756,14 @@ function saveCard(){
     createdAt:existing?existing.createdAt:Date.now()
   };
   if(!item.apartment && !item.ownerName && !item.listingUrl){alert('Заполни хотя бы квартиру, ФИО или ссылку на объявление');return;}
+  /* форма подставила ФИО из локальной базы — это не повод отправить его в облако.
+     А вот если вписали другое имя вручную, значит, его хотят хранить в общей базе. */
+  if(item.noPii){
+    const rec=ownerRecOfCad(item.cadastral||cadOfApt(item.apartment));
+    const same=rec&&normFio(rec.fio||'')===normFio(item.ownerName||'');
+    const samePhone=!item.ownerPhone||(rec&&normPhone(rec.phone)===normPhone(item.ownerPhone));
+    if(!same||!samePhone)delete item.noPii;
+  }
   const prevSnap=existing?(typeof structuredClone==='function'?structuredClone(existing):JSON.parse(JSON.stringify(existing))):null;
   const histEntry=existing?buildHistoryEntry(existing,item):null;
   item.history=(existing?(existing.history||[]):[]).concat(histEntry?[histEntry]:[]).slice(-30);
@@ -2912,7 +2940,7 @@ function updateEgrnStatus(){
   else{el.textContent='база ЕГРН не загружена';el.className='';}
 }
 function loadEgrnFromStorage(){
-  try{const raw=localStorage.getItem('actualka_egrn');if(raw){const o=JSON.parse(raw);egrn.rows=o.rows||[];buildEgrnIndex();}}catch(e){}
+  try{const raw=localStorage.getItem('actualka_egrn');if(raw){const o=JSON.parse(raw);egrn.rows=o.rows||[];buildEgrnIndex();resolveAllPii();}}catch(e){}
   updateEgrnStatus();
 }
 function colFinder(headers){
@@ -2956,7 +2984,7 @@ function loadEgrn(input){
       if(name.endsWith('.csv'))rows=parseEgrnCsv(e.target.result);
       else{if(!window.XLSX){alert('Не загрузилась библиотека чтения Excel — проверь интернет и обнови страницу.');return;}rows=parseEgrnWb(XLSX.read(new Uint8Array(e.target.result),{type:'array'}));}
       if(!rows.length){alert('Не нашёл данные. Нужен лист «Данные» с колонками: кадастровый №, ФИО, телефон, площадь.');input.value='';return;}
-      egrn.rows=rows;buildEgrnIndex();
+      egrn.rows=rows;buildEgrnIndex();resolveAllPii();render();
       try{localStorage.setItem('actualka_egrn',JSON.stringify({rows,loadedAt:Date.now(),count:rows.length}));}
       catch(err){alert('База прочитана ('+rows.length+'), но не поместилась в память браузера. Работает в этой сессии.');}
       updateEgrnStatus();
@@ -3625,7 +3653,7 @@ function callMakeCard(p,note){
   }
   const it={
     id:genId(),apartment:f?f.num:'',area:f?String(f.area):'',cadastral:f?f.cad:'',
-    ownerName:p.fio,ownerPhone:p.phones[0]?fmtPhone(p.phones[0]):'',
+    ownerName:p.fio,ownerPhone:p.phones[0]?fmtPhone(p.phones[0]):'',noPii:true,
     dealStatus:'thinking',dealType:'sale',objState:'active',
     lastContact:todayStr(),price:'',willPay:'unknown',
     notes:'Заведён из обзвона.',
