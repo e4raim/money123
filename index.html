@@ -1152,7 +1152,7 @@ select.mini:focus-visible,.f input:focus-visible,.f select:focus-visible,.f text
     <span style="flex-basis:100%;height:0"></span>
     <button onclick="openReport()"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3.2H7.2a2 2 0 00-2 2v13.6a2 2 0 002 2h9.6a2 2 0 002-2V8z"/><path d="M14 3.2V8h4.8M8.6 13h6.8M8.6 16.4h4.6"/></svg> Отчёт</button>
     <button id="selectModeBtn" class="owner-only" onclick="toggleSelectMode()"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><rect x="3.2" y="3.2" width="17.6" height="17.6" rx="3.4"/><path d="M7.8 12.2l3 3 5.4-6"/></svg> Выбрать несколько</button>
-    <button onclick="exportJSON()"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11M7.8 10.8L12 15l4.2-4.2M4.2 19.8h15.6"/></svg> Сохранить резервную копию</button>
+    <button onclick="exportJSON()" title="Карточки, семьи, заметки по квартирам, итоги обзвона"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11M7.8 10.8L12 15l4.2-4.2M4.2 19.8h15.6"/></svg> Сохранить резервную копию</button>
     <button class="owner-only" onclick="document.getElementById('importFile').click()"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 19.8V8.8M7.8 13L12 8.8l4.2 4.2M4.2 4.2h15.6"/></svg> Загрузить копию</button>
   </div>
   </div>
@@ -1633,15 +1633,26 @@ function doLogin(){
 function doLogout(){if(confirm('Выйти из аккаунта?')){localStorage.removeItem('actualka_seen');if(sessRef){try{sessRef.off();sessRef.remove();}catch(e){}sessRef=null;}firebase.auth().signOut();}}
 function loadLocal(){try{items=JSON.parse(localStorage.getItem('actualka')||'[]')}catch(e){items=[]}resolveAllPii();}
 function saveLocal(){localStorage.setItem('actualka',JSON.stringify(items))}
+/* Firebase на отказ в правах молча откатывает запись: изменение просто
+   исчезает с экрана, и человек думает, что сайт сломался. Говорим вслух. */
+function cloudWrite(pr,what){
+  if(pr&&pr.catch)pr.catch(err=>{
+    console.error('запись в облако не прошла:',what,err);
+    const deny=/permission|denied/i.test((err&&err.message)||'');
+    showToast(deny?('Облако не дало сохранить: '+what+'. Проверь правила базы.')
+                  :('Не сохранилось в облако: '+what+'. Проверь интернет.'));
+  });
+  return pr;
+}
 function upsert(item){
-  if(cloud){dbRef.child(item.id).set(strip(item));}
+  if(cloud){cloudWrite(dbRef.child(item.id).set(strip(item)),'карточка');}
   else{const i=items.findIndex(x=>x.id===item.id);if(i>=0)items[i]=item;else items.push(item);saveLocal();render();}
 }
-function removeItem(id){if(cloud){dbRef.child(id).remove();}else{items=items.filter(x=>x.id!==id);saveLocal();render();}}
+function removeItem(id){if(cloud){cloudWrite(dbRef.child(id).remove(),'удаление объекта');}else{items=items.filter(x=>x.id!==id);saveLocal();render();}}
 /* пишем только ленту: чужая правка карточки её не перезатрёт, и руководителю
    можно открыть доступ ровно к этому полю, не пуская его в остальную карточку */
 function upsertLog(id,log){
-  if(cloud) return dbRef.child(id).child('log').set(log);
+  if(cloud) return cloudWrite(dbRef.child(id).child('log').set(log),'комментарий');
   const i=items.findIndex(x=>x.id===id);
   if(i>=0){items[i]={...items[i],log};saveLocal();render();}
   return Promise.resolve();
@@ -3154,8 +3165,17 @@ document.addEventListener('paste',e=>{
 });
 
 /* ---------- backup ---------- */
+/* Копия должна спасать всё, что нажито руками, а не только карточки: семьи,
+   заметки по квартирам, итоги обзвона и правки собственников живут в облаке и
+   в файл раньше не попадали. База ЕГРН сюда не кладётся — она и так локальная,
+   и её всегда можно перезалить из исходной выписки. */
+function backupSnapshot(){
+  return {kind:'actualka-backup',v:1,at:Date.now(),jk:jkName(),
+    items,
+    aux:{schema:schemaInfo,groups,owners:ownerFix,calls,famNo,complex:COMPLEX}};
+}
 function exportJSON(){
-  const blob=new Blob([JSON.stringify(items,null,2)],{type:'application/json'});
+  const blob=new Blob([JSON.stringify(backupSnapshot(),null,2)],{type:'application/json'});
   const a=document.createElement('a');a.href=URL.createObjectURL(blob);
   a.download='aktualka-'+jkName()+'-'+new Date().toISOString().slice(0,10)+'.json';a.click();
 }
@@ -3164,10 +3184,24 @@ function importJSON(input){
   const f=input.files[0];if(!f)return;
   const r=new FileReader();
   r.onload=e=>{try{
-    const arr=JSON.parse(e.target.result);if(!Array.isArray(arr))throw 0;
-    if(!confirm(`В файле ${arr.length} объектов.\n\nОни добавятся к текущему списку, а карточки с теми же номерами внутри базы будут перезаписаны версией из файла.\n\nПродолжить?`)){input.value='';return;}
+    const data=JSON.parse(e.target.result);
+    const arr=Array.isArray(data)?data:data.items;
+    const aux=(!Array.isArray(data)&&data.aux)?data.aux:null;
+    if(!Array.isArray(arr))throw 0;
+    const cnt=k=>Object.keys((aux&&aux[k])||{}).length;
+    const extra=aux?`\n\nВместе с ними вернутся: семей ${((aux.groups||[]).length)}, заметок по квартирам ${cnt('schema')}, итогов обзвона ${cnt('calls')}, правок собственников ${cnt('owners')}.\nЭто заменит то, что есть сейчас.`:'';
+    if(!confirm(`В файле ${arr.length} объектов.\n\nОни добавятся к текущему списку, а карточки с теми же номерами внутри базы будут перезаписаны версией из файла.${extra}\n\nПродолжить?`)){input.value='';return;}
     arr.forEach(o=>{o.id=o.id||genId();o.createdAt=o.createdAt||Date.now();upsert(o);});
+    if(aux){
+      if(aux.schema&&Object.keys(aux.schema).length){schemaInfo=aux.schema;saveSchemaInfo();}
+      if(aux.groups&&aux.groups.length){groups=aux.groups;saveGroups();}
+      if(aux.owners&&Object.keys(aux.owners).length){ownerFix=aux.owners;saveOwnerFix();}
+      if(aux.calls&&Object.keys(aux.calls).length){calls=aux.calls;pushAux('calls',calls);}
+      if(aux.famNo&&Object.keys(aux.famNo).length){famNo=aux.famNo;famSaveNo();}
+      _gIdx=null;famInvalidate();
+    }
     if(!cloud)render();
+    if(aux)alert('Восстановлено. Семей: '+groups.length+', заметок: '+Object.keys(schemaInfo).length+', итогов обзвона: '+Object.keys(calls).length+'.');
   }catch(err){alert('Не получилось прочитать файл.')}
   input.value='';};
   r.readAsText(f);
@@ -3562,7 +3596,25 @@ function ownerObjects(fio){
   return out.filter(r=>{const f=ownerFix[cadKey(r.cad)];return !f||normFio(f.fio)===key;});
 }
 /* ---------- семьи / группы ---------- */
-function groupOf(fio){const k=normFio(fio);return groups.find(g=>g.members.some(m=>normFio(m)===k))}
+/* Поиск семьи по человеку — самая горячая операция: автосвязывание зовёт её на
+   каждого и само же наращивает список семей. Перебором это росло квадратично и
+   на второй базе вешало страницу на секунды, поэтому держим указатель. */
+let _gIdx=null,_gIdxSrc=null,_gIdxLen=-1;
+function groupIndex(){
+  /* список семей могут заменить целиком (приход из облака, чистка) — ловим это
+     сами, а не надеемся, что каждый такой случай не забыли пометить */
+  if(_gIdx&&_gIdxSrc===groups&&_gIdxLen===groups.length)return _gIdx;
+  const m={};
+  groups.forEach(g=>(g.members||[]).forEach(x=>{const k=normFio(x);if(k&&!m[k])m[k]=g;}));
+  _gIdx=m;_gIdxSrc=groups;_gIdxLen=groups.length;return m;
+}
+function groupsChanged(){_gIdx=null;famInvalidate&&famInvalidate();}
+function gIdxAdd(g){
+  if(!_gIdx)return;
+  _gIdxLen=groups.length;
+  (g.members||[]).forEach(x=>{const k=normFio(x);if(k&&!_gIdx[k])_gIdx[k]=g;});
+}
+function groupOf(fio){const k=normFio(fio);return k?groupIndex()[k]:undefined}
 function groupMembers(fio){const g=groupOf(fio);return g?g.members:[fio]}
 function linkPeople(a,b,name){
   let g=groupOf(a)||groupOf(b);
@@ -3603,7 +3655,7 @@ function startAux(){
     const v=s.val()||{};
     applyComplex(v.complex||null);
     schemaInfo=v.schema||{};
-    groups=Array.isArray(v.groups)?v.groups:(v.groups?Object.values(v.groups):[]);
+    groups=Array.isArray(v.groups)?v.groups:(v.groups?Object.values(v.groups):[]);_gIdx=null;
     ownerFix=v.owners||{};_callPool=null;_callOpts=null;_famSug=null;_livesCache=null;
     loginLog=Array.isArray(v.loginLog)?v.loginLog:(v.loginLog?Object.values(v.loginLog):[]);
     calls=v.calls||{};
@@ -3632,22 +3684,23 @@ function refreshCellIfOpen(){
   if(ov&&ov.classList.contains('show')&&_cell)openCell(_cell.k,_cell.f,_cell.p);
 }
 function pushAux(child,val){
-  if(cloud&&auxRef){auxRef.child(child).set(val);}
+  if(cloud&&auxRef){cloudWrite(auxRef.child(child).set(val),child==='groups'?'семьи':child==='owners'?'правка собственника':child);}
   else{
     if(child==='schema')saveSchemaInfo();
     else localStorage.setItem('actualka_'+child,JSON.stringify(val));
   }
 }
-function saveGroups(){famInvalidate();pushAux('groups',groups)}
+function saveGroups(){groupsChanged();pushAux('groups',groups)}
 function saveOwnerFix(){pushAux('owners',ownerFix)}
 function saveSchemaInfo(){
-  if(cloud&&auxRef){auxRef.child('schema').set(schemaInfo);return;}
+  if(cloud&&auxRef){cloudWrite(auxRef.child('schema').set(schemaInfo),'заметка по квартире');return;}
   try{localStorage.setItem('actualka_schema',JSON.stringify(schemaInfo));}catch(e){}
 }
 function loadAuxLocal(){
   try{const c=JSON.parse(localStorage.getItem('actualka_complex')||'null');if(c)applyComplex(c);}catch(e){}
   try{schemaInfo=JSON.parse(localStorage.getItem('actualka_schema')||'{}')||{}}catch(e){schemaInfo={}}
   try{groups=JSON.parse(localStorage.getItem('actualka_groups')||'[]')||[]}catch(e){groups=[]}
+  _gIdx=null;
   try{ownerFix=JSON.parse(localStorage.getItem('actualka_owners')||'{}')||{}}catch(e){ownerFix={}}
   try{calls=JSON.parse(localStorage.getItem('actualka_calls')||'{}')||{}}catch(e){calls={}}
   try{famNo=JSON.parse(localStorage.getItem('actualka_famNo')||'{}')||{}}catch(e){famNo={}}
@@ -3718,7 +3771,7 @@ function phoneNote(d){
 }
 function saveCall(key,rec){
   calls[key]=rec;
-  if(cloud&&auxRef)auxRef.child('calls').child(key).set(rec);
+  if(cloud&&auxRef)cloudWrite(auxRef.child('calls').child(key).set(rec),'итог звонка');
   else{try{localStorage.setItem('actualka_calls',JSON.stringify(calls));}catch(e){}}
 }
 /* короткая необратимая метка: у двух совладельцев одной квартиры записи не сольются,
@@ -4266,12 +4319,14 @@ function famAutoApply(silent){
         if(groupOf(m.fio))return;
         if(hg.members.some(x=>normFio(x)===normFio(m.fio)))return;
         hg.members.push(m.fio);added++;
+        if(_gIdx)_gIdx[normFio(m.fio)]=hg;
       });
       return;
     }
-    groups.push({id:'g'+Date.now().toString(36)+Math.random().toString(36).slice(2,5),
+    const ng={id:'g'+Date.now().toString(36)+Math.random().toString(36).slice(2,5),
       name:famGroupName(g),
-      members:g.members.map(m=>m.fio),auto:true,why:g.why.join(', ')});
+      members:g.members.map(m=>m.fio),auto:true,why:g.why.join(', ')};
+    groups.push(ng);gIdxAdd(ng);
     added+=g.members.length;
   });
   if(added){
@@ -4365,7 +4420,7 @@ function famSuggestions(){
 }
 function famSaveNo(){
   famInvalidate();
-  if(cloud&&auxRef)auxRef.child('famNo').set(famNo);
+  if(cloud&&auxRef)cloudWrite(auxRef.child('famNo').set(famNo),'ответы по семьям');
   else{try{localStorage.setItem('actualka_famNo',JSON.stringify(famNo));}catch(e){}}
 }
 function famYes(id){
