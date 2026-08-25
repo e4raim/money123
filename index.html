@@ -998,6 +998,48 @@ select.mini:focus-visible,.f input:focus-visible,.f select:focus-visible,.f text
 .bd-line .ico{width:14px;height:14px;flex:none}
 .bd-line b{color:var(--ink);font-weight:700}
 .bd-soon{background:var(--brass-tint);color:var(--brass);font-size:11.5px;font-weight:600;padding:2px 8px;border-radius:999px}
+.td-seg button .ico{width:14px;height:14px;vertical-align:-2px;margin-right:3px}
+.seg-n{margin-left:5px;min-width:17px;height:17px;padding:0 5px;border-radius:999px;background:var(--brass);color:var(--on-brass);font-size:10.5px;font-weight:700;display:inline-flex;align-items:center;justify-content:center}
+.td-seg button.on .seg-n{background:var(--on-brass);color:var(--brass)}
+.bd-chip{display:flex;align-items:center;gap:4px;font-size:11px;font-weight:600;background:var(--brass-tint);color:var(--brass);border-radius:6px;padding:3px 6px;margin-bottom:3px;cursor:pointer;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.bd-chip .ico{width:12px;height:12px;flex:none}
+.bd-chip:hover{filter:brightness(.96)}
+.bd-wrap{max-width:820px}
+.bd-today{display:flex;align-items:center;gap:8px;background:var(--brass);color:var(--on-brass);border-radius:14px;padding:13px 16px;font-size:14px;font-weight:600;margin-bottom:14px}
+.bd-today .ico{width:18px;height:18px;flex:none}
+.bd-grp{display:flex;align-items:center;gap:7px;font-size:11.5px;font-weight:700;letter-spacing:.3px;text-transform:uppercase;color:var(--ink-soft);margin:16px 0 8px}
+.bd-grp .ico{width:14px;height:14px}
+.bd-grp.now{color:var(--brass)}
+.bd-row{display:flex;align-items:center;gap:12px;padding:10px 12px;background:var(--card);border:1px solid var(--line);border-radius:13px;margin-bottom:6px}
+.bd-when{flex:none;width:44px;text-align:center;line-height:1.1}
+.bd-when b{display:block;font-family:var(--serif);font-size:19px;color:var(--ink)}
+.bd-when span{display:block;font-size:10.5px;color:var(--ink-soft);text-transform:lowercase}
+.bd-who{flex:1;min-width:0}
+.bd-who b{display:block;font-size:14.5px;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bd-who small{display:block;font-size:11.5px;color:var(--ink-soft);margin-top:1px}
+.bd-call{display:inline-flex;align-items:center;gap:7px;flex:none;min-height:44px;padding:0 14px;border-radius:11px;background:var(--ok-s);color:var(--on-solid);text-decoration:none;font-size:13.5px;font-weight:700;font-variant-numeric:tabular-nums}
+.bd-call svg{width:16px;height:16px}
+.bd-call:hover{filter:brightness(1.07)}
+.bd-notel{flex:none;font-size:12px;color:var(--ink-soft)}
+.bd-rest{margin-top:18px}
+.bd-rh{font-size:11.5px;font-weight:700;letter-spacing:.3px;text-transform:uppercase;color:var(--brass);margin-bottom:8px}
+.bd-mon{margin-bottom:6px}
+.bd-mh{width:100%;display:flex;align-items:center;gap:10px;min-height:46px;padding:0 14px;border:1px solid var(--line);border-radius:12px;background:var(--card);color:var(--ink);font:inherit;font-size:14px;font-weight:600;cursor:pointer;text-align:left}
+.bd-mh:hover{border-color:var(--brass)}
+.bd-mh>span:first-child{flex:1}
+.bd-mn{font-size:11.5px;color:var(--ink-soft)}
+.bd-ar{color:var(--ink-soft);font-size:12px}
+.bd-mon .bd-row{margin-top:6px}
+.td-row.bd-tdrow{cursor:pointer}
+@media (max-width:560px){
+  .bd-call span{display:none}
+  .bd-call{padding:0 12px}
+  .bd-row{gap:9px;padding:9px 10px}
+}
+.cal-month .dn{display:flex;align-items:center;justify-content:space-between;gap:4px}
+.mc-bd{display:inline-flex;align-items:center;gap:2px;font-size:10.5px;font-weight:700;color:var(--brass);background:var(--brass-tint);border-radius:999px;padding:1px 6px;cursor:pointer}
+.mc-bd .ico{width:11px;height:11px}
+.mc-bd:hover{filter:brightness(.95)}
 </style>
 </head>
 <body>
@@ -2116,6 +2158,7 @@ function renderToday(){
       <div class="stat"><div class="sv">${todayList.length}</div><div class="sl">На сегодня</div></div>
       <div class="stat"><div class="sv">${staleList.length}</div><div class="sl">Молчат 30+ дней</div></div>
       <div class="stat"><div class="sv">${plans.length}</div><div class="sl">Всего запланировано</div></div>
+      ${bdayPeople().length?`<div class="stat" onclick="setCalMode('bday')" style="cursor:pointer"><div class="sv" style="${bdaySoon(0).length?'color:var(--brass)':''}">${bdaySoon(7).length}</div><div class="sl">Дни рождения за неделю</div></div>`:''}
     </div>
     <div class="td-bar">
       <div class="td-seg">
@@ -2123,8 +2166,9 @@ function renderToday(){
         <button class="${calState.mode==='day'?'on':''}" onclick="setCalMode('day')">День</button>
         <button class="${calState.mode==='week'?'on':''}" onclick="setCalMode('week')">Неделя</button>
         <button class="${calState.mode==='month'?'on':''}" onclick="setCalMode('month')">Месяц</button>
+        <button class="${calState.mode==='bday'?'on':''}" onclick="setCalMode('bday')">${ico('star')} Дни рождения${bdaySoon(7).length?`<span class="seg-n">${bdaySoon(7).length}</span>`:''}</button>
       </div>
-      ${calState.mode==='list'?'':`
+      ${(calState.mode==='list'||calState.mode==='bday')?'':`
       <div class="td-nav">
         <button onclick="calShift(-1)">‹</button>
         <button onclick="calToday()">Сегодня</button>
@@ -2133,7 +2177,8 @@ function renderToday(){
       <div class="td-range">${calRangeLabel()}</div>`}
     </div>`;
   let body='';
-  if(calState.mode==='list')body=renderAgenda(overdue,todayList,staleList);
+  if(calState.mode==='bday')body=renderBdays();
+  else if(calState.mode==='list')body=renderAgenda(overdue,todayList,staleList);
   else if(calState.mode==='day')body=renderCalGrid([calState.anchor]);
   else if(calState.mode==='week'){const m=mondayOf(calState.anchor);body=renderCalGrid([0,1,2,3,4,5,6].map(i=>addDays(m,i)));}
   else body=renderCalMonth();
@@ -2167,7 +2212,7 @@ function renderAgenda(overdue,todayList,staleList){
   const t=todayStr();
   const soon=planItems().filter(o=>o.nextDate>t&&o.nextDate<=addDays(t,7))
     .sort((a,b)=>(a.nextDate+(a.nextTime||'')).localeCompare(b.nextDate+(b.nextTime||'')));
-  if(!overdue.length&&!todayList.length&&!soon.length&&!staleList.length)
+  if(!overdue.length&&!todayList.length&&!soon.length&&!staleList.length&&!bdaySoon(7).length)
     return `<div class="empty"><div class="big">На сегодня звонков нет</div>Список собирается сам из дат «Когда перезвонить» в карточках объектов — заводить ничего не нужно.</div>`;
   let h='';
   const byTime=l=>l.slice().sort((a,b)=>(a.nextTime||'99:99').localeCompare(b.nextTime||'99:99'));
@@ -2185,6 +2230,16 @@ function renderAgenda(overdue,todayList,staleList){
   if(soon.length){
     h+=`<div class="td-grp">${ico('calendar')} Ближайшая неделя · ${soon.length}</div>`;
     h+=soon.slice(0,GRP).map(o=>todayRow(o,false,`${fmtDateY(o.nextDate)}${o.nextTime?', '+esc(o.nextTime):''} · ${esc(planWhy(o))}`)).join('')+cut(soon,'на неделе');
+  }
+  const bd=bdaySoon(7);
+  if(bd.length){
+    h+=`<div class="td-grp" style="color:var(--brass)">${ico('star')} Дни рождения · ${bd.length}</div>`;
+    h+=bd.slice(0,GRP).map(x=>`<div class="td-row bd-tdrow" onclick="openPerson('${jq(x.fio)}')">
+      <div class="bd-when"><b>${x.day}</b><span>${MON_GEN[x.mon].slice(0,3)}</span></div>
+      <div class="in"><div class="num pii">${esc(x.fio)}</div>
+        <div class="meta">${x.days===0?'<b>сегодня</b>':(x.days===1?'завтра':'через '+x.days+' '+plural(x.days,'день','дня','дней'))} · исполняется ${x.age+1}${x.p.flats.length?' · кв. '+x.p.flats.map(f=>f.num).join(', '):''}</div></div>
+      ${x.phone?`<a class="call" href="tel:+${x.phone}" onclick="event.stopPropagation()" aria-label="Позвонить">${SVG_CALL}</a>`:''}
+    </div>`).join('');
   }
   if(staleList.length){
     h+=`<div class="td-grp">${ico('moon')} Молчат 30+ дней · ${staleList.length}</div>`;
@@ -2216,10 +2271,11 @@ function renderCalGrid(days){
     ${days.map(d=>{const dt=parseYmd(d);
       return `<div class="hcell${d===t?' today':''}">${DOW[(dt.getDay()+6)%7]}<b>${dt.getDate()}</b></div>`;}).join('')}
   </div>`;
-  const hasAllday=days.some(d=>allday[d].length);
+  const bdOn={};days.forEach(d=>{bdOn[d]=bdaysOn(d);});
+  const hasAllday=days.some(d=>allday[d].length||bdOn[d].length);
   const ad=hasAllday?`<div class="cal-allday" style="grid-template-columns:${cols}">
-    <div class="lbl">без<br>времени</div>
-    ${days.map(d=>`<div class="acell">${allday[d].map(o=>calChip(o,d<t)).join('')}</div>`).join('')}
+    <div class="lbl">весь<br>день</div>
+    ${days.map(d=>`<div class="acell">${bdOn[d].map(x=>bdayChip(x,d)).join('')}${allday[d].map(o=>calChip(o,d<t)).join('')}</div>`).join('')}
   </div>`:'';
   const gutter=`<div class="cal-gutter">${Array.from({length:rows},(_,i)=>`<div class="hr">${String(minH+i).padStart(2,'0')}:00</div>`).join('')}</div>`;
   const nowH=new Date().getHours()+new Date().getMinutes()/60;
@@ -2275,17 +2331,105 @@ function renderCalMonth(){
   while(cells.length>35&&parseYmd(cells[35]).getMonth()!==a.getMonth()&&parseYmd(cells[41]).getMonth()!==a.getMonth())cells.length=35;
   const h=DOW.map(d=>`<div class="dow">${d}</div>`).join('')+cells.map(d=>{
     const dt=parseYmd(d),out=dt.getMonth()!==a.getMonth();
-    const list=plansOn(d);
-    const shown=list.slice(0,3);
+    const list=plansOn(d),bd=bdaysOn(d);
+    const shown=list.slice(0,3),hidden=list.length-shown.length;
+    /* В доме под тысячу собственников — именинник почти каждый день. Если
+       выписывать их в клетку поимённо, план звонков в ней тонет, поэтому здесь
+       только метка с числом; имена — в сетке дня и в отдельном календаре. */
+    const bdMark=bd.length?`<div class="mc-bd" title="${esc(bd.map(x=>shortFio(x.fio)).join(', '))}" onclick="event.stopPropagation();calState.mode='day';calState.anchor='${d}';renderToday()">${ico('star')}${bd.length}</div>`:'';
     return `<div class="mc${out?' out':''}${d===t?' today':''}">
-      <div class="dn">${dt.getDate()}</div>
+      <div class="dn">${dt.getDate()}${bdMark}</div>
       ${shown.map(o=>calChip(o,d<t)).join('')}
-      ${list.length>3?`<div class="cal-more" onclick="calState.mode='day';calState.anchor='${d}';renderToday()">+ ещё ${list.length-3}</div>`:''}
+      ${hidden>0?`<div class="cal-more" onclick="calState.mode='day';calState.anchor='${d}';renderToday()">+ ещё ${hidden}</div>`:''}
     </div>`;
   }).join('');
   return `<div class="cal-month">${h}</div>
-  <div class="pv-hint" style="margin-top:10px">В клетках — объекты, которым назначен звонок на этот день. Клик по объекту открывает его карточку.</div>`;
+  <div class="pv-hint" style="margin-top:10px">В клетках — объекты, которым назначен звонок на этот день, и дни рождения собственников. Клик открывает карточку.</div>`;
 }
+/* ---------- дни рождения собственников ----------
+   Берутся из базы ЕГРН, значит живут только в этом браузере. Повод позвонить
+   без повода: поздравил — и разговор уже не холодный. */
+let _bdays=null;
+function bdayPeople(){
+  if(_bdays)return _bdays;
+  if(!egrn.rows.length)return (_bdays=[]);
+  const out=[];
+  buildCallPool().forEach(p=>{
+    const b=birthInfo(p.born);
+    if(!b)return;
+    out.push({p,fio:p.fio,d:b.date,md:String(b.date.getMonth()+1).padStart(2,'0')+'-'+String(b.date.getDate()).padStart(2,'0'),
+      day:b.date.getDate(),mon:b.date.getMonth(),age:b.age,days:b.days,text:b.text,phone:p.phones[0]||''});
+  });
+  out.sort((a,b)=>a.days-b.days);
+  _bdays=out;return out;
+}
+/* дни рождения на конкретную дату (год не важен) */
+function bdaysOn(dateStr){
+  const d=parseYmd(dateStr);
+  const md=String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+  return bdayPeople().filter(x=>x.md===md);
+}
+function bdaySoon(n){return bdayPeople().filter(x=>x.days<=n)}
+function bdayChip(x,dateStr){
+  const turns=parseYmd(dateStr).getFullYear()-x.d.getFullYear();
+  return `<div class="bd-chip" onclick="openPerson('${jq(x.fio)}')" title="${esc(x.fio)} · ${turns} ${plural(turns,'год','года','лет')}">
+    ${ico('star')}<span class="pii">${esc(shortFio(x.fio))}</span> ${turns}</div>`;
+}
+function shortFio(fio){
+  const w=(fio||'').trim().split(/\s+/);
+  if(w.length<2)return fio||'';
+  return w[0]+' '+w[1].charAt(0)+'.';
+}
+/* ---------- отдельный календарь дней рождения ---------- */
+function renderBdays(){
+  const list=bdayPeople();
+  if(!egrn.rows.length)
+    return '<div class="empty"><div class="big">Нет базы ЕГРН</div>Дни рождения берутся из неё и хранятся только в этом браузере.<div><button class="btn-add" onclick="switchView(\'settings\')">Загрузить базу</button></div></div>';
+  if(!list.length)
+    return '<div class="empty"><div class="big">Дат рождения в базе нет</div>В выписке должна быть колонка «Дата рождения».</div>';
+  const today=list.filter(x=>x.days===0);
+  const week=list.filter(x=>x.days>0&&x.days<=7);
+  const month=list.filter(x=>x.days>7&&x.days<=30);
+  const row=(x,far)=>{
+    const tel=x.phone;
+    /* «через 341 день» под заголовком «Август» — шум: месяц и так назван */
+    const when=far?'':(x.days===0?'сегодня':(x.days===1?'завтра':'через '+x.days+' '+plural(x.days,'день','дня','дней')))+' · ';
+    return `<div class="bd-row">
+      <div class="bd-when"><b>${x.day}</b><span>${MON_GEN[x.mon].slice(0,3)}</span></div>
+      <div class="bd-who">
+        <b class="pii">${esc(x.fio)}</b>
+        <small>${when}исполняется ${x.age+1} ${plural(x.age+1,'год','года','лет')}${x.p.flats.length?' · кв. '+x.p.flats.map(f=>f.num).join(', '):''}</small>
+      </div>
+      ${tel?`<a class="bd-call pii" href="tel:+${tel}">${SVG_CALL}<span>${fmtPhone(tel)}</span></a>${copyBtn(tel)}`:'<span class="bd-notel">телефона нет</span>'}
+      <button class="fq-open" onclick="openPerson('${jq(x.fio)}')" title="Карточка">→</button>
+    </div>`;
+  };
+  const grp=(title,arr,cls)=>arr.length?`<div class="bd-grp ${cls||''}">${ico('star')} ${title} · ${arr.length}</div>`+arr.map(x=>row(x,false)).join(''):'';
+  /* дальше года вперёд смотреть незачем — показываем по месяцам, начиная с текущего */
+  const byMon={};
+  list.filter(x=>x.days>30).forEach(x=>{(byMon[x.mon]=byMon[x.mon]||[]).push(x);});
+  const order=[];for(let i=0;i<12;i++)order.push((new Date().getMonth()+i)%12);
+  const rest=order.filter(m=>byMon[m]).map(m=>{
+    const arr=byMon[m].sort((a,b)=>a.day-b.day);
+    const open=bdayOpenMon===m;
+    return `<div class="bd-mon">
+      <button class="bd-mh" onclick="bdayToggleMon(${m})" aria-expanded="${open}">
+        <span>${MON_NOM[m]}</span><span class="bd-mn">${arr.length}</span><span class="bd-ar">${open?'▴':'▾'}</span>
+      </button>
+      ${open?arr.map(x=>row(x,true)).join(''):''}
+    </div>`;
+  }).join('');
+  return `<div class="bd-wrap">
+    ${today.length?`<div class="bd-today">${ico('star')} Сегодня день рождения у ${today.length} ${plural(today.length,'человека','человек','человек')} — самый лёгкий повод позвонить</div>`:''}
+    ${grp('Сегодня',today,'now')}
+    ${grp('На неделе',week)}
+    ${grp('В этом месяце',month)}
+    ${rest?`<div class="bd-rest"><div class="bd-rh">Дальше по месяцам</div>${rest}</div>`:''}
+    <div class="pv-hint" style="margin-top:12px">Даты берутся из базы ЕГРН и никуда не уходят. Всего с датой рождения: ${list.length} ${plural(list.length,'человек','человека','человек')}.</div>
+  </div>`;
+}
+let bdayOpenMon=null;
+function bdayToggleMon(m){bdayOpenMon=(bdayOpenMon===m?null:m);renderToday();}
 /* ---------- уведомления: только то, что сделал руководитель ---------- */
 function notifSeen(){try{return +(localStorage.getItem('actualka_notif_seen')||0)}catch(e){return 0}}
 function setNotifSeen(ts){try{localStorage.setItem('actualka_notif_seen',String(ts))}catch(e){}}
@@ -3035,7 +3179,7 @@ function buildEgrnIndex(){
     const k=normFio(r.fio);if(k){(egrn.byOwner[k]=egrn.byOwner[k]||[]).push(r);}
     if(r.inn){(egrn.byInn[r.inn]=egrn.byInn[r.inn]||[]).push(r);}
   });
-  _homeSig=null;_livesCache=null;_callPool=null;_callOpts=null;_famSug=null;
+  _homeSig=null;_livesCache=null;_callPool=null;_callOpts=null;_famSug=null;_bdays=null;
 }
 /* ---------- «живёт здесь»: сверяем адрес прописки с адресом самого дома ----------
    Эталон берём из самой базы — самый частый адрес объекта. Никаких зашитых улиц. */
@@ -3327,7 +3471,7 @@ function applyComplex(c){
   TOWERS=(c.towers||[]).map(t=>({k:t.k,ru:t.ru,name:t.en,en:t.en,cls:t.cls,max:t.max,rules:t.rules||[]}));
   HYDE_BY_NUM={};
   Object.keys(HYDE_OBJ).forEach(suf=>{HYDE_BY_NUM[HYDE_OBJ[suf][0]]=suf;});
-  _livesCache=null;_callPool=null;_callOpts=null;_famSug=null;
+  _livesCache=null;_callPool=null;_callOpts=null;_famSug=null;_bdays=null;
   if(c.name){try{localStorage.setItem('actualka_jk',c.name);}catch(e){}}
 }
 function hasComplex(){return !!(COMPLEX&&TOWERS.length)}
@@ -3644,7 +3788,7 @@ function buildCallPool(){
     p.share=p.rows.some(r=>r.share&&r.share!=='1/1');
     return p;
   });
-  _callPool=pool;_callOpts=null;_famSug=null;
+  _callPool=pool;_callOpts=null;_famSug=null;_bdays=null;
   return pool;
 }
 /* «Дата регистрации владения» приходит как дд.мм.гггг — берём год и считаем срок */
