@@ -994,6 +994,10 @@ select.mini:focus-visible,.f input:focus-visible,.f select:focus-visible,.f text
 .fl-h{display:flex;align-items:center;justify-content:space-between;gap:10px}
 .fl-hide{border:0;background:none;color:var(--ink-soft);font:inherit;font-size:11px;text-transform:none;letter-spacing:0;text-decoration:underline;cursor:pointer;min-height:32px}
 .fl-hide:hover{color:var(--brass)}
+.bd-line{display:inline-flex;align-items:center;gap:6px;flex-wrap:wrap;font-size:12.5px;color:var(--ink-soft);margin-top:4px}
+.bd-line .ico{width:14px;height:14px;flex:none}
+.bd-line b{color:var(--ink);font-weight:700}
+.bd-soon{background:var(--brass-tint);color:var(--brass);font-size:11.5px;font-weight:600;padding:2px 8px;border-radius:999px}
 </style>
 </head>
 <body>
@@ -1677,6 +1681,40 @@ function copyFallback(text,done){
     document.body.removeChild(ta);
     if(okc)done(); else showToast('Не вышло скопировать — выдели номер вручную');
   }catch(e){showToast('Не вышло скопировать — выдели номер вручную');}
+}
+/* ---------- дата рождения: возраст важнее самой даты ----------
+   Перед звонком нужно понимать, с кем говоришь: с ровесником или с человеком
+   за семьдесят. Плюс ближний день рождения — законный повод для звонка. */
+function birthInfo(raw){
+  const t=(raw||'').toString().trim();
+  if(!t)return null;
+  let d=null,m=/^(\d{1,2})[.\-/](\d{1,2})[.\-/](\d{4})/.exec(t);
+  if(m)d=new Date(+m[3],+m[2]-1,+m[1]);
+  else{
+    m=/^(\d{4})[.\-/](\d{1,2})[.\-/](\d{1,2})/.exec(t);
+    if(m)d=new Date(+m[1],+m[2]-1,+m[3]);
+    else{const p2=Date.parse(t);if(!isNaN(p2))d=new Date(p2);}
+  }
+  if(!d||isNaN(d.getTime()))return null;
+  const y=d.getFullYear();
+  if(y<1900||y>new Date().getFullYear())return null;
+  const now=new Date(), today=new Date(now.getFullYear(),now.getMonth(),now.getDate());
+  let age=today.getFullYear()-y;
+  const bdThis=new Date(today.getFullYear(),d.getMonth(),d.getDate());
+  if(bdThis>today)age--;
+  let next=bdThis;
+  if(bdThis<today)next=new Date(today.getFullYear()+1,d.getMonth(),d.getDate());
+  const days=Math.round((next-today)/86400000);
+  return {date:d,text:String(d.getDate()).padStart(2,'0')+'.'+String(d.getMonth()+1).padStart(2,'0')+'.'+y,
+          age,days,soon:days<=14};
+}
+function ageWord(n){return n+' '+plural(n,'год','года','лет')}
+function birthLine(raw){
+  const b=birthInfo(raw);
+  if(!b)return '';
+  const bd=b.days===0?'сегодня день рождения'
+          :(b.soon?'день рождения через '+b.days+' '+plural(b.days,'день','дня','дней'):'');
+  return `<span class="bd-line pii">${ico('calendar')} <b>${ageWord(b.age)}</b> · ${b.text}${bd?`<span class="bd-soon">${bd}</span>`:''}</span>`;
 }
 function showPhone(raw){const d=normPhone(raw);return d?fmtPhone(d):(raw||'').toString().trim();}
 function telHref(raw){const d=normPhone(raw);return d?('+'+d):(raw||'').toString().replace(/[^\d+]/g,'');}
@@ -3807,7 +3845,8 @@ function callCardHtml(p,total){
         <div class="cc-av">${esc(initials(p.fio))}</div>
         <div class="cc-id">
           <div class="cc-name pii">${esc(p.fio)}</div>
-          <div class="cc-sub">${p.born?'р. '+esc(String(p.born).slice(0,10))+' · ':''}${p.flats.length?p.flats.length+' '+plural(p.flats.length,'квартира','квартиры','квартир'):'без квартир'}${p.rest.length?' + '+p.rest.length+' '+plural(p.rest.length,'объект','объекта','объектов'):''}</div>
+          <div class="cc-sub">${p.flats.length?p.flats.length+' '+plural(p.flats.length,'квартира','квартиры','квартир'):'без квартир'}${p.rest.length?' + '+p.rest.length+' '+plural(p.rest.length,'объект','объекта','объектов'):''}</div>
+          ${birthLine(p.born)}
           <div class="cc-badges">${badges.join('')}</div>
         </div>
         <div class="cc-pos">${callState.idx+1} / ${total}</div>
@@ -4610,6 +4649,7 @@ function openPerson(fio){
       <div style="flex:1;min-width:0">
         <div class="pers-name">${esc(fio)}</div>
         <div class="pers-sub">${rec.phone?esc(showPhone(rec.phone)):'телефон не указан'}${rec.share&&rec.share!=='1/1'?' · доля '+esc(rec.share):''}</div>
+        ${birthLine(rec.birth||(egrn.byOwner[normFio(fio)]||[]).map(r=>r.birth).find(Boolean))}
         <div class="pv-badges">
           ${g?`<span class="pv-badge${isGuest?'':' link'}" ${isGuest?'':`onclick="renameGroup('${jq(fio)}');openPerson('${jq(fio)}')"`}>${esc(g.name)} · ${famTotal} кв.</span>`
              :`<span class="pv-badge off">не связан с семьёй</span>`}
