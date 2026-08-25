@@ -1040,6 +1040,11 @@ select.mini:focus-visible,.f input:focus-visible,.f select:focus-visible,.f text
 .mc-bd{display:inline-flex;align-items:center;gap:2px;font-size:10.5px;font-weight:700;color:var(--brass);background:var(--brass-tint);border-radius:999px;padding:1px 6px;cursor:pointer}
 .mc-bd .ico{width:11px;height:11px}
 .mc-bd:hover{filter:brightness(.95)}
+.fq-q{display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+.fq-tag{background:var(--fam-tint);color:var(--fam);border-radius:999px;padding:2px 9px;font-size:10.5px;letter-spacing:0;text-transform:none}
+.fq-p.fq-g{background:var(--fam-tint);border-color:transparent}
+.fq-av.fam{background:var(--fam);color:#fff}
+.fq-av.fam .ico{width:19px;height:19px}
 </style>
 </head>
 <body>
@@ -4297,33 +4302,65 @@ function famPairId(a,b){
   const x=[normFio(a),normFio(b)].sort();
   return callHash(x[0]+'|'+x[1]);
 }
+function famHints(a,b,sur,n){
+  const hints=[];let score=0;
+  if(n===2&&!isCommonSurname(sur)){hints.push('фамилия в доме больше ни у кого');score+=3;}
+  else if(isCommonSurname(sur)){hints.push('фамилия распространённая — совпадение вероятно');score-=2;}
+  if(patronMatches(a.fio,b.fio)||patronMatches(b.fio,a.fio)){hints.push('отчество указывает на родителя');score+=4;}
+  if(a.region&&a.region===b.region){hints.push('прописаны в одном регионе');score+=1;}
+  if(a.live&&b.live){hints.push('оба прописаны здесь же');score+=1;}
+  return {hints,score};
+}
 function famSuggestions(){
   if(_famSug)return _famSug;
   if(!egrn.rows.length)return (_famSug=[]);
   const pool=buildCallPool().filter(p=>p.fio);
+  const byFio={};pool.forEach(p=>{byFio[normFio(p.fio)]=p;});
   const bySur={};
   pool.forEach(p=>{const s=surnameOf(p.fio);if(s.length>3)(bySur[s]=bySur[s]||[]).push(p);});
   const out=[];
+  const rejected=(a,b)=>!!famNo[famPairId(a,b)];
   Object.keys(bySur).forEach(sur=>{
     const ks=bySur[sur];
     if(ks.length<2||ks.length>5)return;   /* «Иванов» вшестером — это не подсказка */
-    for(let i=0;i<ks.length;i++)for(let j=i+1;j<ks.length;j++){
-      const a=ks[i],b=ks[j];
+    /* Разводим тех, кто уже в семье, и тех, кто сам по себе: иначе про третьего
+       однофамильца спрашиваешь дважды — отдельной парой с каждым членом семьи. */
+    const fams=[],loose=[];
+    ks.forEach(p=>{
+      const g=groupOf(p.fio);
+      if(g){const f=fams.find(x=>x.g===g);if(f)f.mine.push(p);else fams.push({g,mine:[p]});}
+      else loose.push(p);
+    });
+    /* 1) добавить человека в уже собранную семью */
+    fams.forEach(f=>{
+      loose.forEach(p=>{
+        if(f.g.members.some(m=>normFio(m)===normFio(p.fio)))return;
+        if(f.g.members.some(m=>rejected(p.fio,m)))return;      /* уже отказались от кого-то из семьи */
+        const h=famHints(p,f.mine[0],sur,ks.length);
+        out.push({kind:'join',id:'j'+callHash(normFio(p.fio)+'|'+f.g.members.map(normFio).sort().join('|')),
+          p,g:f.g,sur,hints:h.hints,score:h.score+2});   /* семья уже есть — подсказка сильнее */
+      });
+    });
+    /* 2) объединить две семьи с одной фамилией */
+    for(let i=0;i<fams.length;i++)for(let j=i+1;j<fams.length;j++){
+      const A=fams[i],B=fams[j];
+      if(A.mine.some(x=>B.g.members.some(m=>rejected(x.fio,m))))continue;
+      const h=famHints(A.mine[0],B.mine[0],sur,ks.length);
+      out.push({kind:'merge',id:'m'+callHash([A.g.members.map(normFio).sort().join('|'),B.g.members.map(normFio).sort().join('|')].sort().join('#')),
+        ga:A.g,gb:B.g,sur,hints:h.hints,score:h.score+1});
+    }
+    /* 3) обычная пара: оба сами по себе */
+    for(let i=0;i<loose.length;i++)for(let j=i+1;j<loose.length;j++){
+      const a=loose[i],b=loose[j];
       if(normFio(a.fio)===normFio(b.fio))continue;      /* это один человек, а не двое */
-      const g=groupOf(a.fio);
-      if(g&&g.members.some(m=>normFio(m)===normFio(b.fio)))continue;   /* уже вместе */
-      const id=famPairId(a.fio,b.fio);
-      if(famNo[id])continue;                                          /* уже отказались */
-      const hints=[];let score=0;
-      if(ks.length===2&&!isCommonSurname(sur)){hints.push('фамилия в доме больше ни у кого');score+=3;}
-      else if(isCommonSurname(sur)){hints.push('фамилия распространённая — совпадение вероятно');score-=2;}
-      if(patronMatches(a.fio,b.fio)||patronMatches(b.fio,a.fio)){hints.push('отчество указывает на родителя');score+=4;}
-      if(a.region&&a.region===b.region){hints.push('прописаны в одном регионе');score+=1;}
-      if(a.live&&b.live){hints.push('оба прописаны здесь же');score+=1;}
-      out.push({id,a,b,sur,hints,score});
+      if(rejected(a.fio,b.fio))continue;
+      const h=famHints(a,b,sur,ks.length);
+      out.push({kind:'pair',id:famPairId(a.fio,b.fio),a,b,sur,hints:h.hints,score:h.score});
     }
   });
-  _famSug=out.sort((x,y)=>y.score-x.score||x.a.fio.localeCompare(y.a.fio,'ru'));
+  const seen={};
+  _famSug=out.filter(x=>seen[x.id]?false:(seen[x.id]=1))
+             .sort((x,y)=>y.score-x.score||(x.sur||'').localeCompare(y.sur||'','ru'));
   return _famSug;
 }
 function famSaveNo(){
@@ -4333,20 +4370,54 @@ function famSaveNo(){
 }
 function famYes(id){
   const s=famSuggestions().find(x=>x.id===id);if(!s)return;
-  linkPeople(s.a.fio,s.b.fio,'Семья '+s.sur.charAt(0)+s.sur.slice(1).toLowerCase());
-  const g=groupOf(s.a.fio); if(g)g.auto=false;   /* подтверждено человеком */
-  saveGroups();
-  showUndo('Связал: '+s.a.fio.split(' ')[0]+' — семья',()=>{unlinkPerson(s.b.fio);renderFamily();});
-  renderFamily();
+  const snap=JSON.parse(JSON.stringify(groups));
+  const back=()=>{groups=snap;saveGroups();renderFamily();updateFamBadge();};
+  if(s.kind==='join'){
+    if(!s.g.members.some(m=>normFio(m)===normFio(s.p.fio)))s.g.members.push(s.p.fio);
+    s.g.auto=false;famFixCount(s.g);saveGroups();
+    showUndo('Добавил в «'+s.g.name+'»: '+shortFio(s.p.fio),back);
+  }else if(s.kind==='merge'){
+    s.gb.members.forEach(m=>{if(!s.ga.members.some(x=>normFio(x)===normFio(m)))s.ga.members.push(m);});
+    s.ga.auto=false;famFixCount(s.ga);
+    groups=groups.filter(g=>g!==s.gb);
+    saveGroups();
+    showUndo('Объединил «'+s.ga.name+'» и «'+s.gb.name+'»',back);
+  }else{
+    linkPeople(s.a.fio,s.b.fio,'Семья '+s.sur.charAt(0)+s.sur.slice(1).toLowerCase());
+    const g=groupOf(s.a.fio); if(g)g.auto=false;   /* подтверждено человеком */
+    saveGroups();
+    showUndo('Связал: '+s.a.fio.split(' ')[0]+' — семья',back);
+  }
+  renderFamily();updateFamBadge();
+}
+/* Имя автогруппы несёт в себе число людей («Один адрес · 2 чел.») — после
+   добавления человека оно бы врало. Заодно, если все стали однофамильцами,
+   имя становится обычным «Семья X». */
+function famFixCount(g){
+  const surs=[...new Set(g.members.map(m=>surnameOf(m)).filter(Boolean))];
+  if(surs.length===1){const b=surs[0];g.name='Семья '+b.charAt(0)+b.slice(1).toLowerCase();return;}
+  if(/ · \d+ чел\.$/.test(g.name))g.name=g.name.replace(/ · \d+ чел\.$/,' · '+g.members.length+' чел.');
+}
+/* Отказ помним по парам людей, а не по самой догадке: состав семьи может
+   поменяться, а «это не родня» останется правдой. */
+function famRejectPairs(s){
+  const out=[];
+  if(s.kind==='join')s.g.members.forEach(m=>out.push(famPairId(s.p.fio,m)));
+  else if(s.kind==='merge')s.ga.members.forEach(a=>s.gb.members.forEach(b=>out.push(famPairId(a,b))));
+  else out.push(famPairId(s.a.fio,s.b.fio));
+  return out;
 }
 function famReject(id){
-  famNo[id]=1;famSaveNo();
-  showUndo('Не семья — больше не спрошу',()=>{delete famNo[id];famSaveNo();renderFamily();});
-  renderFamily();
+  const s=famSuggestions().find(x=>x.id===id);if(!s)return;
+  const keys=famRejectPairs(s);
+  keys.forEach(k=>{famNo[k]=1;});
+  famSaveNo();
+  showUndo('Не семья — больше не спрошу',()=>{keys.forEach(k=>{delete famNo[k];});famSaveNo();renderFamily();updateFamBadge();});
+  renderFamily();updateFamBadge();
 }
 function famSkipAll(){
   if(!confirm('Отметить все оставшиеся догадки как «не семья»? Опросник исчезнет.'))return;
-  famSuggestions().forEach(s=>{famNo[s.id]=1;});
+  famSuggestions().forEach(s=>famRejectPairs(s).forEach(k=>{famNo[k]=1;}));
   famSaveNo();renderFamily();updateFamBadge();
 }
 function updateFamBadge(){
@@ -4405,6 +4476,17 @@ function famPersonCard(p){
     <button class="fq-open" onclick="openPerson('${jq(p.fio)}')" title="Открыть карточку">→</button>
   </div>`;
 }
+function famGroupCard(g){
+  const flats=g.members.reduce((n,m)=>n+ownerObjects(m).filter(r=>{const o=objOfCad(r.cad);return o&&o.type==='kv';}).length,0);
+  return `<div class="fq-p fq-g">
+    <div class="fq-av fam">${ico('users')}</div>
+    <div class="fq-in">
+      <b>${esc(g.name)}</b>
+      <small class="pii">${g.members.map(m=>esc(shortFio(m))).join(' · ')}</small>
+      <small>${g.members.length} ${plural(g.members.length,'человек','человека','человек')} · ${flats} ${plural(flats,'квартира','квартиры','квартир')}${g.auto?' · нашёл сам':''}</small>
+    </div>
+  </div>`;
+}
 function renderFamily(){
   const box=document.getElementById('viewFamily');if(!box)return;
   if(!egrn.rows.length){
@@ -4422,29 +4504,35 @@ function renderFamily(){
     <div class="fq-stats">
       <div class="cst"><b>${groups.length}</b><span>семей всего</span></div>
       <div class="cst"><b>${autoG.length}</b><span>нашёл сам</span></div>
-      <div class="cst${list.length?' warn':''}"><b>${list.length}</b><span>ждут ответа</span></div>
+      <div class="cst${list.length?' warn':''}"><b>${list.length}</b><span>вопросов</span></div>
     </div>
   </div>`;
   if(!list.length){
     box.innerHTML=head+`<div class="call-done">
       <b>Опросник пройден</b>
-      <div>${done?'Ответил по '+done+' '+plural(done,'паре','парам','парам')+'. Новые догадки появятся, только если загрузишь ещё одну базу.':'Догадок нет — однофамильцев в базе не нашлось.'}</div>
+      <div>${done?'Отклонённых связей: '+done+'. Новые догадки появятся, только если загрузишь ещё одну базу или семьи изменятся.':'Догадок нет — однофамильцев в базе не нашлось.'}</div>
       ${done?`<button class="ca-skip" style="max-width:260px;margin:0 auto" onclick="famResetNo()">Показать отклонённые заново</button>`:''}
     </div>`+famListHtml();
     return;
   }
   const s=list[0];
+  const q=s.kind==='join'?'Он из этой семьи?':(s.kind==='merge'?'Это одна семья?':'Это одна семья?');
+  const yes=s.kind==='join'?'Да, добавить':(s.kind==='merge'?'Да, объединить':'Да, семья');
+  let mid;
+  if(s.kind==='join')       mid=famPersonCard(s.p)+`<span class="fq-amp">${ico('users')}</span>`+famGroupCard(s.g);
+  else if(s.kind==='merge') mid=famGroupCard(s.ga)+`<span class="fq-amp">${ico('users')}</span>`+famGroupCard(s.gb);
+  else                      mid=famPersonCard(s.a)+`<span class="fq-amp">${ico('users')}</span>`+famPersonCard(s.b);
   box.innerHTML=head+`
     <div class="fq-card">
-      <div class="fq-q">Это одна семья?</div>
-      <div class="fq-pair">${famPersonCard(s.a)}<span class="fq-amp">${ico('users')}</span>${famPersonCard(s.b)}</div>
+      <div class="fq-q">${q}${s.kind!=='pair'?`<span class="fq-tag">${s.kind==='join'?'дополнить семью':'объединить семьи'}</span>`:''}</div>
+      <div class="fq-pair">${mid}</div>
       <div class="fq-why">Общая фамилия <b>${esc(s.sur.charAt(0)+s.sur.slice(1).toLowerCase())}</b>${s.hints.length?' · '+s.hints.map(esc).join(' · '):''}</div>
       <div class="fq-acts">
-        <button class="fq-yes" onclick="famYes('${s.id}')">${ico('check')} Да, семья</button>
+        <button class="fq-yes" onclick="famYes('${s.id}')">${ico('check')} ${yes}</button>
         <button class="fq-no" onclick="famReject('${s.id}')">${ico('close')} Нет</button>
       </div>
       <div class="fq-foot">
-        <span>Осталось ${list.length} ${plural(list.length,'пара','пары','пар')}</span>
+        <span>Осталось ${list.length} ${plural(list.length,'вопрос','вопроса','вопросов')}</span>
         <button onclick="famSkipAll()">Закрыть опросник — остальные не семья</button>
       </div>
     </div>`+famListHtml();
