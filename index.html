@@ -3067,8 +3067,7 @@ function familyInfo(fio){
     return {fio:m,flats:all.filter(o=>o.type==='kv'),rest:all.filter(o=>o.type!=='kv'),
             phone:(ownerObjects(m)[0]||{}).phone||''};
   });
-  let total=0;
-  groupMembers(fio).forEach(m=>{total+=flatsOf(m).filter(o=>o.type==='kv').length;});
+  let total=familyFlatCount(groupMembers(fio));
   return {g,members,total};
 }
 function familyBlockHtml(fio){
@@ -3692,6 +3691,17 @@ function ownerObjects(fio){
   return out.filter(r=>{const f=ownerFix[cadKey(r.cad)];return !f||normFio(f.fio)===key;});
 }
 /* ---------- семьи / группы ---------- */
+/* Квартиру, которой владеют вдвоём, нельзя считать дважды: раньше счёт шёл
+   суммой по каждому члену семьи, и общая доля превращала одну квартиру в две. */
+function familyFlatNums(members){
+  const seen={};
+  (members||[]).forEach(m=>ownerObjects(m).forEach(r=>{
+    const o=objOfCad(r.cad);
+    if(o&&o.type==='kv')seen[o.num]=1;
+  }));
+  return Object.keys(seen);
+}
+function familyFlatCount(members){return familyFlatNums(members).length}
 /* Поиск семьи по человеку — самая горячая операция: автосвязывание зовёт её на
    каждого и само же наращивает список семей. Перебором это росло квадратично и
    на второй базе вешало страницу на секунды, поэтому держим указатель. */
@@ -4642,7 +4652,7 @@ function famPersonCard(p){
   </div>`;
 }
 function famGroupCard(g){
-  const flats=g.members.reduce((n,m)=>n+ownerObjects(m).filter(r=>{const o=objOfCad(r.cad);return o&&o.type==='kv';}).length,0);
+  const flats=familyFlatCount(g.members);
   return `<div class="fq-p fq-g">
     <div class="fq-av fam">${ico('users')}</div>
     <div class="fq-in">
@@ -4715,7 +4725,7 @@ function famListHtml(){
   const open=famListShown();
   if(!open)return `<button class="fl-more" onclick="famListToggle()">Показать уже связанные семьи · ${groups.length}</button>`;
   const rows=groups.slice().sort((a,b)=>b.members.length-a.members.length).map(g=>{
-    const flats=g.members.reduce((n,m)=>n+ownerObjects(m).filter(r=>{const o=objOfCad(r.cad);return o&&o.type==='kv';}).length,0);
+    const flats=familyFlatCount(g.members);
     return `<div class="fl-row">
       <div class="fl-in">
         <b>${esc(g.name)}</b>
@@ -5087,7 +5097,7 @@ function openPerson(fio){
   const notes=[];
   flats.forEach(x=>{const ni=schemaInfo[x.o.num];if(ni&&ni.note)notes.push({num:x.o.num,note:ni.note});});
 
-  let famTotal=0;groupMembers(fio).forEach(m=>{famTotal+=ownerObjects(m).filter(r=>{const o=objOfCad(r.cad);return o&&o.type==='kv';}).length;});
+  const famTotal=familyFlatCount(groupMembers(fio));
   const tel=telHref(rec.phone),wa=waLink(rec.phone);
 
   const h=`
