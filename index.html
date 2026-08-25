@@ -910,6 +910,18 @@ select.mini:focus-visible,.f input:focus-visible,.f select:focus-visible,.f text
 .cobj .cco{display:block;font-size:11.5px;color:var(--fam);margin-top:2px}
 .pii-note{display:flex;gap:5px;align-items:flex-start;margin-top:5px;font-size:11px;line-height:1.45;color:var(--ink-soft)}
 .pii-note .ico{width:12px;height:12px;flex:none;margin-top:1px}
+.egrn-bar{display:flex;gap:14px;align-items:center;flex-wrap:wrap;background:var(--think-s);color:var(--on-solid);border-radius:14px;padding:14px 16px;margin-bottom:14px}
+.eb-txt{flex:1;min-width:220px}
+.eb-txt b{display:flex;align-items:center;gap:7px;font-size:14px;margin-bottom:4px}
+.eb-txt b .ico{width:16px;height:16px;flex:none}
+.eb-txt span{display:block;font-size:12.5px;line-height:1.5;opacity:.92}
+.eb-btn{flex:none;display:inline-flex;align-items:center;gap:7px;min-height:44px;padding:0 16px;border:0;border-radius:11px;background:var(--on-solid);color:var(--think-t);font:inherit;font-size:13.5px;font-weight:700;cursor:pointer}
+.eb-btn .ico{width:16px;height:16px}
+.eb-btn:hover{filter:brightness(.96)}
+#egrnStatus.egrn-old{color:var(--think-t);font-weight:600}
+.st-warn{display:flex;gap:7px;align-items:flex-start;font-size:12.5px;line-height:1.5;color:var(--think-t);background:var(--surface2);border-left:3px solid var(--think-s);border-radius:0 10px 10px 0;padding:10px 12px;margin:10px 0}
+.st-warn .ico{width:15px;height:15px;flex:none;margin-top:1px}
+.st-btn.st-btn-warn{border-color:var(--think-s);color:var(--think-t);font-weight:700}
 </style>
 </head>
 <body>
@@ -973,6 +985,7 @@ select.mini:focus-visible,.f input:focus-visible,.f select:focus-visible,.f text
       <option value="rent">Только аренда</option>
     </select>
     <select class="mini" id="fState" aria-label="Фильтр: состояние объекта"></select>
+    <select class="mini" id="fTower" aria-label="Фильтр: корпус"></select>
     <select class="mini" id="fPay" aria-label="Фильтр: оплата нам">
       <option value="all">Оплата — любая</option>
       <option value="yes">Платит</option>
@@ -1296,7 +1309,7 @@ let items = [];
 let cloud=false, dbRef=null, editingId=null, pendingPhoto=null;
 let selectMode=false, selectedIds=new Set();
 const PAGE=60;                                   /* столько карточек в DOM за раз: дальше дотягиваем прокруткой */
-const state = {q:"", status:"all", pay:"all", sort:"new", dealType:"all", objState:"all", view:"actualka", limit:PAGE,
+const state = {q:"", status:"all", pay:"all", sort:"new", dealType:"all", objState:"all", tower:"all", view:"actualka", limit:PAGE,
   viewMode:(function(){try{return localStorage.getItem('actualka_viewmode')==='list'?'list':'grid';}catch(e){return 'grid';}})()};
 
 /* ---------- ЖК label ---------- */
@@ -1614,6 +1627,7 @@ function baseFiltered(){
     out=res;
   }
   if(state.pay!=='all') out=out.filter(o=>(o.willPay||'unknown')===state.pay);
+  if(state.tower!=='all') out=out.filter(o=>towerOfNum(o.apartment)===state.tower);
   if(state.dealType==='sale') out=out.filter(o=>dealOf(o)==='sale'||dealOf(o)==='both');
   else if(state.dealType==='rent') out=out.filter(o=>dealOf(o)==='rent'||dealOf(o)==='both');
   if(state.objState==='active') out=out.filter(o=>stateOf(o)==='active');
@@ -1705,7 +1719,7 @@ function refreshOpenFeed(){
 function render(){
   refreshCurrentView();
   refreshOpenFeed();
-  setJkLabel(); buildChips(); renderDash(); renderBulkBar(); applyViewMode(); renderBell();
+  setJkLabel(); buildChips(); buildTowerFilter(); renderDash(); renderBulkBar(); applyViewMode(); renderBell();
   const grid=document.getElementById('grid');
   const list=filtered();
   if(!items.length){
@@ -2234,6 +2248,7 @@ function buildStateFilter(){
   sel.innerHTML=opts.map(([v,l])=>`<option value="${v}" ${state.objState===v?'selected':''}>${l}</option>`).join('');
 }
 function onDealFilter(){state.dealType=document.getElementById('fDeal').value;state.objState='all';state.limit=PAGE;buildStateFilter();render();}
+function onTowerFilter(){state.tower=document.getElementById('fTower').value;state.limit=PAGE;render();}
 function onStateFieldChange(){
   const s=document.getElementById('fld_objState').value, cd=document.getElementById('fld_closedDate');
   if((s==='sold'||s==='rented')&&!cd.value) cd.value=todayStr();
@@ -2855,7 +2870,7 @@ function importJSON(input){
 }
 
 /* ---------- база ЕГРН (только локально, в браузере) ---------- */
-let egrn={rows:[],byCad:{},byOwner:{},byInn:{}}, egrnMatches=[], egrnTimer=null;
+let egrn={rows:[],byCad:{},byOwner:{},byInn:{},ver:0}, egrnMatches=[], egrnTimer=null;
 function normFio(s){return (s||'').toString().trim().toUpperCase().replace(/\s+/g,' ')}
 function shortType(t){t=(t||'').toString();if(/кварт/i.test(t))return ico('home')+' кв';if(/машином/i.test(t))return ico('car')+' мм';if(/кладов/i.test(t))return ico('box')+' клад';if(/помещ/i.test(t))return 'помещ';return t.replace(/^\d+\s*-\s*/,'')||'объект';}
 function buildEgrnIndex(){
@@ -2934,13 +2949,24 @@ function mjRegion(mj){
   v=v.replace(/^(г|гор)[\s.]+/i,'').replace(/[\s.]+(г|обл|респ|край|ао)\.?$/i,'');
   return v?v.charAt(0).toUpperCase()+v.slice(1).toLowerCase():'';
 }
+const EGRN_V=2;   /* 2 — читаем ещё ИНН, адрес прописки и дату регистрации владения */
+/* база, поднятая из памяти после старой версии сайта: строки есть, новых колонок нет */
+function egrnStale(){
+  if(!egrn.rows.length)return false;
+  if(egrn.ver>=EGRN_V)return false;
+  return !egrn.rows.some(r=>r.mj||r.inn||r.reg);
+}
 function updateEgrnStatus(){
   const el=document.getElementById('egrnStatus');if(!el)return;
-  if(egrn.rows.length){el.textContent='база ЕГРН: '+egrn.rows.length+' записей (локально)';el.className='egrn-ok';}
-  else{el.textContent='база ЕГРН не загружена';el.className='';}
+  if(!egrn.rows.length){el.textContent='база ЕГРН не загружена';el.className='';return;}
+  if(egrnStale()){
+    el.textContent='база ЕГРН: '+egrn.rows.length+' записей, но без прописки и срока владения — загрузи файл заново';
+    el.className='egrn-old';return;
+  }
+  el.textContent='база ЕГРН: '+egrn.rows.length+' записей (локально)';el.className='egrn-ok';
 }
 function loadEgrnFromStorage(){
-  try{const raw=localStorage.getItem('actualka_egrn');if(raw){const o=JSON.parse(raw);egrn.rows=o.rows||[];buildEgrnIndex();resolveAllPii();}}catch(e){}
+  try{const raw=localStorage.getItem('actualka_egrn');if(raw){const o=JSON.parse(raw);egrn.rows=o.rows||[];egrn.ver=o.v||0;buildEgrnIndex();resolveAllPii();}}catch(e){}
   updateEgrnStatus();
 }
 function colFinder(headers){
@@ -2984,13 +3010,16 @@ function loadEgrn(input){
       if(name.endsWith('.csv'))rows=parseEgrnCsv(e.target.result);
       else{if(!window.XLSX){alert('Не загрузилась библиотека чтения Excel — проверь интернет и обнови страницу.');return;}rows=parseEgrnWb(XLSX.read(new Uint8Array(e.target.result),{type:'array'}));}
       if(!rows.length){alert('Не нашёл данные. Нужен лист «Данные» с колонками: кадастровый №, ФИО, телефон, площадь.');input.value='';return;}
-      egrn.rows=rows;buildEgrnIndex();resolveAllPii();render();
-      try{localStorage.setItem('actualka_egrn',JSON.stringify({rows,loadedAt:Date.now(),count:rows.length}));}
+      egrn.rows=rows;egrn.ver=EGRN_V;buildEgrnIndex();resolveAllPii();render();
+      try{localStorage.setItem('actualka_egrn',JSON.stringify({v:EGRN_V,rows,loadedAt:Date.now(),count:rows.length}));}
       catch(err){alert('База прочитана ('+rows.length+'), но не поместилась в память браузера. Работает в этой сессии.');}
       updateEgrnStatus();
       if(state.view==='settings')renderSettings();
       if(state.view==='db')renderDbRows();
-      alert('База загружена: '+rows.length+' записей.\nХранится только в этом браузере, на GitHub не уходит.');
+      const got=k=>rows.filter(r=>r[k]).length;
+      alert('База загружена: '+rows.length+' записей.\n'
+        +'С телефоном: '+got('phone')+' · с пропиской: '+got('mj')+' · с датой регистрации: '+got('reg')+'\n'
+        +'Хранится только в этом браузере, на GitHub не уходит.');
     }catch(err){console.error(err);alert('Не смог прочитать файл: '+err.message);}
     input.value='';
   };
@@ -3069,6 +3098,27 @@ function encodeApt(k,f,p){return `${k}${String(f).padStart(2,'0')}${p}`}
 let schemaInfo={};
 /* --- таблица объектов комплекса: кадастр ↔ номер --- */
 let HYDE_BY_NUM={};
+/* корпус зашит в номер: первая цифра — башня */
+function towerOfNum(numStr){
+  const d=(numStr||'').toString().replace(/\D/g,'');
+  return d?d.charAt(0):'';
+}
+function towerLabel(k){const t=towerOf(+k);return t?t.ru:('корпус '+k)}
+let _towerSig='';
+function buildTowerFilter(){
+  const sel=document.getElementById('fTower');if(!sel)return;
+  if(!TOWERS.length){sel.style.display='none';_towerSig='';return;}
+  sel.style.display='';
+  const cnt={};items.forEach(o=>{const k=towerOfNum(o.apartment);if(k)cnt[k]=(cnt[k]||0)+1;});
+  const opts=[['all','Все корпуса']].concat(TOWERS.map(t=>[String(t.k),t.ru+(cnt[t.k]?' · '+cnt[t.k]:'')]));
+  if(!opts.some(o=>o[0]===state.tower))state.tower='all';
+  /* список перестраиваем, только когда он правда изменился: иначе на каждой
+     отрисовке схлопывался бы уже открытый выпадающий список */
+  const sig=JSON.stringify(opts)+'|'+state.tower;
+  if(sig===_towerSig)return;
+  _towerSig=sig;
+  sel.innerHTML=opts.map(([v,l])=>`<option value="${v}" ${state.tower===v?'selected':''}>${esc(l)}</option>`).join('');
+}
 function objTypeOf(num){const u=(num||'').toUpperCase();
   if(u.includes('М'))return 'mm'; if(u.includes('К'))return 'kl'; if(u.includes('Н'))return 'com'; return 'kv';}
 function typeLabel(t){return {mm:'машино-место',kl:'кладовая',com:'коммерция',kv:'квартира'}[t]||t}
@@ -3393,7 +3443,9 @@ function callOptions(){
   if(_callOpts)return _callOpts;
   const pool=buildCallPool(),withOwn=pool.filter(x=>x.own!=null);
   const m={};pool.forEach(p=>{if(p.region)m[p.region]=(m[p.region]||0)+1;});
+  const tw={};pool.forEach(x=>x.flats.forEach(f=>{const k=towerOfNum(f.num);if(k)tw[k]=(tw[k]||0)+1;}));
   _callOpts={
+    towers:[['all','Все корпуса']].concat(TOWERS.map(t=>[String(t.k),t.ru+(tw[t.k]?' · '+tw[t.k]+' кв.':'')])),
     own:OWN_BUCKETS.map(([k,t,f])=>[k,k==='all'?t:(t+' · '+withOwn.filter(x=>f(x.own)).length)]),
     regions:Object.keys(m).sort((a,b)=>m[b]-m[a]||a.localeCompare(b,'ru')).map(r=>({r,n:m[r]}))
   };
@@ -3430,9 +3482,19 @@ function renderCalls(){
   const q=callQueue();
   if(callState.idx>=q.length)callState.idx=Math.max(0,q.length?q.length:0);
   const p=q[callState.idx]||null;
-  box.innerHTML=callFiltersHtml(q)+(q.length
+  box.innerHTML=egrnStaleBar()+callFiltersHtml(q)+(q.length
     ? (p?callCardHtml(p,q.length):'<div class="call-done"><b>Очередь пройдена</b><div>Все '+q.length+' контактов по этим критериям обработаны. Смени критерии или загляни завтра — недозвоны вернутся сами.</div><button class="btn-add" onclick="callState.idx=0;renderCalls()">В начало очереди</button></div>')
     : '<div class="call-done"><b>Под эти критерии никто не подходит</b><div>Ослабь фильтры — например, включи тех, кто уже прописан в доме, или убери требование телефона.</div></div>');
+}
+/* база в памяти браузера осталась с прошлой версии сайта — молча делать вид,
+   что прописки просто нет, нельзя: человек решит, что сломан отбор */
+function egrnStaleBar(){
+  if(!egrnStale())return '';
+  return `<div class="egrn-bar">
+    <div class="eb-txt"><b>${ico('warn')} База загружена старой версией сайта</b>
+      <span>Прописка и срок владения тогда ещё не читались, поэтому фильтры «живут здесь» и «срок владения» пустые, а на схеме нет отметок. Загрузи тот же файл ЕГРН заново — данные обновятся за пару секунд.</span></div>
+    <button class="eb-btn" onclick="document.getElementById('egrnFile').click()">${ico('upload')} Загрузить файл заново</button>
+  </div>`;
 }
 function callFiltersHtml(q){
   const regs=callRegions();
@@ -3455,7 +3517,7 @@ function callFiltersHtml(q){
       ${sel('own',callState.own,{label:'Срок владения',list:ownOptions()})}
       ${sel('ads',callState.ads,{label:'Реклама',list:[['all','Неважно, в рекламе или нет'],['yes','Чья квартира сейчас в рекламе'],['no','Кого нет в рекламе']]})}
       ${sel('phone',callState.phone,{label:'Телефон',list:[['yes','Только с телефоном'],['all','Даже без телефона']]})}
-      ${sel('tower',callState.tower,{label:'Корпус',list:[['all','Все корпуса']].concat(TOWERS.map(t=>[String(t.k),t.ru]))})}
+      ${sel('tower',callState.tower,{label:'Корпус',list:callOptions().towers})}
       <span class="cf-range">Метраж
         <input class="mini nn" id="cf_areaMin" type="number" inputmode="decimal" placeholder="от" value="${esc(callState.areaMin)}" aria-label="Метраж от" onchange="onCallFilter()">
         <input class="mini nn" id="cf_areaMax" type="number" inputmode="decimal" placeholder="до" value="${esc(callState.areaMax)}" aria-label="Метраж до" onchange="onCallFilter()">м²</span>
@@ -3664,7 +3726,7 @@ function callMakeCard(p,note){
 }
 
 /* ---------- вкладка «База» ---------- */
-const dbState={q:'',type:'all',sort:'num',limit:120};
+const dbState={q:'',type:'all',tower:'all',sort:'num',limit:120};
 function dbRows(){
   let rows=Object.keys(HYDE_OBJ).map(suf=>{
     const v=HYDE_OBJ[suf],num=v[0],cad=HYDE_PREFIX+suf;
@@ -3672,6 +3734,7 @@ function dbRows(){
     return {num,area:v[1],floor:v[2],cad,type:objTypeOf(num),fio:rec?rec.fio:'',phone:rec?rec.phone:'',note:(schemaInfo[num]||{}).note||''};
   });
   if(dbState.type!=='all')rows=rows.filter(r=>r.type===dbState.type);
+  if(dbState.tower!=='all')rows=rows.filter(r=>towerOfNum(r.num)===dbState.tower);
   const q=dbState.q.trim().toLowerCase();
   if(q)rows=rows.filter(r=>r.num.toLowerCase().includes(q)||r.cad.includes(q)||r.fio.toLowerCase().includes(q)||(r.phone||'').replace(/\D/g,'').includes(q.replace(/\D/g,''))&&q.replace(/\D/g,'').length>2||r.note.toLowerCase().includes(q));
   const s=dbState.sort;
@@ -3701,6 +3764,10 @@ function renderDb(){
         <option value="kl" ${dbState.type==='kl'?'selected':''}>Кладовые (${cnt.kl})</option>
         <option value="com" ${dbState.type==='com'?'selected':''}>Коммерция (${cnt.com})</option>
       </select>
+      <select class="mini" id="dbTower" aria-label="База: корпус">
+        <option value="all" ${dbState.tower==='all'?'selected':''}>Все корпуса</option>
+        ${TOWERS.map(t=>`<option value="${t.k}" ${dbState.tower===String(t.k)?'selected':''}>${esc(t.ru)} (${Object.keys(HYDE_OBJ).filter(x=>towerOfNum(HYDE_OBJ[x][0])===String(t.k)).length})</option>`).join('')}
+      </select>
       <select class="mini" id="dbSort">
         <option value="num" ${dbState.sort==='num'?'selected':''}>По номеру</option>
         <option value="area" ${dbState.sort==='area'?'selected':''}>Метраж ↓</option>
@@ -3716,6 +3783,7 @@ function renderDb(){
   let t=null;
   q.addEventListener('input',()=>{clearTimeout(t);t=setTimeout(()=>{dbState.q=q.value;dbState.limit=400;renderDbRows();},160);});
   document.getElementById('dbType').addEventListener('change',e=>{dbState.type=e.target.value;dbState.limit=400;renderDbRows();});
+  document.getElementById('dbTower').addEventListener('change',e=>{dbState.tower=e.target.value;dbState.limit=400;renderDbRows();});
   document.getElementById('dbSort').addEventListener('change',e=>{dbState.sort=e.target.value;renderDbRows();});
   renderDbRows();
 }
@@ -3788,8 +3856,9 @@ function renderSettings(){
 
       <div class="st-card">
         <div class="st-h">База ЕГРН <span class="st-tag">только на этом устройстве</span></div>
-        <div class="st-note">${egrn.rows.length?`Загружено записей: <b>${egrn.rows.length}</b>`:'Не загружена — ФИО и телефоны не отображаются.'}</div>
-        <button class="st-btn" onclick="document.getElementById('egrnFile').click()">${ico('db')} ${egrn.rows.length?'Заменить базу':'Загрузить базу'}</button>
+        <div class="st-note">${egrn.rows.length?`Загружено записей: <b>${egrn.rows.length}</b>${egrnStale()?'':` · с пропиской: <b>${egrn.rows.filter(r=>r.mj).length}</b>`}`:'Не загружена — ФИО и телефоны не отображаются.'}</div>
+        ${egrnStale()?`<div class="st-warn">${ico('warn')} База загружена старой версией сайта: прописка и срок владения тогда не читались. Загрузи тот же файл заново — появятся отметки «живёт здесь» и отбор по сроку владения.</div>`:''}
+        <button class="st-btn${egrnStale()?' st-btn-warn':''}" onclick="document.getElementById('egrnFile').click()">${ico(egrnStale()?'upload':'db')} ${egrn.rows.length?(egrnStale()?'Загрузить файл заново':'Заменить базу'):'Загрузить базу'}</button>
       </div>
 
       <div class="st-card">
@@ -4283,6 +4352,7 @@ document.getElementById('linkOverlay').addEventListener('click',e=>{if(e.target.
 document.getElementById('linkQ').addEventListener('input',fillLink);
 document.getElementById('fPay').addEventListener('change',e=>{state.pay=e.target.value;state.limit=PAGE;render()});
 document.getElementById('fState').addEventListener('change',e=>{state.objState=e.target.value;state.limit=PAGE;render()});
+document.getElementById('fTower').addEventListener('change',onTowerFilter);
 document.getElementById('fSort').addEventListener('change',e=>{state.sort=e.target.value;state.limit=PAGE;render()});
 document.getElementById('overlay').addEventListener('click',e=>{if(e.target.id==='overlay')closeModal()});
 document.getElementById('modal').addEventListener('input',scheduleDraftSave);
@@ -4323,7 +4393,7 @@ applyTheme();
 setJkLabel();
 applyPrivacy();
 loadAuxLocal();
-buildStateFilter();
+buildStateFilter();buildTowerFilter();
 loadEgrnFromStorage();
 initStore();
 </script>
