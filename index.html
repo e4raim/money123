@@ -1045,18 +1045,6 @@ select.mini:focus-visible,.f input:focus-visible,.f select:focus-visible,.f text
 .fq-p.fq-g{background:var(--fam-tint);border-color:transparent}
 .fq-av.fam{background:var(--fam);color:#fff}
 .fq-av.fam .ico{width:19px;height:19px}
-.pf-btn{color:var(--brass)}
-.pf-btn:hover{border-color:var(--brass)}
-.pf-who{font-family:var(--serif);font-size:17px;color:var(--ink);margin-bottom:4px}
-.pf-base{font-size:12.5px;color:var(--ink-soft);margin-bottom:14px}
-.pf-lb{display:block;font-size:11.5px;font-weight:700;letter-spacing:.3px;text-transform:uppercase;color:var(--brass);margin:0 0 5px}
-#pfBody input{width:100%;min-height:46px;padding:0 12px;margin-bottom:12px;border:1px solid var(--line);border-radius:11px;background:var(--surface2);color:var(--ink);font:inherit;font-size:15px}
-#pfBody input:focus{outline:2px solid var(--brass);outline-offset:1px;background:var(--card)}
-.pf-hint{display:flex;gap:6px;align-items:flex-start;font-size:11.5px;line-height:1.5;color:var(--ink-soft)}
-.pf-hint .ico{width:13px;height:13px;flex:none;margin-top:1px}
-.pf-mark{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;color:var(--brass);margin-top:3px}
-.pf-mark .ico{width:12px;height:12px;flex:none}
-.overlay#phoneOverlay{z-index:70}   /* правка телефона открывается поверх карточки, из которой её вызвали */
 </style>
 </head>
 <body>
@@ -1189,7 +1177,6 @@ select.mini:focus-visible,.f input:focus-visible,.f select:focus-visible,.f text
 </main>
 <input type="file" id="cfgFile" accept="application/json" hidden onchange="loadComplexFile(this)">
 <input type="file" id="egrnFile" accept=".xlsx,.xls,.csv" hidden onchange="loadEgrn(this)">
-<input type="file" id="pfFile" accept="application/json" hidden onchange="importPhoneFix(this)">
 <input type="file" id="importFile" accept="application/json" hidden onchange="importJSON(this)">
 <button class="floatlock" onclick="lockNow()" title="Заблокировать" aria-label="Заблокировать"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><rect x="4.5" y="10" width="15" height="10.5" rx="2.2"/><path d="M8.2 10V7a3.8 3.8 0 017.6 0v3"/></svg></button>
 <div id="schemaTip"></div>
@@ -1371,16 +1358,6 @@ select.mini:focus-visible,.f input:focus-visible,.f select:focus-visible,.f text
   </div>
 </div>
 
-<div class="overlay" id="phoneOverlay">
-  <div class="modal" style="max-width:400px">
-    <div class="modal-head">
-      <h2 id="pfTitle">Телефон собственника</h2>
-      <button class="x" onclick="closePhoneEdit()">×</button>
-    </div>
-    <div class="modal-body" id="pfBody"></div>
-    <div class="modal-foot" id="pfFoot"></div>
-  </div>
-</div>
 <div class="overlay" id="cellOverlay">
   <div class="modal" style="max-width:460px">
     <div class="modal-head">
@@ -3345,13 +3322,7 @@ function loadEgrnFromStorage(){
     }catch(e){}
     updateEgrnStatus();
   };
-  loadPhoneFixLocal();
   idbAll().then(list=>{
-    if(list&&list.length){
-      const pf=list.find(x=>x.id===PFIX_ID);
-      if(pf&&pf.map)phoneFix=pf.map;
-      list=list.filter(x=>x.id!==PFIX_ID);
-    }
     if(list&&list.length){
       egrn.bases=list.sort((a,b)=>(a.loadedAt||0)-(b.loadedAt||0));
       rebuildEgrn();updateEgrnStatus();
@@ -3469,7 +3440,7 @@ function egrnLookup(){
         <div>
           <div class="egrn-fio">${esc(r.fio)}</div>
           <div class="egrn-meta">${esc(r.cad)}${r.area?` · ${esc(r.area)} м²`:''}${r.share&&r.share!=='1/1'?` · доля ${esc(r.share)}`:''} · ${esc(shortType(r.type))}</div>
-          ${(withPhoneFix(r)||r).phone?`<div class="egrn-meta">${ico('phone')} ${esc(showPhone((withPhoneFix(r)||r).phone))}${withPhoneFix(r).phoneFixed?' · правлено':''}</div>`:''}
+          ${r.phone?`<div class="egrn-meta">${ico('phone')} ${esc(showPhone(r.phone))}</div>`:''}
         </div>
         <button type="button" class="egrn-fill" onclick="fillFromEgrn(${idx})">Заполнить</button>
       </div>
@@ -3572,11 +3543,8 @@ function ownerRecOfCad(cad){
   if(!cad)return null;
   const base=(egrn.byCad[cad]||[])[0];
   const fix=ownerFix[cadKey(cad)];
-  let rec=fix?Object.assign({cad,fio:'',phone:'',share:''},base||{},fix):(base||null);
-  if(!rec)return null;
-  const pf=phoneFixFor(rec);
-  if(pf)rec=Object.assign({},rec,{phone:fmtPhone(pf.tel),phoneFixed:true,phoneNote:pf.note||''});
-  return rec;
+  if(!fix)return base||null;
+  return Object.assign({cad,fio:'',phone:'',share:''},base||{},fix);
 }
 function ownerOfApt(num){const r=ownerRecOfCad(cadOfApt(num));return r?r.fio:''}
 function ownerObjects(fio){
@@ -3722,142 +3690,6 @@ function switchView(v){
   if(v==='settings')renderSettings();
 }
 
-/* ---------- правки телефонов ----------
-   Живут отдельно от самой выписки: базу можно удалить, перезалить или вовсе
-   не грузить — исправленный номер останется. В облако не уходит: это тот же
-   персональный контакт, что и вся база ЕГРН. */
-const PFIX_ID='__phonefix';
-let phoneFix={};
-function pfKeys(rec){
-  const out=[];
-  if(rec&&rec.inn)out.push('i'+rec.inn);
-  const f=normFio(rec&&rec.fio);
-  if(f)out.push('n'+f);
-  return out;
-}
-function phoneFixFor(rec){
-  const ks=pfKeys(rec);
-  for(let i=0;i<ks.length;i++)if(phoneFix[ks[i]])return phoneFix[ks[i]];
-  return null;
-}
-/* накладываем правку на любую запись о собственнике, откуда бы она ни пришла */
-function withPhoneFix(rec){
-  if(!rec)return rec;
-  const pf=phoneFixFor(rec);
-  if(!pf)return rec;
-  return Object.assign({},rec,{phone:fmtPhone(pf.tel),phoneFixed:true,phoneNote:pf.note||''});
-}
-function savePhoneFix(){
-  const rec={id:PFIX_ID,map:phoneFix};
-  idbPut(rec).catch(()=>{try{localStorage.setItem('actualka_phonefix',JSON.stringify(phoneFix));}catch(e){}});
-  try{localStorage.setItem('actualka_phonefix',JSON.stringify(phoneFix));}catch(e){}
-  _callPool=null;_famSug=null;_bdays=null;
-}
-function loadPhoneFixLocal(){
-  try{const raw=localStorage.getItem('actualka_phonefix');if(raw)phoneFix=JSON.parse(raw)||{};}catch(e){}
-}
-function setPhoneFix(rec,tel,note){
-  const ks=pfKeys(rec);
-  if(!ks.length)return false;
-  if(!tel){ks.forEach(k=>{delete phoneFix[k];});}
-  else{const v={tel,note:note||'',at:Date.now(),fio:rec.fio||''};ks.forEach(k=>{phoneFix[k]=v;});}
-  savePhoneFix();
-  return true;
-}
-function phoneFixCount(){
-  /* один человек лежит под двумя ключами — считаем людей, а не ключи */
-  const seen={};let n=0;
-  Object.keys(phoneFix).forEach(k=>{const v=phoneFix[k];const s=(v.fio||'')+'|'+v.tel;if(!seen[s]){seen[s]=1;n++;}});
-  return n;
-}
-/* ---------- окно правки ---------- */
-let _pfTarget=null;
-function openPhoneEdit(fio,cad){
-  if(isGuest)return;
-  const rows=(egrn.byOwner[normFio(fio)]||[]);
-  const rec={fio,inn:(rows.find(r=>r.inn)||{}).inn||'',cad:cad||''};
-  const fx=phoneFixFor(rec);
-  const base=(cad?(ownerRecOfCad(cad)||{}).phone:'')||(rows.find(r=>r.phone)||{}).phone||'';
-  _pfTarget=rec;
-  document.getElementById('pfTitle').textContent='Телефон собственника';
-  document.getElementById('pfBody').innerHTML=`
-    <div class="pf-who pii">${esc(fio)}</div>
-    <div class="pf-base">В выписке: <b class="pii">${base?esc(showPhone(base)):'номера нет'}</b></div>
-    <label class="pf-lb" for="pfTel">Правильный номер</label>
-    <input id="pfTel" type="tel" inputmode="tel" autocomplete="off" placeholder="+7 900 000-00-00" value="${esc(fx?showPhone(fx.tel):'')}">
-    <label class="pf-lb" for="pfNote">Откуда номер (необязательно)</label>
-    <input id="pfNote" type="text" autocomplete="off" placeholder="сказал при звонке · дал сосед · из объявления" value="${esc(fx&&fx.note||'')}">
-    <div class="pf-hint">${ico('lock')} Правка хранится только в этом браузере, отдельно от выписки: базу можно удалить или перезалить — номер останется.</div>`;
-  document.getElementById('pfFoot').innerHTML=`
-    <button class="del" style="color:var(--ink-soft);border-color:var(--line)" onclick="closePhoneEdit()">Отмена</button>
-    ${fx?`<button class="del" onclick="phoneEditClear()">Убрать правку</button>`:''}
-    <button class="save" onclick="phoneEditSave()">Сохранить</button>`;
-  openOverlay(document.getElementById('phoneOverlay'));
-  setTimeout(()=>{const e=document.getElementById('pfTel');if(e)e.focus();},60);
-}
-function closePhoneEdit(){closeOverlay(document.getElementById('phoneOverlay'));_pfTarget=null;}
-function phoneEditRefresh(fio){
-  if(state.view==='calls')renderCalls();
-  if(state.view==='db')renderDbRows();
-  if(state.view==='today')renderToday();
-  render();
-  const po=document.getElementById('personOverlay');
-  if(po&&po.classList.contains('show'))openPerson(fio);
-  if(_cell)refreshCellIfOpen();
-}
-function phoneEditSave(){
-  if(!_pfTarget)return;
-  const raw=(document.getElementById('pfTel').value||'').trim();
-  const note=(document.getElementById('pfNote').value||'').trim();
-  if(raw){
-    const d=normPhone(raw);
-    if(!d){alert('Не похоже на номер. Нужно 10–11 цифр, например +7 900 000-00-00.');return;}
-    setPhoneFix(_pfTarget,d,note);
-    showUndo('Номер исправлен: '+fmtPhone(d),()=>{setPhoneFix(_pfTarget,'','');phoneEditRefresh(_pfTarget.fio);});
-  }else{
-    setPhoneFix(_pfTarget,'','');
-    showToast('Правка убрана — вернулся номер из выписки');
-  }
-  const fio=_pfTarget.fio;
-  closePhoneEdit();phoneEditRefresh(fio);
-}
-function phoneEditClear(){
-  if(!_pfTarget)return;
-  const fio=_pfTarget.fio;
-  setPhoneFix(_pfTarget,'','');
-  closePhoneEdit();phoneEditRefresh(fio);
-  showToast('Правка убрана — вернулся номер из выписки');
-}
-function pfBtn(fio,cad){
-  if(isGuest)return '';
-  return `<button type="button" class="copy-btn pf-btn" onclick="event.stopPropagation();openPhoneEdit('${jq(fio)}',${cad?`'${jq(cad)}'`:'null'})" title="Исправить номер" aria-label="Исправить номер телефона">${ico('pencil')}</button>`;
-}
-/* перенос правок на другое устройство: файлом, не через облако */
-function exportPhoneFix(){
-  const n=phoneFixCount();
-  if(!n){alert('Правок телефонов пока нет.');return;}
-  const blob=new Blob([JSON.stringify({kind:'actualka-phonefix',at:Date.now(),map:phoneFix},null,2)],{type:'application/json'});
-  const a=document.createElement('a');a.href=URL.createObjectURL(blob);
-  a.download='aktualka-telefony-'+new Date().toISOString().slice(0,10)+'.json';a.click();
-}
-function importPhoneFix(input){
-  const f=input.files[0];if(!f)return;
-  const r=new FileReader();
-  r.onload=e=>{
-    try{
-      const o=JSON.parse(e.target.result);
-      const map=(o&&o.map)||o;
-      if(!map||typeof map!=='object')throw 0;
-      let n=0;Object.keys(map).forEach(k=>{if(map[k]&&map[k].tel){phoneFix[k]=map[k];n++;}});
-      if(!n)throw 0;
-      savePhoneFix();render();if(state.view==='settings')renderSettings();
-      alert('Правки телефонов добавлены. Всего исправленных номеров: '+phoneFixCount()+'.');
-    }catch(err){alert('Не получилось прочитать файл с правками.');}
-    input.value='';
-  };
-  r.readAsText(f);
-}
-
 /* ---------- вкладка «Обзвон»: холодный прозвон по базе ЕГРН ----------
    ФИО и телефоны живут только в этом браузере (база ЕГРН).
    В облако уходит обезличенно: номер объекта, итог звонка и комментарий. */
@@ -3915,7 +3747,6 @@ function buildCallPool(){
     if(!p.mj&&r.mj)p.mj=r.mj;
     if(!p.born&&r.birth)p.born=r.birth;
     const t=normPhone(phone);if(t&&p.phones.indexOf(t)<0)p.phones.push(t);
-    if(r.inn&&!p.inn)p.inn=r.inn;
     const em=(r.email||'').toString().trim().toLowerCase();if(em&&p.emails.indexOf(em)<0)p.emails.push(em);
     const ad=adrKey(r.mj);if(ad&&p.adrs.indexOf(ad)<0)p.adrs.push(ad);
     if(r.mj&&livesHere(r.mj))p.live=true;
@@ -3948,8 +3779,6 @@ function buildCallPool(){
     p.rows=p.rows.filter(r=>{const kk=r.cad+'|'+(r.share||'');if(seenRow[kk])return false;seenRow[kk]=1;return true;});
     p.region=mjRegion(p.mj);
     p.objs=p.rows.map(r=>({r,o:objOfCad(r.cad)}));
-    const pf=phoneFixFor(p);
-    if(pf){p.phoneFixed=true;p.phoneNote=pf.note||'';p.phones=[pf.tel].concat(p.phones.filter(t=>t!==pf.tel));}
     p.regOf={};p.objs.forEach(x=>{if(x.o&&x.r.reg)p.regOf[x.o.num]=x.r.reg;});
     const yrs=p.objs.map(x=>ownYears(x.r.reg)).filter(v=>v!=null);
     p.own=yrs.length?Math.max.apply(null,yrs):null;   /* сколько владеет дольше всего */
@@ -4198,10 +4027,9 @@ function callCardHtml(p,total){
       ${tel?`<div class="cc-phone">
           <a class="cc-call pii" href="tel:+${tel}">${SVG_CALL}<span>${fmtPhone(tel)}</span></a>
           ${wa?`<a class="cc-wa" href="${wa}" target="_blank" rel="noopener" aria-label="Написать в WhatsApp"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.4 8.4 0 01-12.3 7.5L3 20.5l1.6-5.5A8.4 8.4 0 1121 11.5z"/></svg></a>`:''}
-          ${copyBtn(tel,'cc-copy')}${pfBtn(p.fio)}
+          ${copyBtn(tel,'cc-copy')}
           ${p.phones.length>1?`<span class="cc-alt pii">ещё: ${p.phones.slice(1).map(x=>`<a href="tel:+${x}">${fmtPhone(x)}</a>${copyBtn(x,'copy-sm')}`).join(', ')}</span>`:''}
           ${note?`<span class="cc-note">${esc(note)}</span>`:''}
-          ${p.phoneFixed?`<span class="pf-mark">${ico('pencil')} исправлен вручную${p.phoneNote?' · '+esc(p.phoneNote):''}</span>`:''}
         </div>`
        :`<div class="cc-phone none">Телефона в базе нет — пропусти или найди контакт вручную</div>`}
       ${attempts}
@@ -4884,10 +4712,6 @@ function renderSettings(){
           </div>`).join('')}</div>`:''}
         <button class="st-btn${egrnStale()?' st-btn-warn':''}" onclick="document.getElementById('egrnFile').click()">${ico(egrnStale()?'upload':'db')} ${egrnStale()?'Загрузить файл заново':(egrn.bases.length?'Добавить ещё базу':'Загрузить базу')}</button>
         ${egrn.bases.length>1?`<div class="st-note" style="margin-top:8px">Базы работают вместе: поиск, схема и обзвон видят все загруженные записи.</div>`:''}
-        ${phoneFixCount()?`<div class="st-note" style="margin-top:12px;padding-top:12px;border-top:1px solid var(--line)">
-          Исправленных телефонов: <b>${phoneFixCount()}</b>. Хранятся отдельно от выписки — базу можно удалить или перезалить.</div>
-          <button class="st-btn" onclick="exportPhoneFix()">${ico('download')} Сохранить правки в файл</button>`:''}
-        <button class="st-btn" onclick="document.getElementById('pfFile').click()">${ico('upload')} Загрузить правки телефонов</button>
       </div>
 
       <div class="st-card">
@@ -5022,7 +4846,7 @@ function openCell(k,f,p){
       ${obj?`<div class="ci-row"><span>Метраж (реестр)</span><b>${obj.area} м²</b></div>`:''}
       ${cad?`<div class="ci-row"><span>Кадастр</span><b style="font-size:11px">${esc(cad)}</b></div>`:'<div class="ci-row"><span>Кадастр</span><b style="color:var(--ink-soft)">нет в реестре</b></div>'}
       ${rec?`<div class="ci-row"><span>Собственник</span><b class="pii">${esc(rec.fio)}</b></div>
-             ${rec.phone?`<div class="ci-row"><span>Телефон</span><b class="pii tel-row"><a href="tel:${esc(telHref(rec.phone))}">${esc(showPhone(rec.phone))}</a>${copyBtn(rec.phone)}${pfBtn(rec.fio,cad)}</b></div>`:''}
+             ${rec.phone?`<div class="ci-row"><span>Телефон</span><b class="pii tel-row"><a href="tel:${esc(telHref(rec.phone))}">${esc(showPhone(rec.phone))}</a>${copyBtn(rec.phone)}</b></div>`:''}
              ${rec.share&&rec.share!=='1/1'?`<div class="ci-row"><span>Доля</span><b>${esc(rec.share)}</b></div>`:''}
              ${ownerLivesHere(rec.fio)?`<div class="ci-row"><span>Прописка</span><b><span class="lives-badge">${ico('home')} живёт здесь</span></b></div>`
                :(mjRegion(rec.mj)?`<div class="ci-row"><span>Прописка</span><b>${esc(mjRegion(rec.mj))}</b></div>`:'')}`
@@ -5087,7 +4911,7 @@ let _person=null;
 function openPerson(fio){
   _person=fio;
   const objs=ownerObjects(fio);
-  const rec=withPhoneFix(objs[0]||{fio,phone:'',share:''});
+  const rec=objs[0]||{fio,phone:'',share:''};
   const flats=objs.map(r=>({r,o:objOfCad(r.cad)})).filter(x=>x.o&&x.o.type==='kv');
   const rest=objs.map(r=>({r,o:objOfCad(r.cad)})).filter(x=>!x.o||x.o.type!=='kv');
   const g=groupOf(fio);
@@ -5107,7 +4931,6 @@ function openPerson(fio){
       <div style="flex:1;min-width:0">
         <div class="pers-name">${esc(fio)}</div>
         <div class="pers-sub">${rec.phone?esc(showPhone(rec.phone)):'телефон не указан'}${rec.share&&rec.share!=='1/1'?' · доля '+esc(rec.share):''}</div>
-        ${rec.phoneFixed?`<span class="pf-mark">${ico('pencil')} номер исправлен вручную${rec.phoneNote?' · '+esc(rec.phoneNote):''}</span>`:''}
         ${birthLine(rec.birth||(egrn.byOwner[normFio(fio)]||[]).map(r=>r.birth).find(Boolean))}
         <div class="pv-badges">
           ${g?`<span class="pv-badge${isGuest?'':' link'}" ${isGuest?'':`onclick="renameGroup('${jq(fio)}');openPerson('${jq(fio)}')"`}>${esc(g.name)} · ${famTotal} кв.</span>`
@@ -5121,7 +4944,7 @@ function openPerson(fio){
     </div>
     ${tel?`<div class="cv-acts">
       <a class="cv-act cv-tel" href="tel:${tel}">${SVG_CALL}Позвонить</a>
-      ${copyBtn(rec.phone,'cv-copy')}${pfBtn(fio)}
+      ${copyBtn(rec.phone,'cv-copy')}
       ${wa?`<a class="cv-act wa" href="${wa}" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.4 8.4 0 01-12.3 7.5L3 20.5l1.6-5.5A8.4 8.4 0 1121 11.5z"/></svg>WhatsApp</a>`:''}
     </div>`:''}
 
