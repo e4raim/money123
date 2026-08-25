@@ -1045,6 +1045,9 @@ select.mini:focus-visible,.f input:focus-visible,.f select:focus-visible,.f text
 .fq-p.fq-g{background:var(--fam-tint);border-color:transparent}
 .fq-av.fam{background:var(--fam);color:#fff}
 .fq-av.fam .ico{width:19px;height:19px}
+.closed-hint{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:6px;padding:11px 14px;border:1px dashed var(--line);border-radius:12px;font-size:12.5px;color:var(--ink-soft);background:var(--surface2)}
+.closed-hint .ico{width:14px;height:14px;flex:none;color:var(--ok-t)}
+.closed-hint a{color:var(--brass);font-weight:600;cursor:pointer;text-decoration:underline}
 </style>
 </head>
 <body>
@@ -1435,7 +1438,7 @@ let items = [];
 let cloud=false, dbRef=null, editingId=null, pendingPhoto=null;
 let selectMode=false, selectedIds=new Set();
 const PAGE=60;                                   /* столько карточек в DOM за раз: дальше дотягиваем прокруткой */
-const state = {q:"", status:"all", pay:"all", sort:"new", dealType:"all", objState:"all", tower:"all", view:"actualka", limit:PAGE,
+const state = {q:"", status:"all", pay:"all", sort:"new", dealType:"all", objState:"active", tower:"all", view:"actualka", limit:PAGE,
   viewMode:(function(){try{return localStorage.getItem('actualka_viewmode')==='list'?'list':'grid';}catch(e){return 'grid';}})()};
 
 /* ---------- ЖК label ---------- */
@@ -1823,8 +1826,18 @@ function ymd(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0'
 
 /* ---------- render ---------- */
 function baseFiltered(){
-  let out=items.filter(o=>stateOf(o)!=='withdrawn');
-  const q=state.q.trim().toLowerCase();
+  /* Актуалка — это то, над чем работаешь сейчас. Проданное живёт в «Сделках»,
+     снятое с рекламы — в «Архиве». Но поиск обязан находить и их: иначе объект
+     не «переехал», а «пропал». */
+  const q0=state.q.trim();
+  const showClosed=state.objState==='closed'||state.objState==='sold'||state.objState==='rented'||!!q0;
+  let out=items.filter(o=>{
+    const st=stateOf(o);
+    if(st==='withdrawn')return !!q0;              /* снятое — только через поиск */
+    if(CLOSED.includes(st))return showClosed;
+    return true;
+  });
+  const q=q0.toLowerCase();
   if(q){
     const hay=o=>[o.apartment,o.cadastral,o.ownerName,o.ownerPhone,o.currentAgent,o.notes]
         .filter(Boolean).join(' ').toLowerCase();
@@ -1842,10 +1855,17 @@ function baseFiltered(){
   if(state.tower!=='all') out=out.filter(o=>towerOfNum(o.apartment)===state.tower);
   if(state.dealType==='sale') out=out.filter(o=>dealOf(o)==='sale'||dealOf(o)==='both');
   else if(state.dealType==='rent') out=out.filter(o=>dealOf(o)==='rent'||dealOf(o)==='both');
-  if(state.objState==='active') out=out.filter(o=>stateOf(o)==='active');
-  else if(state.objState==='closed') out=out.filter(o=>CLOSED.includes(stateOf(o)));
-  else if(state.objState!=='all') out=out.filter(o=>stateOf(o)===state.objState);
+  /* при поиске состояние не сужаем: ищем по всему, включая проданное и снятое */
+  if(!q0){
+    if(state.objState==='active') out=out.filter(o=>stateOf(o)==='active');
+    else if(state.objState==='closed') out=out.filter(o=>CLOSED.includes(stateOf(o)));
+    else if(state.objState!=='all') out=out.filter(o=>stateOf(o)===state.objState);
+  }
   return out;
+}
+function hiddenClosedCount(){
+  if(state.q.trim()||state.objState!=='active')return 0;
+  return items.filter(o=>CLOSED.includes(stateOf(o))).length;
 }
 function filtered(){
   let out=baseFiltered();
@@ -1944,10 +1964,21 @@ function render(){
 
   _lastList=list;
   const shown=list.slice(0,state.limit);
-  grid.innerHTML=shown.map(cardHtml).join("")+moreRowHtml(list,shown.length);
+  grid.innerHTML=shown.map(cardHtml).join("")+moreRowHtml(list,shown.length)+closedHintHtml();
   watchMore();
 }
 let _lastList=null;
+function closedHintHtml(){
+  const n=hiddenClosedCount();
+  if(!n)return '';
+  const sold=items.filter(o=>['sold','rented'].includes(stateOf(o))).length;
+  const wd=items.filter(o=>stateOf(o)==='withdrawn').length;
+  const parts=[];
+  if(sold)parts.push(`<a onclick="switchView('deals')">${sold} в «Сделках»</a>`);
+  if(wd)parts.push(`<a onclick="switchView('archive')">${wd} в «Архиве»</a>`);
+  return `<div class="closed-hint" style="grid-column:1/-1">
+    ${ico('check')} Закрытые объекты здесь не показываются: ${parts.join(' · ')}. Найти их можно поиском.</div>`;
+}
 function moreRowHtml(list,shown){
   return list.length>shown
     ? `<div class="more-row" id="moreRow" style="grid-column:1/-1">
@@ -2551,9 +2582,9 @@ function setStatus(k){state.status=(state.status===k&&(k==='incomplete'||k==='ov
 /* ---------- фильтры сделка/состояние ---------- */
 function stateFilterOptions(){
   const d=state.dealType;
-  if(d==='sale') return [['all','Все объекты'],['active','В продаже'],['sold','Продано']];
-  if(d==='rent') return [['all','Все объекты'],['active','В аренде'],['rented','Сдано']];
-  return [['all','Все состояния'],['active','Активные'],['closed','Закрытые']];
+  if(d==='sale') return [['active','В продаже'],['sold','Показать проданные'],['all','Показать всё']];
+  if(d==='rent') return [['active','В аренде'],['rented','Показать сданные'],['all','Показать всё']];
+  return [['active','В работе'],['closed','Показать закрытые'],['all','Показать всё']];
 }
 function buildStateFilter(){
   const sel=document.getElementById('fState');if(!sel)return;
@@ -2561,7 +2592,7 @@ function buildStateFilter(){
   if(!opts.some(o=>o[0]===state.objState)) state.objState='all';
   sel.innerHTML=opts.map(([v,l])=>`<option value="${v}" ${state.objState===v?'selected':''}>${l}</option>`).join('');
 }
-function onDealFilter(){state.dealType=document.getElementById('fDeal').value;state.objState='all';state.limit=PAGE;buildStateFilter();render();}
+function onDealFilter(){state.dealType=document.getElementById('fDeal').value;state.objState='active';state.limit=PAGE;buildStateFilter();render();}
 function onTowerFilter(){state.tower=document.getElementById('fTower').value;state.limit=PAGE;render();}
 function onStateFieldChange(){
   const s=document.getElementById('fld_objState').value, cd=document.getElementById('fld_closedDate');
@@ -3101,8 +3132,12 @@ function saveCard(){
   const newId=item.id;
   clearDraft();
   upsert(item); closeModal(); if(state.view==='schema')renderSchema();
+  const wasSt=prevSnap?stateOf(prevSnap):'active', nowSt=stateOf(item);
+  const moved=wasSt!==nowSt&&CLOSED.includes(nowSt)
+    ? (nowSt==='withdrawn'?'Архив':'Сделки') : '';
   if(prevSnap){
-    showUndo('Изменения сохранены',()=>{upsert(prevSnap);if(state.view==='schema')renderSchema();});
+    showUndo(moved?('Ушёл из актуалки в «'+moved+'»'):'Изменения сохранены',
+      ()=>{upsert(prevSnap);if(state.view==='schema')renderSchema();});
   }else{
     showUndo('Объект добавлен',()=>{removeItem(newId);if(state.view==='schema')renderSchema();});
   }
@@ -3210,7 +3245,26 @@ function importJSON(input){
 /* ---------- база ЕГРН (только локально, в браузере) ---------- */
 let egrn={rows:[],byCad:{},byOwner:{},byInn:{},ver:0,bases:[]}, egrnMatches=[], egrnTimer=null;
 function normFio(s){return (s||'').toString().trim().toUpperCase().replace(/\s+/g,' ')}
-function shortType(t){t=(t||'').toString();if(/кварт/i.test(t))return ico('home')+' кв';if(/машином/i.test(t))return ico('car')+' мм';if(/кладов/i.test(t))return ico('box')+' клад';if(/помещ/i.test(t))return 'помещ';return t.replace(/^\d+\s*-\s*/,'')||'объект';}
+/* Тип объекта нужен в двух видах: с иконкой — для экрана, словом — для заметок
+   и всего, что уходит в текст. Раньше была одна функция, и разметка иконки
+   утекала то в поле заметок, то на экран сырым тегом. */
+function typeWord(t){
+  t=(t||'').toString();
+  if(/кварт/i.test(t))return 'кв';
+  if(/машино/i.test(t))return 'мм';        /* в выписке пишут «Машино-место», через дефис */
+  if(/кладов/i.test(t))return 'клад';
+  if(/помещ/i.test(t))return 'помещ';
+  return t.replace(/^\d+\s*-\s*/,'').trim()||'объект';
+}
+function typeIconOf(t){
+  t=(t||'').toString();
+  if(/кварт/i.test(t))return ico('home');
+  if(/машино/i.test(t))return ico('car');
+  if(/кладов/i.test(t))return ico('box');
+  return '';
+}
+/* готовая безопасная разметка: иконка + экранированное слово */
+function shortType(t){const w=typeIconOf(t);return (w?w+' ':'')+esc(typeWord(t));}
 function buildEgrnIndex(){
   egrn.byCad={};egrn.byOwner={};egrn.byInn={};
   egrn.rows.forEach(r=>{
@@ -3473,12 +3527,12 @@ function egrnLookup(){
       <div class="egrn-top">
         <div>
           <div class="egrn-fio">${esc(r.fio)}</div>
-          <div class="egrn-meta">${esc(r.cad)}${r.area?` · ${esc(r.area)} м²`:''}${r.share&&r.share!=='1/1'?` · доля ${esc(r.share)}`:''} · ${esc(shortType(r.type))}</div>
+          <div class="egrn-meta">${esc(r.cad)}${r.area?` · ${esc(r.area)} м²`:''}${r.share&&r.share!=='1/1'?` · доля ${esc(r.share)}`:''} · ${shortType(r.type)}</div>
           ${r.phone?`<div class="egrn-meta">${ico('phone')} ${esc(showPhone(r.phone))}</div>`:''}
         </div>
         <button type="button" class="egrn-fill" onclick="fillFromEgrn(${idx})">Заполнить</button>
       </div>
-      ${others.length?`<div class="egrn-others"><b>Ещё у собственника (${others.length}):</b> ${others.slice(0,14).map(o=>shortType(o.type)+' '+(o.area?o.area+'м² ':'')+o.cad).join('; ')}${others.length>14?' …':''}</div>`:''}
+      ${others.length?`<div class="egrn-others"><b>Ещё у собственника (${others.length}):</b> ${others.slice(0,14).map(o=>shortType(o.type)+' '+(o.area?esc(o.area)+'м² ':'')+esc(o.cad)).join('; ')}${others.length>14?' …':''}</div>`:''}
     </div>`;
   }).join('');
 }
@@ -3490,7 +3544,7 @@ function fillFromEgrn(idx){
   const others=ownerOtherObjects(r.fio,r.cad);
   const info=[];
   if(co.length)info.push('Сособственники: '+co.map(c=>c.fio+(c.share?` (${c.share})`:'')).join(', '));
-  if(others.length)info.push('Ещё объектов: '+others.slice(0,14).map(o=>shortType(o.type)+' '+(o.area?o.area+'м² ':'')+o.cad).join('; '));
+  if(others.length)info.push('Ещё объектов: '+others.slice(0,14).map(o=>typeWord(o.type)+' '+(o.area?o.area+'м² ':'')+o.cad).join('; '));
   const notesEl=document.getElementById('fld_notes'),marker='[ЕГРН] ';
   if(info.length){
     const cleaned=(notesEl.value||'').split('\n').filter(l=>!l.startsWith(marker)).join('\n').trim();
@@ -4491,6 +4545,19 @@ function dropEgrnBase(id){
 }
 /* Ранняя версия могла записать «семью» из одного человека, продублированного
    двумя выписками. Разбираем такие за собой молча — это чужой мусор на экране. */
+/* В заметки объектов раньше утекала разметка иконки из автозаполнения.
+   Вычищаем её за собой — это чужой мусор в поле, которое человек читает. */
+function cleanupSvgNotes(){
+  if(isGuest)return 0;
+  let n=0;
+  items.forEach(o=>{
+    if(!o.notes||o.notes.indexOf('<svg')<0)return;
+    const clean=o.notes.replace(/<svg[\s\S]*?<\/svg>\s*/g,'').replace(/[ \t]{2,}/g,' ');
+    if(clean!==o.notes){upsert({...o,notes:clean});n++;}
+  });
+  if(n)console.log('вычищено заметок с разметкой:',n);
+  return n;
+}
 function famCleanup(){
   if(isGuest||!groups.length)return 0;
   let fixed=0;
@@ -4511,6 +4578,7 @@ function famCleanup(){
   return 0;
 }
 function afterEgrnLoaded(){
+  cleanupSvgNotes();
   famCleanup();
   famAutoApply();
   updateFamBadge();
