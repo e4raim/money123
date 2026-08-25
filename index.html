@@ -3401,7 +3401,8 @@ function ownerOfApt(num){const r=ownerRecOfCad(cadOfApt(num));return r?r.fio:''}
 function ownerObjects(fio){
   if(!fio)return [];
   const key=normFio(fio);
-  const out=(egrn.byOwner[key]||[]).slice();
+  const seen={},out=[];
+  (egrn.byOwner[key]||[]).forEach(r=>{const k=r.cad+'|'+(r.share||'');if(seen[k])return;seen[k]=1;out.push(r);});
   /* объекты, переписанные вручную на этого человека */
   Object.keys(ownerFix).forEach(k=>{
     const f=ownerFix[k];
@@ -3602,8 +3603,31 @@ function buildCallPool(){
     if(r.mj&&livesHere(r.mj))p.live=true;
     p.rows.push(r);
   });
+  /* В одной выписке ИНН есть, в другой колонки нет — и один человек
+     превращался в двух: одного узнаю по ИНН, другого по ФИО. Склеиваем, но
+     только когда сомнений нет: если тёзок с ИНН несколько, это разные люди. */
+  const byFioInn={};
+  Object.keys(by).forEach(k=>{const p=by[k];if(p.inn){const f=normFio(p.fio);(byFioInn[f]=byFioInn[f]||[]).push(p);}});
+  Object.keys(by).forEach(k=>{
+    const p=by[k];
+    if(p.inn)return;
+    const twins=byFioInn[normFio(p.fio)];
+    if(!twins||twins.length!==1)return;
+    const host=twins[0];
+    p.rows.forEach(r=>host.rows.push(r));
+    p.phones.forEach(t=>{if(host.phones.indexOf(t)<0)host.phones.push(t)});
+    p.emails.forEach(e=>{if(host.emails.indexOf(e)<0)host.emails.push(e)});
+    p.adrs.forEach(a=>{if(host.adrs.indexOf(a)<0)host.adrs.push(a)});
+    if(!host.mj&&p.mj)host.mj=p.mj;
+    if(!host.born&&p.born)host.born=p.born;
+    if(p.live)host.live=true;
+    delete by[k];
+  });
   const pool=Object.keys(by).map(k=>{
     const p=by[k];
+    /* одну и ту же базу могли загрузить дважды — объект не должен удвоиться */
+    const seenRow={};
+    p.rows=p.rows.filter(r=>{const kk=r.cad+'|'+(r.share||'');if(seenRow[kk])return false;seenRow[kk]=1;return true;});
     p.region=mjRegion(p.mj);
     p.objs=p.rows.map(r=>({r,o:objOfCad(r.cad)}));
     p.regOf={};p.objs.forEach(x=>{if(x.o&&x.r.reg)p.regOf[x.o.num]=x.r.reg;});
@@ -4069,7 +4093,9 @@ function famUnion(){
   const comp={};
   pool.forEach(p=>{const r=find(p.key);(comp[r]=comp[r]||[]).push(p);});
   return Object.keys(comp).map(r=>{
-    const mem=comp[r];
+    /* один и тот же человек не может оказаться в семье дважды */
+    const seen={},mem=[];
+    comp[r].forEach(m=>{const f=normFio(m.fio);if(f&&!seen[f]){seen[f]=1;mem.push(m);}});
     const rs=new Set();mem.forEach(m=>{(why[m.key]||[]).forEach(x=>rs.add(x));});
     return {members:mem,why:[...rs]};
   }).filter(g=>g.members.length>1);
@@ -4089,6 +4115,7 @@ function famAutoApply(silent){
       const hg=groupOf(host.fio);
       g.members.forEach(m=>{
         if(groupOf(m.fio))return;
+        if(hg.members.some(x=>normFio(x)===normFio(m.fio)))return;
         hg.members.push(m.fio);added++;
       });
       return;
@@ -4138,6 +4165,7 @@ function famSuggestions(){
     if(ks.length<2||ks.length>5)return;   /* «Иванов» вшестером — это не подсказка */
     for(let i=0;i<ks.length;i++)for(let j=i+1;j<ks.length;j++){
       const a=ks[i],b=ks[j];
+      if(normFio(a.fio)===normFio(b.fio))continue;      /* это один человек, а не двое */
       const g=groupOf(a.fio);
       if(g&&g.members.some(m=>normFio(m)===normFio(b.fio)))continue;   /* уже вместе */
       const id=famPairId(a.fio,b.fio);
@@ -4191,7 +4219,29 @@ function dropEgrnBase(id){
   idbDel(id).catch(()=>{try{localStorage.removeItem('actualka_egrn');}catch(e){}});
   showToast('База «'+bs.name+'» убрана');
 }
+/* Ранняя версия могла записать «семью» из одного человека, продублированного
+   двумя выписками. Разбираем такие за собой молча — это чужой мусор на экране. */
+function famCleanup(){
+  if(isGuest||!groups.length)return 0;
+  let fixed=0;
+  const clean=[];
+  groups.forEach(g=>{
+    const seen={},mem=[];
+    (g.members||[]).forEach(m=>{const f=normFio(m);if(f&&!seen[f]){seen[f]=1;mem.push(m);}});
+    if(mem.length!==(g.members||[]).length)fixed++;
+    if(mem.length<2)return;                 /* сам себе не семья */
+    g.members=mem;clean.push(g);
+  });
+  if(fixed||clean.length!==groups.length){
+    const removed=groups.length-clean.length;
+    groups=clean;saveGroups();
+    console.log('семьи: убрано дублей —',fixed,', распущено пустых —',removed);
+    return removed+fixed;
+  }
+  return 0;
+}
 function afterEgrnLoaded(){
+  famCleanup();
   famAutoApply();
   updateFamBadge();
   if(state.view==='family')renderFamily();
