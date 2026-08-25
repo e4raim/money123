@@ -1048,6 +1048,11 @@ select.mini:focus-visible,.f input:focus-visible,.f select:focus-visible,.f text
 .closed-hint{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:6px;padding:11px 14px;border:1px dashed var(--line);border-radius:12px;font-size:12.5px;color:var(--ink-soft);background:var(--surface2)}
 .closed-hint .ico{width:14px;height:14px;flex:none;color:var(--ok-t)}
 .closed-hint a{color:var(--brass);font-weight:600;cursor:pointer;text-decoration:underline}
+.rent-side{margin-top:12px;padding:14px;border:1px solid var(--line);border-left:3px solid var(--think-s);border-radius:0 12px 12px 0;background:var(--surface2)}
+.rs-h{font-size:11.5px;font-weight:700;letter-spacing:.3px;text-transform:uppercase;color:var(--think-t);margin-bottom:10px}
+.rent-side .two{margin-bottom:0}
+.card .price.rent2{font-size:15px;color:var(--think-t);margin-top:-2px}
+.card .price.rent2::before{content:"аренда ";font-size:11px;font-weight:600;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.3px}
 </style>
 </head>
 <body>
@@ -1262,8 +1267,16 @@ select.mini:focus-visible,.f input:focus-visible,.f select:focus-visible,.f text
             <label class="f"><span class="lb" id="dealSumLabel">Сумма сделки <span style="color:var(--brass);font-weight:700">— реальная, если отличается от цены</span></span><input id="fld_dealSum" inputmode="numeric" placeholder="фактическая сумма" onblur="fmtMoneyInput(this)"></label>
           </div>
           <div class="two">
-            <label class="f"><span class="lb">Кто ведёт сейчас</span><input id="fld_currentAgent" placeholder="Агентство / агент"></label>
-            <label class="f"><span class="lb">Ссылка на объявление</span><input id="fld_listingUrl" inputmode="url" placeholder="cian / avito / …"></label>
+            <label class="f"><span class="lb" id="agentLabel">Кто ведёт сейчас</span><input id="fld_currentAgent" placeholder="Агентство / агент"></label>
+            <label class="f"><span class="lb" id="listingLabel">Ссылка на объявление</span><input id="fld_listingUrl" inputmode="url" placeholder="cian / avito / …"></label>
+          </div>
+          <div id="rentSide" class="rent-side" style="display:none">
+            <div class="rs-h">Аренда — отдельное объявление</div>
+            <div class="two">
+              <label class="f"><span class="lb">Ставка аренды, / мес.</span><input id="fld_rentPrice" inputmode="numeric" placeholder="180 000" onblur="fmtMoneyInput(this)"></label>
+              <label class="f"><span class="lb">Кто сдаёт</span><input id="fld_rentAgent" placeholder="Агентство / агент"></label>
+            </div>
+            <label class="f"><span class="lb">Ссылка на объявление аренды</span><input id="fld_rentUrl" inputmode="url" placeholder="cian / avito / …"></label>
           </div>
           <div class="two">
             <label class="f"><span class="lb">Оплата нам</span>
@@ -1800,7 +1813,13 @@ function esc(s){return (s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>'
 function fmtDate(d){if(!d)return'';const[y,m,day]=d.split('-');return`${day}.${m}`}
 function fmtDateY(d){if(!d)return'';const[y,m,day]=d.split('-');return`${day}.${m}.${y.slice(2)}`}
 function fmtMoney(v){const n=num(v);if(!n)return esc(v||'');return n.toLocaleString('ru-RU')+' ₽'}
-function isIncomplete(o){return !o.ownerPhone || !num(o.price) || !num(o.area) || !o.listingUrl}
+function isIncomplete(o){
+  if(!o.ownerPhone || !num(o.price) || !num(o.area) || !o.listingUrl)return true;
+  /* «продажа + аренда» — два объявления: без ставки и ссылки на аренду
+     карточка так же не дозаполнена, как без цены продажи */
+  if(dealOf(o)==='both' && (!num(o.rentPrice) || !o.rentUrl))return true;
+  return false;
+}
 function levenshtein(a,b){
   const m=a.length,n=b.length;
   if(!m)return n; if(!n)return m;
@@ -1993,7 +2012,7 @@ function cardHtml(o){
     const perM=ppm(o);
     const closed=CLOSED.includes(stateOf(o));
     const overlayTxt=stateOf(o)==='sold'?'ПРОДАНО':stateOf(o)==='rented'?'СДАНО':stateOf(o)==='withdrawn'?'СНЯТО':'';
-    const dl=dealOf(o), dealTxt=dl==='rent'?'Аренда':dl==='both'?'Прод.+Аренда':'Продажа';
+    const dl=dealOf(o), both=dl==='both', dealTxt=dl==='rent'?'Аренда':both?'Прод.+Аренда':'Продажа';
     const sel=selectedIds.has(o.id);
     return `<div class="card ${isIncomplete(o)?'incomplete':''} ${closed?'closed':''} ${selectMode?'selectable':''} ${sel?'selected':''}" onclick="cardClick('${o.id}')">
       <div class="thumb">
@@ -2010,6 +2029,7 @@ function cardHtml(o){
         ${num(o.area)?`<div class="metr">${esc(o.area)} м²${o.share&&o.share!=='1/1'?` · доля ${esc(o.share)}`:''}</div>`:(o.share&&o.share!=='1/1'?`<div class="metr">доля ${esc(o.share)}</div>`:'')}
         ${o.cadastral?`<div class="cadline">${esc(o.cadastral)}</div>`:''}
         ${num(o.price)?`<div class="price">${fmtMoney(o.price)}${dl==='rent'?' / мес.':''}</div>`:(o.price?`<div class="price">${esc(o.price)}${dl==='rent'?' / мес.':''}</div>`:'')}
+        ${(dl==='both'&&num(o.rentPrice))?`<div class="price rent2">${fmtMoney(o.rentPrice)} / мес.</div>`:''}
         ${(perM&&dl!=='rent')?`<div class="ppm">${Math.round(perM).toLocaleString('ru-RU')} ₽/м²</div>`:''}
         ${(dl!=='sale')&&o.leaseEnd?`<div class="row"><span class="k">Договор до:</span> ${fmtDateY(o.leaseEnd)}</div>`:''}
         ${o.currentAgent?`<div class="row"><span class="k">Ведёт:</span> ${esc(o.currentAgent)}</div>`:''}
@@ -2151,7 +2171,11 @@ function plansOn(date){
 function planWhy(o){return o.nextStep||'Перезвонить собственнику';}
 function shortMeta(o){
   const a=num(o.area)?`<span class="ar">· ${esc(o.area)} м²</span>`:'';
-  const p=num(o.price)?`<span class="pr">· ${dealOf(o)==='rent'?fmtMoney(o.price)+' / мес.':fmtMoney(o.price)}</span>`:'';
+  const d=dealOf(o);
+  const parts=[];
+  if(num(o.price))parts.push(d==='rent'?fmtMoney(o.price)+' / мес.':fmtMoney(o.price));
+  if(d==='both'&&num(o.rentPrice))parts.push(fmtMoney(o.rentPrice)+' / мес.');
+  const p=parts.length?`<span class="pr">· ${parts.join(' · ')}</span>`:'';
   return a+' '+p;
 }
 function setCalMode(m){calState.mode=m;if(m==='list')calState.anchor=todayStr();renderToday();}
@@ -2620,6 +2644,19 @@ function updateDealFieldLabels(){
       inp.placeholder='фактическая сумма продажи';
     }
   }
+  /* «продажа + аренда» — это два объявления разом: у каждого своя цена,
+     свой агент и своя ссылка. Иначе одна строка пытается быть обеими. */
+  const rs=document.getElementById('rentSide');
+  if(rs) rs.style.display=dt==='both'?'':'none';
+  const aLbl=document.getElementById('agentLabel'), lLbl=document.getElementById('listingLabel');
+  const pLbl=document.querySelector('label[for],#fld_price')&&document.getElementById('fld_price');
+  if(aLbl) aLbl.textContent=dt==='both'?'Кто продаёт':'Кто ведёт сейчас';
+  if(lLbl) lLbl.textContent=dt==='both'?'Ссылка на объявление продажи':'Ссылка на объявление';
+  if(pLbl){
+    const lb=pLbl.parentNode.querySelector('.lb');
+    if(lb) lb.textContent=dt==='both'?'Цена продажи':(dt==='rent'?'Ставка аренды, / мес.':'Цена');
+    pLbl.placeholder=dt==='rent'?'180 000':'120 000 000';
+  }
   const wOpt=document.getElementById('withdrawnOpt');
   if(wOpt) wOpt.textContent='Снято с рекламы';
 }
@@ -2681,8 +2718,8 @@ function generateReport(){
 }
 
 /* ---------- modal ---------- */
-const FORM_FIELDS=['apartment','area','price','cadastral','share','commissionPct','ownerName','ownerPhone','currentAgent','listingUrl','dealStatus','willPay','exclusive','dealType','objState','closedDate','leaseEnd','wonByUs','dealSum','lastContact','nextDate','nextTime','nextStep','notes'];
-const HISTORY_LABELS={price:'Цена',dealStatus:'Статус',objState:'Состояние',willPay:'Оплата нам',exclusive:'Эксклюзив у другого',ownerName:'Собственник',ownerPhone:'Телефон собственника',currentAgent:'Ведёт',dealType:'Тип сделки',nextStep:'Следующий шаг',nextDate:'Когда перезвонить',nextTime:'Время звонка',commissionPct:'Комиссия, %',wonByUs:'Сделка наша?',dealSum:'Сумма сделки'};
+const FORM_FIELDS=['apartment','area','price','rentPrice','rentAgent','rentUrl','cadastral','share','commissionPct','ownerName','ownerPhone','currentAgent','listingUrl','dealStatus','willPay','exclusive','dealType','objState','closedDate','leaseEnd','wonByUs','dealSum','lastContact','nextDate','nextTime','nextStep','notes'];
+const HISTORY_LABELS={price:'Цена',rentPrice:'Ставка аренды',rentAgent:'Кто сдаёт',rentUrl:'Объявление аренды',dealStatus:'Статус',objState:'Состояние',willPay:'Оплата нам',exclusive:'Эксклюзив у другого',ownerName:'Собственник',ownerPhone:'Телефон собственника',currentAgent:'Ведёт',dealType:'Тип сделки',nextStep:'Следующий шаг',nextDate:'Когда перезвонить',nextTime:'Время звонка',commissionPct:'Комиссия, %',wonByUs:'Сделка наша?',dealSum:'Сумма сделки'};
 const HISTORY_VALUE_LABELS={dealStatus:STATUS,objState:{active:'В работе',sold:'Продано',rented:'Сдано',withdrawn:'Снято с рекламы'},willPay:PAY,exclusive:{unknown:'не выяснено',no:'нет',yes:'да'},dealType:{sale:'Продажа',rent:'Аренда',both:'Продажа + аренда'},wonByUs:{yes:'да',no:'нет'}};
 const HISTORY_FIELD_DEFAULTS={dealStatus:'base',objState:'active',willPay:'unknown',exclusive:'unknown',dealType:'sale'};
 function historyValueLabel(field,v){
@@ -2789,7 +2826,7 @@ function waLink(phone){
 function renderCardView(o){
   const box=document.getElementById('cardView');
   const st=STATUS[o.dealStatus||'base']||{},closed=CLOSED.includes(stateOf(o));
-  const dl=dealOf(o),rent=dl==='rent';
+  const dl=dealOf(o),rent=dl==='rent',both=dl==='both';
   const d=decodeApt(o.apartment),tw=d?towerOf(d.k):null;
   const perM=ppm(o),comm=commissionValue(o);
   const phoneClean=(o.ownerPhone||'').replace(/[^\d+]/g,''),wa=waLink(o.ownerPhone);
@@ -2824,7 +2861,8 @@ function renderCardView(o){
     </div>`:''}
 
     <div class="cv-facts">
-      ${num(o.price)?`<div class="cv-fact"><div class="k">${rent?'Аренда':'Цена'}</div><div class="v">${fmtMoney(o.price)}${rent?' / мес.':''}</div></div>`:''}
+      ${num(o.price)?`<div class="cv-fact"><div class="k">${rent?'Аренда':(both?'Продажа':'Цена')}</div><div class="v">${fmtMoney(o.price)}${rent?' / мес.':''}</div></div>`:''}
+      ${(both&&num(o.rentPrice))?`<div class="cv-fact"><div class="k">Аренда</div><div class="v">${fmtMoney(o.rentPrice)} / мес.</div></div>`:''}
       ${(perM&&!rent)?`<div class="cv-fact"><div class="k">За метр</div><div class="v">${Math.round(perM).toLocaleString('ru-RU')} ₽</div></div>`:''}
       ${comm?`<div class="cv-fact"><div class="k">Комиссия ${esc(o.commissionPct)}%</div><div class="v">${fmtMoney(Math.round(comm))}</div></div>`:''}
     </div>
@@ -2857,9 +2895,11 @@ function renderCardView(o){
       ${familyBlockHtml(o.ownerName)}
     </div>
 
-    ${(o.currentAgent||o.listingUrl)?`<div class="cv-facts">
-      ${o.currentAgent?`<div class="cv-fact"><div class="k">Ведёт сейчас</div><div class="v" style="font-size:14px">${esc(o.currentAgent)}</div></div>`:''}
-      ${o.listingUrl?`<div class="cv-fact"><div class="k">Объявление</div><div class="v" style="font-size:14px"><a href="${esc(o.listingUrl)}" target="_blank" rel="noopener">открыть →</a></div></div>`:''}
+    ${(o.currentAgent||o.listingUrl||(both&&(o.rentAgent||o.rentUrl)))?`<div class="cv-facts">
+      ${o.currentAgent?`<div class="cv-fact"><div class="k">${both?'Продаёт':'Ведёт сейчас'}</div><div class="v" style="font-size:14px">${esc(o.currentAgent)}</div></div>`:''}
+      ${o.listingUrl?`<div class="cv-fact"><div class="k">${both?'Объявление продажи':'Объявление'}</div><div class="v" style="font-size:14px"><a href="${esc(o.listingUrl)}" target="_blank" rel="noopener">открыть →</a></div></div>`:''}
+      ${(both&&o.rentAgent)?`<div class="cv-fact"><div class="k">Сдаёт</div><div class="v" style="font-size:14px">${esc(o.rentAgent)}</div></div>`:''}
+      ${(both&&o.rentUrl)?`<div class="cv-fact"><div class="k">Объявление аренды</div><div class="v" style="font-size:14px"><a href="${esc(o.rentUrl)}" target="_blank" rel="noopener">открыть →</a></div></div>`:''}
     </div>`:''}
 
     ${o.notes?`<div style="margin-bottom:14px"><div style="font-size:11px;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.3px;font-weight:700;margin-bottom:7px">Заметки</div><div class="cv-note pii">${esc(o.notes)}</div></div>`:''}
@@ -3064,6 +3104,7 @@ function openModal(id){
   set('apartment',o.apartment);set('area',o.area);set('price',o.price);set('cadastral',o.cadastral);set('share',o.share);set('commissionPct',o.commissionPct);
   set('ownerName',o.ownerName);set('ownerPhone',o.ownerPhone);
   set('currentAgent',o.currentAgent);set('listingUrl',o.listingUrl);
+  set('rentPrice',o.rentPrice);set('rentAgent',o.rentAgent);set('rentUrl',o.rentUrl);
   set('dealStatus',o.dealStatus||'base');set('willPay',o.willPay||'unknown');set('exclusive',o.exclusive||'unknown');
   set('dealType',o.dealType||'sale');set('objState',o.objState||'active');set('closedDate',o.closedDate);set('leaseEnd',o.leaseEnd);
   set('wonByUs',o.wonByUs);set('dealSum',o.dealSum);
@@ -3105,7 +3146,8 @@ function saveCard(){
   const item={
     ...(existing||{}),                          /* всё, чего нет в форме (лента, история, будущие поля), не теряем */
     id:editingId||genId(),
-    apartment:g('apartment'),area:g('area'),price:g('price'),cadastral:g('cadastral'),share:g('share'),commissionPct:g('commissionPct'),
+    apartment:g('apartment'),area:g('area'),price:g('price'),
+    rentPrice:g('rentPrice'),rentAgent:g('rentAgent'),rentUrl:g('rentUrl'),cadastral:g('cadastral'),share:g('share'),commissionPct:g('commissionPct'),
     ownerName:g('ownerName'),ownerPhone:g('ownerPhone'),
     currentAgent:g('currentAgent'),listingUrl:g('listingUrl'),
     dealStatus:g('dealStatus'),willPay:g('willPay'),exclusive:g('exclusive'),
