@@ -402,6 +402,25 @@ body.guest #tabDb,body.guest #tabSchema,body.guest #tabDeals,body.guest .sb-grou
   body.menu-open .sb-backdrop{opacity:1;pointer-events:auto}
 }
 @media (prefers-reduced-motion:reduce){.sidebar{transition-duration:.12s}}
+/* --- сайдбар можно свернуть до иконок: сетка получает ~170px и вмещает +1 карточку в ряд --- */
+.sb-toggle{margin:auto 10px 12px;width:calc(100% - 20px);display:flex;align-items:center;gap:11px;padding:9px 12px;border:none;border-radius:10px;background:rgba(255,255,255,.05);color:rgba(240,235,226,.7);font-family:var(--sans);font-size:12.5px;font-weight:600;cursor:pointer;text-align:left}
+.sb-toggle:hover{background:rgba(255,255,255,.11);color:#F0EBE2}
+.sb-toggle svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.8;flex:none}
+@media (max-width:760px){.sb-toggle{display:none}}
+@media (min-width:761px){
+  body.sb-mini{--sbw:62px}
+  body.sb-mini .sb-name,body.sb-mini .nl{display:none}
+  body.sb-mini .sb-group{height:1px;padding:0;margin:10px 12px 9px;font-size:0;line-height:0;color:transparent;background:rgba(255,255,255,.13);border-radius:1px}
+  body.sb-mini .sb-nav>.sb-group:first-child{display:none}
+  body.sb-mini .sb-brand{justify-content:center;padding:17px 0 15px}
+  body.sb-mini .sb-nav{padding:8px 8px 14px;gap:4px}
+  body.sb-mini .navi{position:relative;justify-content:center;gap:0;padding:11px 0}
+  body.sb-mini .navi svg{width:19px;height:19px}
+  body.sb-mini .navi-n{position:absolute;top:3px;right:5px;margin:0;min-width:0;height:14px;padding:0 4px;font-size:9.5px}
+  body.sb-mini .sb-toggle{justify-content:center;padding:10px 0;margin:auto 8px 12px;width:calc(100% - 16px)}
+  body.sb-mini .sb-toggle svg{transform:rotate(180deg)}
+  body.sb-mini .grid{grid-template-columns:repeat(auto-fill,minmax(232px,1fr))}
+}
 .schema-head{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:14px}
 .twr{border:1px solid var(--line);background:var(--card);color:var(--ink-soft);padding:8px 14px;border-radius:999px;font-size:13.5px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:8px}
 .twr .sw{width:13px;height:13px;border-radius:3px;border:1px solid rgba(0,0,0,.15)}
@@ -1065,27 +1084,30 @@ select.mini:focus-visible,.f input:focus-visible,.f select:focus-visible,.f text
   </div>
   <nav class="sb-nav">
     <div class="sb-group">План</div>
-    <button class="navi" id="tabToday" onclick="switchView('today')">
-      <svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M8 3v4M16 3v4M3 11h18"/></svg>Сегодня</button>
+    <button class="navi" id="tabToday" title="Сегодня" onclick="switchView('today')">
+      <svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M8 3v4M16 3v4M3 11h18"/></svg><span class="nl">Сегодня</span></button>
     <div class="sb-group">Недвижимость</div>
-    <button class="navi active" id="tabActualka" onclick="switchView('actualka')">
-      <svg viewBox="0 0 24 24"><rect x="3" y="4" width="8" height="8" rx="1.5"/><rect x="13" y="4" width="8" height="8" rx="1.5"/><rect x="3" y="14" width="8" height="6" rx="1.5"/><rect x="13" y="14" width="8" height="6" rx="1.5"/></svg>Актуалка</button>
-    <button class="navi" id="tabDb" onclick="switchView('db')">
-      <svg viewBox="0 0 24 24"><ellipse cx="12" cy="6" rx="8" ry="3"/><path d="M4 6v6c0 1.7 3.6 3 8 3s8-1.3 8-3V6"/><path d="M4 12v6c0 1.7 3.6 3 8 3s8-1.3 8-3v-6"/></svg>База</button>
-    <button class="navi" id="tabSchema" onclick="switchView('schema')">
-      <svg viewBox="0 0 24 24"><path d="M4 21V9l8-5 8 5v12"/><path d="M9 21v-7h6v7"/><path d="M9 12h.01M15 12h.01M9 8h.01M15 8h.01"/></svg>Схема дома</button>
-    <button class="navi owner-only" id="tabFamily" onclick="switchView('family')" style="display:none">
-      <svg viewBox="0 0 24 24"><circle cx="9.4" cy="8.4" r="3.2"/><path d="M3.4 20a6 6 0 0112 0"/><path d="M16 5.6a3.2 3.2 0 010 6.2M17.4 14.8a6 6 0 013.2 5.2"/></svg>Семьи<span class="navi-n" id="famCount"></span></button>
-    <button class="navi owner-only" id="tabCalls" onclick="switchView('calls')">
-      <svg viewBox="0 0 24 24"><path d="M7.4 4.2H4.6c-.8 0-1.4.6-1.4 1.4C3.2 13.6 10.4 20.8 18.4 20.8c.8 0 1.4-.6 1.4-1.4v-2.8c0-.7-.5-1.3-1.2-1.4l-2.9-.4c-.5-.1-1 .1-1.3.5l-1.2 1.4a13.6 13.6 0 01-5.5-5.5l1.4-1.2c.4-.3.6-.8.5-1.3l-.4-2.9c-.1-.7-.7-1.2-1.4-1.2z"/><path d="M16 3.4l4.6 4.6M20.6 3.4L16 8"/></svg>Обзвон</button>
-    <button class="navi" id="tabDeals" onclick="switchView('deals')">
-      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9 12l2 2 4-4"/></svg>Сделки</button>
-    <button class="navi" id="tabArchive" onclick="switchView('archive')">
-      <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="5" rx="1.2"/><path d="M5 9v9a2 2 0 002 2h10a2 2 0 002-2V9"/><path d="M10 13h4"/></svg>Архив</button>
+    <button class="navi active" id="tabActualka" title="Актуалка" onclick="switchView('actualka')">
+      <svg viewBox="0 0 24 24"><rect x="3" y="4" width="8" height="8" rx="1.5"/><rect x="13" y="4" width="8" height="8" rx="1.5"/><rect x="3" y="14" width="8" height="6" rx="1.5"/><rect x="13" y="14" width="8" height="6" rx="1.5"/></svg><span class="nl">Актуалка</span></button>
+    <button class="navi" id="tabDb" title="База" onclick="switchView('db')">
+      <svg viewBox="0 0 24 24"><ellipse cx="12" cy="6" rx="8" ry="3"/><path d="M4 6v6c0 1.7 3.6 3 8 3s8-1.3 8-3V6"/><path d="M4 12v6c0 1.7 3.6 3 8 3s8-1.3 8-3v-6"/></svg><span class="nl">База</span></button>
+    <button class="navi" id="tabSchema" title="Схема дома" onclick="switchView('schema')">
+      <svg viewBox="0 0 24 24"><path d="M4 21V9l8-5 8 5v12"/><path d="M9 21v-7h6v7"/><path d="M9 12h.01M15 12h.01M9 8h.01M15 8h.01"/></svg><span class="nl">Схема дома</span></button>
+    <button class="navi owner-only" id="tabFamily" title="Семьи" onclick="switchView('family')" style="display:none">
+      <svg viewBox="0 0 24 24"><circle cx="9.4" cy="8.4" r="3.2"/><path d="M3.4 20a6 6 0 0112 0"/><path d="M16 5.6a3.2 3.2 0 010 6.2M17.4 14.8a6 6 0 013.2 5.2"/></svg><span class="nl">Семьи</span><span class="navi-n" id="famCount"></span></button>
+    <button class="navi owner-only" id="tabCalls" title="Обзвон" onclick="switchView('calls')">
+      <svg viewBox="0 0 24 24"><path d="M7.4 4.2H4.6c-.8 0-1.4.6-1.4 1.4C3.2 13.6 10.4 20.8 18.4 20.8c.8 0 1.4-.6 1.4-1.4v-2.8c0-.7-.5-1.3-1.2-1.4l-2.9-.4c-.5-.1-1 .1-1.3.5l-1.2 1.4a13.6 13.6 0 01-5.5-5.5l1.4-1.2c.4-.3.6-.8.5-1.3l-.4-2.9c-.1-.7-.7-1.2-1.4-1.2z"/><path d="M16 3.4l4.6 4.6M20.6 3.4L16 8"/></svg><span class="nl">Обзвон</span></button>
+    <button class="navi" id="tabDeals" title="Сделки" onclick="switchView('deals')">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9 12l2 2 4-4"/></svg><span class="nl">Сделки</span></button>
+    <button class="navi" id="tabArchive" title="Архив" onclick="switchView('archive')">
+      <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="5" rx="1.2"/><path d="M5 9v9a2 2 0 002 2h10a2 2 0 002-2V9"/><path d="M10 13h4"/></svg><span class="nl">Архив</span></button>
     <div class="sb-group sb-group-acct">Аккаунт</div>
-    <button class="navi sb-group-acct" id="tabSettings" onclick="switchView('settings')">
-      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 00.34 1.87l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.7 1.7 0 00-1.87-.34 1.7 1.7 0 00-1.04 1.56V21a2 2 0 11-4 0v-.09A1.7 1.7 0 008.4 19.4a1.7 1.7 0 00-1.87.34l-.06.06a2 2 0 11-2.83-2.83l.06-.06A1.7 1.7 0 004.6 15a1.7 1.7 0 00-1.56-1.04H3a2 2 0 110-4h.09A1.7 1.7 0 004.6 8.6a1.7 1.7 0 00-.34-1.87l-.06-.06a2 2 0 112.83-2.83l.06.06A1.7 1.7 0 008.6 4.6a1.7 1.7 0 001.04-1.56V3a2 2 0 114 0v.09c0 .69.4 1.32 1.04 1.56.63.25 1.36.12 1.87-.34l.06-.06a2 2 0 112.83 2.83l-.06.06c-.46.51-.59 1.24-.34 1.87.24.64.87 1.04 1.56 1.04H21a2 2 0 110 4h-.09c-.69 0-1.32.4-1.56 1.04z"/></svg>Настройки</button>
+    <button class="navi sb-group-acct" id="tabSettings" title="Настройки" onclick="switchView('settings')">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 00.34 1.87l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.7 1.7 0 00-1.87-.34 1.7 1.7 0 00-1.04 1.56V21a2 2 0 11-4 0v-.09A1.7 1.7 0 008.4 19.4a1.7 1.7 0 00-1.87.34l-.06.06a2 2 0 11-2.83-2.83l.06-.06A1.7 1.7 0 004.6 15a1.7 1.7 0 00-1.56-1.04H3a2 2 0 110-4h.09A1.7 1.7 0 004.6 8.6a1.7 1.7 0 00-.34-1.87l-.06-.06a2 2 0 112.83-2.83l.06.06A1.7 1.7 0 008.6 4.6a1.7 1.7 0 001.04-1.56V3a2 2 0 114 0v.09c0 .69.4 1.32 1.04 1.56.63.25 1.36.12 1.87-.34l.06-.06a2 2 0 112.83 2.83l-.06.06c-.46.51-.59 1.24-.34 1.87.24.64.87 1.04 1.56 1.04H21a2 2 0 110 4h-.09c-.69 0-1.32.4-1.56 1.04z"/></svg><span class="nl">Настройки</span></button>
   </nav>
+  <button class="sb-toggle" id="sbToggle" onclick="toggleSidebar()" title="Свернуть меню" aria-label="Свернуть меню">
+    <svg viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/><path d="M20 5v14"/></svg><span class="nl">Свернуть</span>
+  </button>
 </aside>
 
 <header>
@@ -3820,6 +3842,17 @@ function schemaIndex(){
 }
 /* выдвижное меню на телефоне */
 function toggleMenu(){document.body.classList.toggle('menu-open');}
+function applySbMini(on){
+  document.body.classList.toggle('sb-mini',on);
+  const b=document.getElementById('sbToggle');
+  if(b){b.title=on?'Развернуть меню':'Свернуть меню';b.setAttribute('aria-label',b.title);
+        const t=b.querySelector('.nl');if(t)t.textContent=on?'Развернуть':'Свернуть';}
+}
+function toggleSidebar(){
+  const on=!document.body.classList.contains('sb-mini');
+  applySbMini(on);
+  try{localStorage.setItem('actualka_sbmini',on?'1':'0');}catch(e){}
+}
 function closeMenu(){document.body.classList.remove('menu-open');}
 function switchView(v){
   closeMenu();
@@ -5420,6 +5453,7 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeModal();closeR
 })();
 
 applyTheme();
+applySbMini((function(){try{return localStorage.getItem('actualka_sbmini')==='1'}catch(e){return false}})());
 setJkLabel();
 applyPrivacy();
 loadAuxLocal();
