@@ -3534,15 +3534,64 @@ function parseEgrnCsv(text){
   const split=l=>{const out=[];let cur='',q=false;for(const ch of l){if(ch==='"')q=!q;else if(ch===delim&&!q){out.push(cur);cur='';}else cur+=ch;}out.push(cur);return out.map(s=>s.trim());};
   return rowsFromAoa(lines.map(split));
 }
+/* Пока база читается, вкладка выглядит мёртвой: всё идёт одним куском, а в
+   конце alert. Поэтому пишем вслух каждый шаг прямо в строку статуса. */
+function egrnSay(msg,cls){
+  const el=document.getElementById('egrnStatus');
+  if(el){el.textContent=msg;el.className=cls||'';}
+  /* кнопка загрузки есть на трёх экранах, а строка статуса живёт только на
+     «Актуалке» — поэтому ход дела дублируем плашкой, её видно откуда угодно */
+  try{
+    _undoAction=null;
+    document.getElementById('undoMsg').textContent=msg;
+    document.getElementById('undoToast').classList.add('show','no-undo');
+    clearTimeout(_undoTimer);
+    _undoTimer=setTimeout(hideUndo,cls?8000:180000);
+  }catch(e){}
+}
+/* даём браузеру перерисоваться перед тем, как снова занять поток надолго */
+function egrnTick(fn){requestAnimationFrame(()=>setTimeout(fn,0));}
 function loadEgrn(input){
   const f=input.files[0];if(!f)return;
   const name=f.name.toLowerCase(),reader=new FileReader();
+  const isCsv=name.endsWith('.csv');
+  /* проверяем библиотеку до чтения файла, а не после: незачем гонять в память
+     десятки мегабайт, чтобы потом сказать «не загрузилась библиотека» */
+  if(!isCsv&&!window.XLSX){
+    egrnSay('не загрузилась библиотека чтения Excel','egrn-old');
+    alert('Не загрузилась библиотека чтения Excel.\n\nПроверь интернет, выключи VPN и обнови страницу (потяни вниз).');
+    input.value='';return;
+  }
+  const mb=(f.size/1048576).toFixed(1);
+  egrnSay('читаю файл «'+f.name+'» ('+mb+' МБ)…');
+  /* раньше onerror не было вовсе: если файл не читается (частый случай на
+     айпаде, когда он лежит в iCloud и не скачан), не происходило ничего —
+     ни ошибки, ни подсказки, вкладка просто висела */
+  reader.onerror=reader.onabort=()=>{
+    egrnSay('файл не прочитался','egrn-old');
+    alert('Браузер не смог прочитать файл.\n\nЧаще всего это значит, что файл лежит в iCloud и ещё не скачан на устройство: открой «Файлы», дождись, пока пропадёт значок облачка у файла, и выбери его снова.');
+    input.value='';
+  };
+  let shown=-10;
+  reader.onprogress=ev=>{
+    if(!ev.lengthComputable)return;
+    const p=Math.round(ev.loaded/ev.total*100);
+    if(p-shown<10)return; shown=p;
+    egrnSay('читаю файл… '+p+'%');
+  };
   reader.onload=e=>{
+    egrnSay('разбираю таблицу, это может занять минуту…');
+    egrnTick(()=>egrnParse(e.target.result,f,isCsv,input));
+  };
+  if(isCsv)reader.readAsText(f,'utf-8');else reader.readAsArrayBuffer(f);
+}
+function egrnParse(data,f,isCsv,input){
     try{
       let rows;
-      if(name.endsWith('.csv'))rows=parseEgrnCsv(e.target.result);
-      else{if(!window.XLSX){alert('Не загрузилась библиотека чтения Excel — проверь интернет и обнови страницу.');return;}rows=parseEgrnWb(XLSX.read(new Uint8Array(e.target.result),{type:'array'}));}
-      if(!rows.length){alert('Не нашёл данные. Нужен лист «Данные» с колонками: кадастровый №, ФИО, телефон, площадь.');input.value='';return;}
+      if(isCsv)rows=parseEgrnCsv(data);
+      else rows=parseEgrnWb(XLSX.read(new Uint8Array(data),{type:'array'}));
+      if(!rows.length){egrnSay('в файле не нашлись данные','egrn-old');alert('Не нашёл данные. Нужен лист «Данные» с колонками: кадастровый №, ФИО, телефон, площадь.');input.value='';return;}
+      egrnSay('нашёл '+rows.length+' записей, раскладываю…');
       const nice=f.name.replace(/\.(xlsx|xls|csv)$/i,'').slice(0,60)||'База ЕГРН';
       /* тот же файл грузят повторно (например, чтобы дочитать новые колонки) — заменяем, а не плодим */
       const prev=egrn.bases.find(b=>b.name===nice);
@@ -3555,7 +3604,9 @@ function loadEgrn(input){
       const got=k=>rows.filter(r=>r[k]).length;
       const head='База «'+nice+'»: '+rows.length+' записей'+(prev?' (заменила прежнюю)':'')
         +'\nС телефоном: '+got('phone')+' · с пропиской: '+got('mj')+' · с датой регистрации: '+got('reg');
+      egrnSay('сохраняю базу в браузере…');
       idbPut(rec).then(()=>{
+        hideUndo();
         alert(head+'\nСохранена в этом браузере, на GitHub не уходит.'
           +(egrn.bases.length>1?'\nВсего баз загружено: '+egrn.bases.length+' · записей: '+egrn.rows.length:''));
         afterEgrnLoaded();
@@ -3563,15 +3614,18 @@ function loadEgrn(input){
         /* IndexedDB недоступна (приватный режим и т.п.) — пробуем старое хранилище */
         let saved=false;
         try{localStorage.setItem('actualka_egrn',JSON.stringify({v:EGRN_V,name:nice,rows,loadedAt:Date.now(),count:rows.length}));saved=true;}catch(e){}
+        hideUndo();
         alert(head+(saved
           ?'\nСохранена в этом браузере, на GitHub не уходит.'
           :'\n\nНЕ СОХРАНИЛАСЬ: браузер не дал места. База работает до закрытия вкладки. Проверь, что не включён приватный режим.'));
         afterEgrnLoaded();
       });
-    }catch(err){console.error(err);alert('Не смог прочитать файл: '+err.message);}
+    }catch(err){
+      console.error(err);
+      egrnSay('файл не разобрался','egrn-old');
+      alert('Не смог прочитать файл: '+err.message);
+    }
     input.value='';
-  };
-  if(name.endsWith('.csv'))reader.readAsText(f,'utf-8');else reader.readAsArrayBuffer(f);
 }
 function ownerOtherObjects(fio,exceptCad){return (egrn.byOwner[normFio(fio)]||[]).filter(r=>r.cad!==exceptCad);}
 function egrnLookupDebounced(){clearTimeout(egrnTimer);egrnTimer=setTimeout(egrnLookup,250);}
@@ -4664,6 +4718,7 @@ function famCleanup(){
   return 0;
 }
 function afterEgrnLoaded(){
+  updateEgrnStatus();   /* затираем надпись о ходе загрузки итоговой строкой */
   cleanupSvgNotes();
   famCleanup();
   famAutoApply();
