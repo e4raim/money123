@@ -464,8 +464,15 @@ body.no-access main,body.no-access .sidebar,body.no-access header .search{displa
 .task.done{border-left:3px solid var(--ok-s)}
 .task.miss{border-left:3px solid var(--no-s)}
 .task.wait{border-left:3px solid var(--think-s)}
+.task-top{display:flex;gap:14px;align-items:flex-start;margin-bottom:10px}
+.task-ph{width:132px;height:99px;object-fit:cover;border-radius:10px;flex:none;background:var(--thumb);cursor:zoom-in}
+.task-ph.none{display:flex;align-items:center;justify-content:center;color:#C3BFB4;cursor:default}
+.task-ph.none svg{width:28px;height:28px}
+.task-hd{min-width:0;flex:1}
+.iv-ph{display:block;width:62px;height:46px;object-fit:cover;border-radius:7px;background:var(--thumb);margin-bottom:5px}
+@media (max-width:560px){.task-top{gap:10px}.task-ph{width:92px;height:70px}}
 .task h3{margin:0 0 2px;font-size:17px;font-family:var(--serif)}
-.task .meta{font-size:13px;color:var(--ink-soft);margin-bottom:10px;display:flex;gap:10px;flex-wrap:wrap}
+.task .meta{font-size:13px;color:var(--ink-soft);margin-bottom:6px;display:flex;gap:10px;flex-wrap:wrap}
 .task .ask{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px}
 .task input,.task textarea{width:100%;border:1px solid var(--line);background:var(--paper);color:var(--ink);
   border-radius:10px;padding:9px 11px;font-size:14px;font-family:var(--sans)}
@@ -5300,9 +5307,15 @@ function taskHtml(k){
     t.price?fmtMoney(t.price):'', t.deal==='rent'?'аренда':'продажа',
     t.agent?'ведёт '+esc(t.agent):''].filter(Boolean);
   return `<div class="task ${cls}">
-    <h3>Квартира ${esc(t.apt||k)}</h3>
-    <div class="meta">${meta.map(m=>`<span>${m}</span>`).join('')}</div>
-    ${t.url?`<div class="meta"><a href="${esc(t.url)}" target="_blank" rel="noopener">объявление</a></div>`:''}
+    <div class="task-top">
+      ${t.photo?`<img class="task-ph" src="${esc(t.photo)}" alt="Квартира ${esc(t.apt||'')}" loading="lazy" onclick="taskPhoto('${k}')">`
+        :`<div class="task-ph none">${SVG_PHOTO}</div>`}
+      <div class="task-hd">
+        <h3>Квартира ${esc(t.apt||k)}</h3>
+        <div class="meta">${meta.map(m=>`<span>${m}</span>`).join('')}</div>
+        ${t.url?`<div class="meta"><a href="${esc(t.url)}" target="_blank" rel="noopener">смотреть объявление</a></div>`:''}
+      </div>
+    </div>
     ${t.note?`<div class="review">${esc(t.note)}</div>`:''}
     <div class="ask">
       <input id="tf_${k}" placeholder="ФИО собственника" value="${esc(a.fio||'')}">
@@ -5315,6 +5328,12 @@ function taskHtml(k){
       :a.fio?'<div class="verdict wait">Отправлено, ждёт проверки</div>':''}
     ${a.review?`<div class="review"><b>Разбор:</b> ${esc(a.review)}</div>`:''}
   </div>`;
+}
+function taskPhoto(k){
+  const t=myTasks[k]||{};
+  if(!t.photo)return;
+  openInfoModal('Квартира '+esc(t.apt||''),
+    `<img src="${esc(t.photo)}" alt="" style="width:100%;border-radius:12px;display:block">`);
 }
 function internSave(k){
   const u=firebase.auth().currentUser;if(!u)return;
@@ -5332,6 +5351,24 @@ function internSave(k){
   showToast('Ответ отправлен');
 }
 
+/* Фото в задании — отдельная уменьшенная копия. Исходник в карточке уже
+   сжат до 1000px, но узел tasks стажёр выкачивает целиком при каждом
+   открытии: десяток полноразмерных снимков съест трафик на пустом месте. */
+function shrinkPhoto(src,max,q){
+  return new Promise(res=>{
+    if(!src)return res('');
+    const img=new Image();
+    img.onload=()=>{
+      let w=img.width,h=img.height;
+      if(w>max){h=Math.round(h*max/w);w=max;}
+      const c=document.createElement('canvas');c.width=w;c.height=h;
+      c.getContext('2d').drawImage(img,0,0,w,h);
+      try{res(c.toDataURL('image/jpeg',q));}catch(e){res('');}
+    };
+    img.onerror=()=>res('');
+    img.src=src;
+  });
+}
 /* ---- выдача квартиры стажёру ---- */
 function assignPick(id){
   const list=internList();
@@ -5344,13 +5381,35 @@ function assignPick(id){
   if(!(i>=0&&i<list.length))return;
   assignToIntern(list[i].uid,o);
 }
-function assignToIntern(uid,o){
+function assignToIntern(uid,o,quiet){
   /* копия без собственника: в этом весь смысл задания */
-  const t={apt:o.apartment||'',area:o.area||'',floor:o.floor||'',price:o.price||'',
-    deal:o.dealType||'sale',agent:o.currentAgent||'',url:o.listingUrl||'',
-    note:'',at:Date.now(),obj:o.id};
-  cloudWrite(firebase.database().ref('tasks/'+uid+'/'+o.id).set(t),'задание')
-    .then(()=>showToast('Выдано: кв. '+(o.apartment||'')));
+  return shrinkPhoto(o.photo||'',560,0.62).then(photo=>{
+    const t={apt:o.apartment||'',area:o.area||'',floor:o.floor||'',price:o.price||'',
+      deal:o.dealType||'sale',agent:o.currentAgent||'',url:o.listingUrl||'',
+      photo:photo||'',note:'',at:Date.now(),obj:o.id};
+    return cloudWrite(firebase.database().ref('tasks/'+uid+'/'+o.id).set(t),'задание')
+      .then(()=>{if(!quiet)showToast('Выдано: кв. '+(o.apartment||''));});
+  });
+}
+/* Задания, выданные раньше, фото не содержат — и цена с агентом в них могли
+   устареть. Перезаписываем их текущими данными карточек, ответы не трогаем. */
+function refreshTasks(){
+  const list=internList();
+  if(!list.length)return;
+  let n=0,miss=0;
+  const jobs=[];
+  list.forEach(x=>{
+    const t=allTasks[x.uid]||{};
+    Object.keys(t).forEach(objId=>{
+      const o=items.find(i=>i.id===objId);
+      if(!o){miss++;return;}
+      n++; jobs.push(assignToIntern(x.uid,o,true));
+    });
+  });
+  if(!n){showToast('Нечего обновлять');return;}
+  Promise.all(jobs).then(()=>{
+    showToast('Обновлено заданий: '+n+(miss?' · '+miss+' без карточки':''));
+  });
 }
 
 /* ---- проверка: сверяем ответ с выпиской ---- */
@@ -5400,7 +5459,9 @@ function renderInterns(){
         <div><b>${ok}</b><span>верно</span></div>
       </div>
     </div>
-    <div class="iv-tabs">${list.map(x=>{
+    <div class="iv-tabs">
+      <button onclick="refreshTasks()" title="Перезаписать выданные задания текущими данными карточек — вместе с фото">Обновить выданное</button>
+      ${list.map(x=>{
       const a=allAnswers[x.uid]||{};
       const wait=Object.keys(a).filter(k=>a[k].fio&&!a[k].verdict).length;
       return `<button class="${x.uid===ivWho?'on':''}" onclick="ivWho='${x.uid}';renderInterns()">${esc(x.name)}${wait?' · '+wait:''}</button>`;
@@ -5412,7 +5473,9 @@ function ivRow(k,t,a){
   const m=a.fio?matchAnswer(a,t.apt):null;
   const right=rightAnswer(t.apt);
   return `<div class="iv-row">
-    <div class="apt">${esc(t.apt||'')}<div class="lbl">${t.area?esc(t.area)+' м²':''}</div></div>
+    <div class="apt">
+      ${t.photo?`<img class="iv-ph" src="${esc(t.photo)}" alt="" loading="lazy">`:''}
+      ${esc(t.apt||'')}<div class="lbl">${t.area?esc(t.area)+' м²':''}</div></div>
     <div><div class="lbl">Ответ стажёра</div>
       <div class="val pii">${a.fio?esc(a.fio):'<i style="color:var(--ink-soft)">не отвечал</i>'}</div>
       <div class="val">${a.phone?esc(showPhone(a.phone)):''}</div>
