@@ -444,67 +444,6 @@ body.guest #tabDb,body.guest #tabSchema,body.guest #tabDeals,body.guest .sb-grou
 .ct-obj .c{color:var(--ink-soft);font-size:11.5px;font-variant-numeric:tabular-nums}
 .ct-kv{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;font-size:13px;color:var(--ink-soft)}
 .ct-kv b{color:var(--ink)}
-/* --- стажёры: у них свой урезанный экран, у руководителя — вкладка с проверкой --- */
-body.intern .sidebar,body.intern .menu-btn,body.intern .search,body.intern #statusChips,
-body.intern #filtersRow2,body.intern .tools,body.intern .dash{display:none!important}
-body.intern{padding-left:0}
-/* у стажёра остаётся только его список: ни добавления объектов, ни массовых
-   действий, ни служебных кнопок шапки */
-body.intern .btn-add,body.intern .bell-wrap,body.intern #privBtn,body.intern #lockBtn,
-body.intern .bulk-bar,body.intern .floatlock,body.intern .viewtog{display:none!important}
-body.intern main{padding-top:4px}
-body.no-access main,body.no-access .sidebar,body.no-access header .search{display:none}
-.in-head{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap;margin-bottom:16px}
-.in-head h2{font-family:var(--serif);font-size:24px;margin:0}
-.in-head p{margin:4px 0 0;color:var(--ink-soft);font-size:13.5px;max-width:62ch}
-.in-score{display:flex;gap:18px}
-.in-score b{display:block;font-size:22px;font-family:var(--serif)}
-.in-score span{font-size:11px;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-soft)}
-.task{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 16px;margin-bottom:12px}
-.task.done{border-left:3px solid var(--ok-s)}
-.task.miss{border-left:3px solid var(--no-s)}
-.task.wait{border-left:3px solid var(--think-s)}
-.task-top{display:flex;gap:14px;align-items:flex-start;margin-bottom:10px}
-.task-ph{width:132px;height:99px;object-fit:cover;border-radius:10px;flex:none;background:var(--thumb);cursor:zoom-in}
-.task-ph.none{display:flex;align-items:center;justify-content:center;color:#C3BFB4;cursor:default}
-.task-ph.none svg{width:28px;height:28px}
-.task-hd{min-width:0;flex:1}
-.iv-ph{display:block;width:62px;height:46px;object-fit:cover;border-radius:7px;background:var(--thumb);margin-bottom:5px}
-@media (max-width:560px){.task-top{gap:10px}.task-ph{width:92px;height:70px}}
-.task h3{margin:0 0 2px;font-size:17px;font-family:var(--serif)}
-.task .meta{font-size:13px;color:var(--ink-soft);margin-bottom:6px;display:flex;gap:10px;flex-wrap:wrap}
-.task .ask{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px}
-.task input,.task textarea{width:100%;border:1px solid var(--line);background:var(--paper);color:var(--ink);
-  border-radius:10px;padding:9px 11px;font-size:14px;font-family:var(--sans)}
-.task textarea{min-height:56px;resize:vertical}
-.task .go{border:none;background:var(--brass);color:var(--on-brass);border-radius:10px;padding:10px 16px;
-  font-size:14px;font-weight:600;cursor:pointer;font-family:var(--sans)}
-.task .verdict{font-size:13px;font-weight:700;padding:7px 10px;border-radius:9px;margin-top:9px}
-.task .verdict.ok{background:var(--ok-tint,#E8F3EC);color:var(--ok-t)}
-.task .verdict.no{background:var(--no-tint,#FBEAE7);color:var(--no-t)}
-.task .verdict.wait{background:var(--surface2);color:var(--ink-soft)}
-.task .review{font-size:13px;color:var(--ink-soft);margin-top:6px;white-space:pre-wrap}
-@media (max-width:560px){.task .ask{grid-template-columns:1fr}}
-.iv-tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
-.iv-tabs button{border:1px solid var(--line);background:var(--card);color:var(--ink-soft);border-radius:999px;
-  padding:8px 14px;font-size:13.5px;font-weight:600;cursor:pointer;font-family:var(--sans)}
-.iv-tabs button.on{background:var(--ink);color:var(--paper);border-color:var(--ink)}
-.iv-row{display:grid;grid-template-columns:70px 1fr 1fr auto;gap:12px;align-items:start;
-  background:var(--card);border:1px solid var(--line);border-radius:12px;padding:11px 14px;margin-bottom:8px}
-.iv-row .apt{font-family:var(--serif);font-size:17px}
-.iv-row .lbl{font-size:11px;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-soft)}
-.iv-row .val{font-size:13.5px;word-break:break-word}
-.iv-row .val.pii{font-weight:600}
-.iv-acts{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
-.iv-acts button{border:1px solid var(--line);background:var(--card);color:var(--ink-soft);border-radius:9px;
-  padding:7px 11px;font-size:12.5px;font-weight:600;cursor:pointer;font-family:var(--sans)}
-.iv-acts button.ok.on{background:var(--ok-s);color:var(--on-solid);border-color:var(--ok-s)}
-.iv-acts button.no.on{background:var(--no-s);color:var(--on-solid);border-color:var(--no-s)}
-.auto{font-size:11.5px;font-weight:700;padding:3px 8px;border-radius:999px;white-space:nowrap}
-.auto.ok{background:var(--ok-s);color:var(--on-solid)}
-.auto.no{background:var(--no-s);color:var(--on-solid)}
-.auto.na{background:var(--surface2);color:var(--ink-soft)}
-@media (max-width:760px){.iv-row{grid-template-columns:1fr;gap:6px}}
 .schema-head{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:14px}
 .twr{border:1px solid var(--line);background:var(--card);color:var(--ink-soft);padding:8px 14px;border-radius:999px;font-size:13.5px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:8px}
 .twr .sw{width:13px;height:13px;border-radius:3px;border:1px solid rgba(0,0,0,.15)}
@@ -1181,8 +1120,6 @@ select.mini:focus-visible,.f input:focus-visible,.f select:focus-visible,.f text
       <svg viewBox="0 0 24 24"><circle cx="9.4" cy="8.4" r="3.2"/><path d="M3.4 20a6 6 0 0112 0"/><path d="M16 5.6a3.2 3.2 0 010 6.2M17.4 14.8a6 6 0 013.2 5.2"/></svg><span class="nl">Семьи</span><span class="navi-n" id="famCount"></span></button>
     <button class="navi owner-only" id="tabCalls" title="Обзвон" onclick="switchView('calls')">
       <svg viewBox="0 0 24 24"><path d="M7.4 4.2H4.6c-.8 0-1.4.6-1.4 1.4C3.2 13.6 10.4 20.8 18.4 20.8c.8 0 1.4-.6 1.4-1.4v-2.8c0-.7-.5-1.3-1.2-1.4l-2.9-.4c-.5-.1-1 .1-1.3.5l-1.2 1.4a13.6 13.6 0 01-5.5-5.5l1.4-1.2c.4-.3.6-.8.5-1.3l-.4-2.9c-.1-.7-.7-1.2-1.4-1.2z"/><path d="M16 3.4l4.6 4.6M20.6 3.4L16 8"/></svg><span class="nl">Обзвон</span></button>
-    <button class="navi owner-only" id="tabInterns" title="Стажёры" onclick="switchView('interns')">
-      <svg viewBox="0 0 24 24"><path d="M12 3.2l9 4.6-9 4.6-9-4.6z"/><path d="M6.6 10.2v4.6c0 1.6 2.4 2.9 5.4 2.9s5.4-1.3 5.4-2.9v-4.6"/><path d="M21 7.8v5.4"/></svg><span class="nl">Стажёры</span><span class="navi-n" id="internBadge" style="display:none"></span></button>
     <button class="navi owner-only" id="tabContacts" title="Контакты" onclick="switchView('contacts')">
       <svg viewBox="0 0 24 24"><rect x="4" y="3" width="16" height="18" rx="2"/><circle cx="12" cy="10" r="2.6"/><path d="M8 17.2a4.2 4.2 0 018 0"/><path d="M2.5 7.5h2M2.5 12h2M2.5 16.5h2"/></svg><span class="nl">Контакты</span></button>
     <button class="navi" id="tabDeals" title="Сделки" onclick="switchView('deals')">
@@ -1288,8 +1225,6 @@ select.mini:focus-visible,.f input:focus-visible,.f select:focus-visible,.f text
   <div id="viewCalls" style="display:none"></div>
   <div id="viewFamily" style="display:none"></div>
   <div id="viewSchema" style="display:none"></div>
-  <div id="viewIntern" style="display:none"></div>
-  <div id="viewInterns" style="display:none"></div>
   <div id="viewContacts" style="display:none"></div>
   <div id="viewDb" style="display:none"></div>
   <div id="viewDeals" style="display:none"></div>
@@ -1438,7 +1373,6 @@ select.mini:focus-visible,.f input:focus-visible,.f select:focus-visible,.f text
       <button class="save" id="saveBtn" onclick="saveCard()">Сохранить</button>
       <button class="closebtn" id="closeViewBtn" style="display:none" onclick="closeModal()">Закрыть</button>
       <button class="save" id="editBtn" style="display:none" onclick="setModalMode('edit')"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12.4 20.4h8.2"/><path d="M16.6 3.6a2.1 2.1 0 013 3L7.2 19 3.2 20l1-4z"/></svg> Редактировать</button>
-      <button class="closebtn owner-only" id="assignBtn" style="display:none" onclick="assignPick(editingId)" title="Выдать квартиру стажёру: он получит данные объекта без собственника">Выдать стажёру</button>
     </div>
   </div>
 </div>
@@ -1544,10 +1478,6 @@ const FIREBASE_CONFIG = { apiKey:"AIzaSyAe2prvX263zrbliZQzO5WEfytekEU0raM", auth
    Вставь сюда UID гостевого пользователя из Firebase → Authentication → Users. */
 const GUEST_UIDS = ['nI6NuJMgu1ca2BRNpvzw1ClZ6qu1'];
 let isGuest=false;
-/* Роль берём из узла roles в облаке, а не из списка в коде: добавить стажёра
-   можно из настроек, не трогая файл. Нет записи — нет доступа. */
-let ROLE='owner', ROLES={}, MYNAME='';
-let isIntern=false;
 const ICONS={eye:"<path d=\"M2.5 12S6 5.8 12 5.8 21.5 12 21.5 12 18 18.2 12 18.2 2.5 12 2.5 12z\"/><circle cx=\"12\" cy=\"12\" r=\"3\"/>",lock:"<rect x=\"4.5\" y=\"10\" width=\"15\" height=\"10.5\" rx=\"2.2\"/><path d=\"M8.2 10V7a3.8 3.8 0 017.6 0v3\"/>",shield:"<path d=\"M12 3.2l7.5 2.8v5c0 4.7-3.2 8.1-7.5 9.5C7.7 19.1 4.5 15.7 4.5 11V6z\"/><path d=\"M9.2 12.2l2 2 3.6-3.8\"/>",doc:"<path d=\"M14 3.2H7.2a2 2 0 00-2 2v13.6a2 2 0 002 2h9.6a2 2 0 002-2V8z\"/><path d=\"M14 3.2V8h4.8M8.6 13h6.8M8.6 16.4h4.6\"/>",check:"<rect x=\"3.2\" y=\"3.2\" width=\"17.6\" height=\"17.6\" rx=\"3.4\"/><path d=\"M7.8 12.2l3 3 5.4-6\"/>",download:"<path d=\"M12 4v11M7.8 10.8L12 15l4.2-4.2M4.2 19.8h15.6\"/>",upload:"<path d=\"M12 19.8V8.8M7.8 13L12 8.8l4.2 4.2M4.2 4.2h15.6\"/>",clock:"<circle cx=\"12\" cy=\"12\" r=\"8.8\"/><path d=\"M12 6.8V12l3.6 2.1\"/>",moon:"<path d=\"M20 14.6A8.6 8.6 0 019.4 4 8.6 8.6 0 1020 14.6z\"/>",phone:"<path d=\"M7.4 4.2H4.6c-.8 0-1.4.6-1.4 1.4C3.2 13.6 10.4 20.8 18.4 20.8c.8 0 1.4-.6 1.4-1.4v-2.8c0-.7-.5-1.3-1.2-1.4l-2.9-.4c-.5-.1-1 .1-1.3.5l-1.2 1.4a13.6 13.6 0 01-5.5-5.5l1.4-1.2c.4-.3.6-.8.5-1.3l-.4-2.9c-.1-.7-.7-1.2-1.4-1.2z\"/>",calendar:"<rect x=\"3.4\" y=\"5\" width=\"17.2\" height=\"15.6\" rx=\"2.2\"/><path d=\"M8 3v4M16 3v4M3.4 10.4h17.2\"/>",chat:"<path d=\"M20.8 11.6a8.4 8.4 0 01-12.2 7.5L3.2 20.8l1.7-5.4A8.4 8.4 0 1120.8 11.6z\"/>",pencil:"<path d=\"M12.4 20.4h8.2\"/><path d=\"M16.6 3.6a2.1 2.1 0 013 3L7.2 19 3.2 20l1-4z\"/>",plan:"<rect x=\"3.4\" y=\"4\" width=\"17.2\" height=\"16\" rx=\"2.2\"/><path d=\"M3.4 9.2h17.2M8.8 9.2V20M14 14.6h6.6\"/>",flame:"<path d=\"M12 3.2s4.8 4.2 4.8 8.6a4.8 4.8 0 11-9.6 0c0-1.9.9-3.4 1.9-4.4 0 1.5.9 2.5 1.9 2.5s1.4-1 .9-2.9 0-3.8 0-3.8z\"/>",db:"<ellipse cx=\"12\" cy=\"6\" rx=\"7.6\" ry=\"2.9\"/><path d=\"M4.4 6v6c0 1.6 3.4 2.9 7.6 2.9s7.6-1.3 7.6-2.9V6\"/><path d=\"M4.4 12v6c0 1.6 3.4 2.9 7.6 2.9s7.6-1.3 7.6-2.9v-6\"/>",warn:"<path d=\"M12 3.8l8.6 15.2a1 1 0 01-.9 1.5H4.3a1 1 0 01-.9-1.5z\"/><path d=\"M12 9.6v4.2M12 17h.01\"/>",note:"<path d=\"M4.6 5.4h14.8M4.6 10.4h14.8M4.6 15.4h9.4\"/><path d=\"M17 14.6l3.4 3.4-3 1.2-1.2-3z\"/>",home:"<path d=\"M3.4 10.4L12 3.4l8.6 7v9.2a1.4 1.4 0 01-1.4 1.4H4.8a1.4 1.4 0 01-1.4-1.4z\"/><path d=\"M9.2 21v-6.2h5.6V21\"/>",car:"<path d=\"M5 11.4l1.6-4.2a2 2 0 011.9-1.3h7a2 2 0 011.9 1.3L19 11.4\"/><rect x=\"3.2\" y=\"11.4\" width=\"17.6\" height=\"5.6\" rx=\"1.6\"/><path d=\"M6.6 17v1.8M17.4 17v1.8M6.4 14.2h.01M17.6 14.2h.01\"/>",box:"<path d=\"M3.4 7.4L12 3.4l8.6 4v9.2L12 20.6l-8.6-4z\"/><path d=\"M3.4 7.4L12 11.4l8.6-4M12 11.4v9.2\"/>",office:"<path d=\"M4.2 20.6V5.4a1.4 1.4 0 011.4-1.4h6a1.4 1.4 0 011.4 1.4v15.2\"/><path d=\"M13 10.2h5.4a1.4 1.4 0 011.4 1.4v9M7 8h2.4M7 12h2.4M7 16h2.4M16 14h1.4\"/>",user:"<circle cx=\"12\" cy=\"8\" r=\"3.6\"/><path d=\"M4.6 20.4a7.4 7.4 0 0114.8 0\"/>",users:"<circle cx=\"9.4\" cy=\"8.4\" r=\"3.2\"/><path d=\"M3.4 20a6 6 0 0112 0\"/><path d=\"M16 5.6a3.2 3.2 0 010 6.2M17.4 14.8a6 6 0 013.2 5.2\"/>",dot:"<circle cx=\"12\" cy=\"12\" r=\"3.4\" fill=\"currentColor\" stroke=\"none\"/>",star:"<path d=\"M12 3.6l2.6 5.3 5.8.8-4.2 4.1 1 5.8L12 16.9l-5.2 2.7 1-5.8-4.2-4.1 5.8-.8z\"/>",close:"<circle cx=\"12\" cy=\"12\" r=\"8.8\"/><path d=\"M9.2 9.2l5.6 5.6M14.8 9.2l-5.6 5.6\"/>",copy:"<rect x=\"8.6\" y=\"8.6\" width=\"11.8\" height=\"11.8\" rx=\"2.4\"/><path d=\"M15.4 5.4a2 2 0 00-2-2H5.6a2 2 0 00-2 2v7.8a2 2 0 002 2\"/>"};
 function ico(n){return ICONS[n]?`<svg class="ico" viewBox="0 0 24 24" aria-hidden="true">${ICONS[n]}</svg>`:'';}
 /* ============================================================ */
@@ -1604,39 +1534,8 @@ function initStore(){
 function startCloud(user){
   hideGate();
   isGuest=GUEST_UIDS.includes(user.uid);
-  cloud=true;
-  firebase.database().ref('roles').on('value',s=>{
-    ROLES=s.val()||{};
-    const me=ROLES[user.uid];
-    /* пока узла roles нет вовсе — работаем как раньше, владельцем */
-    ROLE = me ? (me.role||'owner') : (Object.keys(ROLES).length?'none':'owner');
-    MYNAME = me && me.name ? me.name : '';
-    applyRole(user);
-  }, ()=>{ROLE='owner';applyRole(user);});
-  if(isIntern)return;
-  startOwnerFeed(user);
-}
-function applyRole(user){
-  const wasIntern=isIntern;
-  isIntern = ROLE==='intern';
-  document.body.classList.toggle('intern', isIntern);
-  document.body.classList.toggle('no-access', ROLE==='none');
-  if(ROLE==='none'){
-    const n=document.getElementById('cloudNote');
-    n.className='cloud-note';
-    n.innerHTML='<b>Аккаунт не подключён.</b> Попроси руководителя добавить тебя в настройках.';
-    return;
-  }
-  if(isIntern){
-    if(!wasIntern){internStart(user);switchView('intern');}
-    return;
-  }
-  if(wasIntern)location.reload();          /* роль понизили/повысили — проще перезайти */
-  if(!dbRef)startOwnerFeed(user);
-  if(!internsRef)ownerWatchInterns();
-}
-function startOwnerFeed(user){
   dbRef=firebase.database().ref('actualka');
+  cloud=true;
   dbRef.off();
   dbRef.on('value',s=>{const v=s.val()||{};items=Object.keys(v).map(k=>resolvePii({...v[k],id:k}));_callPool=null;_callOpts=null;render();if(state.view==='schema')renderSchema();if(state.view==='calls')renderCalls();if(!isGuest)offerMigration();},
     err=>{const n=document.getElementById('cloudNote');n.className='cloud-note';n.innerHTML='<b>Нет доступа к базе.</b> Проверь правила Firebase.';console.error(err);});
@@ -2961,9 +2860,6 @@ function setModalMode(m){
   document.getElementById('delBtn').style.display=(!view&&editingId)?'block':'none';
   document.getElementById('closeViewBtn').style.display=view?'block':'none';
   document.getElementById('editBtn').style.display=(view&&!isGuest)?'block':'none';
-  /* выдать можно только существующую карточку и только руководителю */
-  const ab=document.getElementById('assignBtn');
-  if(ab)ab.style.display=(view&&!isGuest&&!isIntern&&editingId&&cloud)?'block':'none';
   document.getElementById('mTitle').textContent=view?'Карточка объекта':(editingId?'Редактировать объект':'Новый объект');
   document.getElementById('modal').scrollTop=0;
   const body=document.querySelector('#overlay .modal-body'); if(body) body.scrollTop=0;
@@ -4040,18 +3936,15 @@ function toggleSidebar(){
 function closeMenu(){document.body.classList.remove('menu-open');}
 function switchView(v){
   closeMenu();
-  if(isIntern)v='intern';
-  else if(isGuest&&v!=='actualka'&&v!=='archive'&&v!=='today')v='actualka';
+  if(isGuest&&v!=='actualka'&&v!=='archive'&&v!=='today')v='actualka';
   state.view=v;
-  [['actualka','tabActualka'],['today','tabToday'],['db','tabDb'],['schema','tabSchema'],['calls','tabCalls'],['interns','tabInterns'],['contacts','tabContacts'],['family','tabFamily'],['deals','tabDeals'],['archive','tabArchive'],['settings','tabSettings']]
+  [['actualka','tabActualka'],['today','tabToday'],['db','tabDb'],['schema','tabSchema'],['calls','tabCalls'],['contacts','tabContacts'],['family','tabFamily'],['deals','tabDeals'],['archive','tabArchive'],['settings','tabSettings']]
     .forEach(([k,id])=>{const b=document.getElementById(id);if(b)b.classList.toggle('active',v===k);});
   document.getElementById('viewActualka').style.display=v==='actualka'?'':'none';
   document.getElementById('viewToday').style.display=v==='today'?'':'none';
   document.getElementById('viewCalls').style.display=v==='calls'?'':'none';
   document.getElementById('viewFamily').style.display=v==='family'?'':'none';
   document.getElementById('viewSchema').style.display=v==='schema'?'':'none';
-  document.getElementById('viewIntern').style.display=v==='intern'?'':'none';
-  document.getElementById('viewInterns').style.display=v==='interns'?'':'none';
   document.getElementById('viewContacts').style.display=v==='contacts'?'':'none';
   document.getElementById('viewDb').style.display=v==='db'?'':'none';
   document.getElementById('viewDeals').style.display=v==='deals'?'':'none';
@@ -4064,8 +3957,6 @@ function switchView(v){
   if(v==='calls')renderCalls();
   if(v==='family'){renderFamily();updateFamBadge();}
   if(v==='schema')renderSchema();
-  if(v==='intern')renderIntern();
-  if(v==='interns')renderInterns();
   if(v==='contacts')renderContacts();
   if(v==='db')renderDb();
   if(v==='deals')renderDeals();
@@ -5246,287 +5137,6 @@ function ctOpen(key){
   openInfoModal(esc(c.fio),html);
 }
 
-/* ---------- стажёры ----------
-   Смысл задания: квартира продаётся через другого агента, стажёру надо
-   вычислить собственника. У руководителя ответ подставляется из ЕГРН сам,
-   поэтому базу стажёру не показываем вовсе — иначе задание бессмысленно.
-   Данные объекта стажёру кладёт руководитель кнопкой, обезличенной копией:
-   в узле tasks нет ни ФИО, ни телефона. */
-let myTasks={}, myAnswers={}, allTasks={}, allAnswers={}, internsRef=null, ivWho='';
-
-function internList(){
-  return Object.keys(ROLES).filter(u=>(ROLES[u]||{}).role==='intern')
-    .map(u=>({uid:u,name:ROLES[u].name||u.slice(0,6)}))
-    .sort((a,b)=>a.name>b.name?1:-1);
-}
-function internStart(user){
-  firebase.database().ref('tasks/'+user.uid).on('value',s=>{myTasks=s.val()||{};renderIntern();});
-  firebase.database().ref('answers/'+user.uid).on('value',s=>{myAnswers=s.val()||{};renderIntern();});
-  const note=document.getElementById('cloudNote');
-  note.className='cloud-note live';
-  note.innerHTML=`<b>● ${esc(MYNAME||user.email||'Стажёр')}</b> — задания по ЖК · <a href="#" onclick="doLogout();return false" style="color:var(--ok-t);font-weight:600">выйти</a>`;
-}
-function ownerWatchInterns(){
-  internsRef=firebase.database().ref('tasks');
-  internsRef.on('value',s=>{allTasks=s.val()||{};updateInternBadge();if(state.view==='interns')renderInterns();});
-  firebase.database().ref('answers').on('value',s=>{allAnswers=s.val()||{};updateInternBadge();if(state.view==='interns')renderInterns();});
-}
-function updateInternBadge(){
-  const el=document.getElementById('internBadge');if(!el)return;
-  let n=0;
-  Object.keys(allAnswers).forEach(u=>Object.keys(allAnswers[u]||{}).forEach(k=>{
-    const a=allAnswers[u][k]; if(a&&a.fio&&!a.verdict)n++;
-  }));
-  el.textContent=n||''; el.style.display=n?'':'none';
-}
-
-/* ---- экран стажёра ---- */
-function renderIntern(){
-  const box=document.getElementById('viewIntern');if(!box)return;
-  const keys=Object.keys(myTasks).sort((a,b)=>(myTasks[b].at||0)-(myTasks[a].at||0));
-  const done=keys.filter(k=>(myAnswers[k]||{}).fio).length;
-  const ok=keys.filter(k=>(myAnswers[k]||{}).verdict==='ok').length;
-  box.innerHTML=`
-    <div class="in-head">
-      <div>
-        <h2>Мои квартиры</h2>
-        <p>По каждой квартире нужно вычислить собственника: кто владеет и как с ним связаться. Пиши, как есть — руководитель сверит с выпиской.</p>
-      </div>
-      <div class="in-score">
-        <div><b>${keys.length}</b><span>выдано</span></div>
-        <div><b>${done}</b><span>отвечено</span></div>
-        <div><b>${ok}</b><span>в точку</span></div>
-      </div>
-    </div>` + (keys.length? keys.map(k=>taskHtml(k)).join('')
-      : '<div class="empty"><h3>Пока ничего не выдано</h3><p>Руководитель назначит квартиры — они появятся здесь.</p></div>');
-}
-function taskHtml(k){
-  const t=myTasks[k]||{}, a=myAnswers[k]||{};
-  const cls = a.verdict==='ok'?'done' : a.verdict==='miss'?'miss' : (a.fio?'wait':'');
-  const meta=[t.area?esc(t.area)+' м²':'', t.floor?esc(t.floor)+' эт.':'',
-    t.price?fmtMoney(t.price):'', t.deal==='rent'?'аренда':'продажа',
-    t.agent?'ведёт '+esc(t.agent):''].filter(Boolean);
-  return `<div class="task ${cls}">
-    <div class="task-top">
-      ${t.photo?`<img class="task-ph" src="${esc(t.photo)}" alt="Квартира ${esc(t.apt||'')}" loading="lazy" onclick="taskPhoto('${k}')">`
-        :`<div class="task-ph none">${SVG_PHOTO}</div>`}
-      <div class="task-hd">
-        <h3>Квартира ${esc(t.apt||k)}</h3>
-        <div class="meta">${meta.map(m=>`<span>${m}</span>`).join('')}</div>
-        ${t.url?`<div class="meta"><a href="${esc(t.url)}" target="_blank" rel="noopener">смотреть объявление</a></div>`:''}
-      </div>
-    </div>
-    ${t.note?`<div class="review">${esc(t.note)}</div>`:''}
-    <div class="ask">
-      <input id="tf_${k}" placeholder="ФИО собственника" value="${esc(a.fio||'')}">
-      <input id="tp_${k}" placeholder="Телефон" value="${esc(a.phone||'')}" inputmode="tel">
-    </div>
-    <textarea id="tn_${k}" placeholder="Откуда узнал, что проверил, что непонятно">${esc(a.note||'')}</textarea>
-    <div style="margin-top:8px"><button class="go" onclick="internSave('${k}')">${a.fio?'Обновить ответ':'Отправить ответ'}</button></div>
-    ${a.verdict==='ok'?'<div class="verdict ok">Верно — собственник совпал</div>'
-      :a.verdict==='miss'?'<div class="verdict no">Мимо — собственник другой</div>'
-      :a.fio?'<div class="verdict wait">Отправлено, ждёт проверки</div>':''}
-    ${a.review?`<div class="review"><b>Разбор:</b> ${esc(a.review)}</div>`:''}
-  </div>`;
-}
-function taskPhoto(k){
-  const t=myTasks[k]||{};
-  if(!t.photo)return;
-  openInfoModal('Квартира '+esc(t.apt||''),
-    `<img src="${esc(t.photo)}" alt="" style="width:100%;border-radius:12px;display:block">`);
-}
-function internSave(k){
-  const u=firebase.auth().currentUser;if(!u)return;
-  const fio=(document.getElementById('tf_'+k)||{}).value||'';
-  const phone=(document.getElementById('tp_'+k)||{}).value||'';
-  const note=(document.getElementById('tn_'+k)||{}).value||'';
-  if(!fio.trim()){alert('Впиши хотя бы ФИО.');return;}
-  const prev=myAnswers[k]||{};
-  const rec={fio:fio.trim(),phone:phone.trim(),note:note.trim(),ts:Date.now()};
-  /* ответ переписали — прежний вердикт снимаем, иначе «верно» повиснет от старой версии */
-  if(prev.fio && (normFio(prev.fio)!==normFio(rec.fio) || normPhone(prev.phone||'')!==normPhone(rec.phone))){
-    rec.verdict=''; rec.review='';
-  } else { rec.verdict=prev.verdict||''; rec.review=prev.review||''; }
-  cloudWrite(firebase.database().ref('answers/'+u.uid+'/'+k).set(rec),'ответ');
-  showToast('Ответ отправлен');
-}
-
-/* Фото в задании — отдельная уменьшенная копия. Исходник в карточке уже
-   сжат до 1000px, но узел tasks стажёр выкачивает целиком при каждом
-   открытии: десяток полноразмерных снимков съест трафик на пустом месте. */
-function shrinkPhoto(src,max,q){
-  return new Promise(res=>{
-    if(!src)return res('');
-    const img=new Image();
-    img.onload=()=>{
-      let w=img.width,h=img.height;
-      if(w>max){h=Math.round(h*max/w);w=max;}
-      const c=document.createElement('canvas');c.width=w;c.height=h;
-      c.getContext('2d').drawImage(img,0,0,w,h);
-      try{res(c.toDataURL('image/jpeg',q));}catch(e){res('');}
-    };
-    img.onerror=()=>res('');
-    img.src=src;
-  });
-}
-/* ---- выдача квартиры стажёру ---- */
-function assignPick(id){
-  const list=internList();
-  if(!list.length){alert('Сначала добавь стажёров в настройках.');return;}
-  const o=items.find(x=>x.id===id);if(!o)return;
-  const names=list.map((x,i)=>(i+1)+'. '+x.name).join('\n');
-  const ans=prompt('Кому выдать квартиру '+(o.apartment||'')+'?\n'+names+'\n\nВведи номер:');
-  if(!ans)return;
-  const i=parseInt(ans,10)-1;
-  if(!(i>=0&&i<list.length))return;
-  assignToIntern(list[i].uid,o);
-}
-function assignToIntern(uid,o,quiet){
-  /* копия без собственника: в этом весь смысл задания */
-  return shrinkPhoto(o.photo||'',560,0.62).then(photo=>{
-    const t={apt:o.apartment||'',area:o.area||'',floor:o.floor||'',price:o.price||'',
-      deal:o.dealType||'sale',agent:o.currentAgent||'',url:o.listingUrl||'',
-      photo:photo||'',note:'',at:Date.now(),obj:o.id};
-    return cloudWrite(firebase.database().ref('tasks/'+uid+'/'+o.id).set(t),'задание')
-      .then(()=>{if(!quiet)showToast('Выдано: кв. '+(o.apartment||''));});
-  });
-}
-/* Задания, выданные раньше, фото не содержат — и цена с агентом в них могли
-   устареть. Перезаписываем их текущими данными карточек, ответы не трогаем. */
-function refreshTasks(){
-  const list=internList();
-  if(!list.length)return;
-  let n=0,miss=0;
-  const jobs=[];
-  list.forEach(x=>{
-    const t=allTasks[x.uid]||{};
-    Object.keys(t).forEach(objId=>{
-      const o=items.find(i=>i.id===objId);
-      if(!o){miss++;return;}
-      n++; jobs.push(assignToIntern(x.uid,o,true));
-    });
-  });
-  if(!n){showToast('Нечего обновлять');return;}
-  Promise.all(jobs).then(()=>{
-    showToast('Обновлено заданий: '+n+(miss?' · '+miss+' без карточки':''));
-  });
-}
-
-/* ---- проверка: сверяем ответ с выпиской ---- */
-function rightAnswer(apt){
-  if(!egrn.rows.length||!hasComplex())return null;
-  const cad=cadOfNum(apt);if(!cad)return null;
-  const rec=ownerRecOfCad(cad);
-  return rec?{fio:rec.fio||'',phone:rec.phone||''}:null;
-}
-function matchAnswer(a,apt){
-  const right=rightAnswer(apt);
-  if(!right||!right.fio)return {v:'na',txt:'нет в базе'};
-  const sameFio=normFio(a.fio||'')===normFio(right.fio);
-  const sameTel=!!normPhone(a.phone||'')&&normPhone(a.phone||'')===normPhone(right.phone||'');
-  if(sameFio&&sameTel)return {v:'ok',txt:'ФИО и телефон',right};
-  if(sameFio)return {v:'ok',txt:'ФИО совпало',right};
-  if(sameTel)return {v:'ok',txt:'телефон совпал',right};
-  /* одна фамилия при разных именах — чаще всего родственник, а не промах.
-     «Петрова» и «Петров» — одна фамилия, поэтому женское окончание снимаем. */
-  const base=f=>surnameOf(f).replace(/А$/,'');
-  if(base(a.fio||'')&&base(a.fio||'')===base(right.fio))
-    return {v:'na',txt:'та же фамилия — возможно родственник',right};
-  return {v:'no',txt:'не совпало',right};
-}
-
-/* ---- вкладка руководителя ---- */
-function renderInterns(){
-  const box=document.getElementById('viewInterns');if(!box)return;
-  const list=internList();
-  if(!list.length){
-    box.innerHTML='<div class="empty"><h3>Стажёров пока нет</h3><p>Добавь их в настройках: имя и UID аккаунта из консоли Firebase.</p>'+
-      '<div><button class="btn-add" onclick="switchView(\'settings\')">В настройки</button></div></div>';
-    return;
-  }
-  if(!ivWho||!list.some(x=>x.uid===ivWho))ivWho=list[0].uid;
-  const tasks=allTasks[ivWho]||{}, ans=allAnswers[ivWho]||{};
-  const keys=Object.keys(tasks).sort((a,b)=>(tasks[b].at||0)-(tasks[a].at||0));
-  const answered=keys.filter(k=>(ans[k]||{}).fio);
-  const ok=keys.filter(k=>(ans[k]||{}).verdict==='ok').length;
-  box.innerHTML=`
-    <div class="in-head">
-      <div><h2>Стажёры</h2>
-        <p>Каждый видит только свои квартиры и свои ответы. Сверка с выпиской идёт у тебя в браузере — стажёрам база не доступна.</p></div>
-      <div class="in-score">
-        <div><b>${keys.length}</b><span>выдано</span></div>
-        <div><b>${answered.length}</b><span>отвечено</span></div>
-        <div><b>${ok}</b><span>верно</span></div>
-      </div>
-    </div>
-    <div class="iv-tabs">
-      <button onclick="refreshTasks()" title="Перезаписать выданные задания текущими данными карточек — вместе с фото">Обновить выданное</button>
-      ${list.map(x=>{
-      const a=allAnswers[x.uid]||{};
-      const wait=Object.keys(a).filter(k=>a[k].fio&&!a[k].verdict).length;
-      return `<button class="${x.uid===ivWho?'on':''}" onclick="ivWho='${x.uid}';renderInterns()">${esc(x.name)}${wait?' · '+wait:''}</button>`;
-    }).join('')}</div>
-    ${keys.length?keys.map(k=>ivRow(k,tasks[k],ans[k]||{})).join('')
-      :'<div class="empty"><h3>Ничего не выдано</h3><p>Открой квартиру в Актуалке и нажми «Выдать стажёру».</p></div>'}`;
-}
-function ivRow(k,t,a){
-  const m=a.fio?matchAnswer(a,t.apt):null;
-  const right=rightAnswer(t.apt);
-  return `<div class="iv-row">
-    <div class="apt">
-      ${t.photo?`<img class="iv-ph" src="${esc(t.photo)}" alt="" loading="lazy">`:''}
-      ${esc(t.apt||'')}<div class="lbl">${t.area?esc(t.area)+' м²':''}</div></div>
-    <div><div class="lbl">Ответ стажёра</div>
-      <div class="val pii">${a.fio?esc(a.fio):'<i style="color:var(--ink-soft)">не отвечал</i>'}</div>
-      <div class="val">${a.phone?esc(showPhone(a.phone)):''}</div>
-      ${a.note?`<div class="val" style="color:var(--ink-soft);margin-top:4px">${esc(a.note)}</div>`:''}</div>
-    <div><div class="lbl">По выписке</div>
-      <div class="val pii">${right&&right.fio?esc(right.fio):'<i style="color:var(--ink-soft)">нет в базе</i>'}</div>
-      <div class="val">${right&&right.phone?esc(showPhone(right.phone)):''}</div>
-      ${m?`<div style="margin-top:6px"><span class="auto ${m.v}">${esc(m.txt)}</span></div>`:''}</div>
-    <div class="iv-acts">
-      <button class="ok ${a.verdict==='ok'?'on':''}" onclick="ivVerdict('${k}','ok')">верно</button>
-      <button class="no ${a.verdict==='miss'?'on':''}" onclick="ivVerdict('${k}','miss')">мимо</button>
-      <button onclick="ivReview('${k}')">разбор</button>
-    </div>
-  </div>`;
-}
-function ivVerdict(k,v){
-  const a=(allAnswers[ivWho]||{})[k];
-  if(!a||!a.fio){alert('Стажёр ещё не ответил.');return;}
-  cloudWrite(firebase.database().ref('answers/'+ivWho+'/'+k+'/verdict').set(a.verdict===v?'':v),'оценка');
-}
-function ivReview(k){
-  const a=((allAnswers[ivWho]||{})[k])||{};
-  const t=prompt('Разбор для стажёра:', a.review||'');
-  if(t===null)return;
-  cloudWrite(firebase.database().ref('answers/'+ivWho+'/'+k+'/review').set(t.trim()),'разбор');
-}
-
-/* ---- настройки: кто стажёр ---- */
-function internSettingsHtml(){
-  const list=internList();
-  return `<div class="st-card">
-    <div class="st-h">Стажёры</div>
-    <div class="st-row"><div class="st-l"><b>Кто работает по ЖК</b>
-      <small>UID берётся в консоли Firebase: Authentication → Users → колонка User UID. Стажёр видит только выданные ему квартиры, базу ЕГРН — нет.</small></div></div>
-    ${list.map(x=>`<div class="st-row"><div class="st-l"><b>${esc(x.name)}</b><small>${esc(x.uid)}</small></div>
-      <button class="st-btn" onclick="internRemove('${x.uid}')">Убрать</button></div>`).join('')}
-    <div class="st-row"><div class="st-l"><b>Добавить</b><small>имя и UID аккаунта</small></div>
-      <button class="st-btn" onclick="internAdd()">Добавить стажёра</button></div>
-  </div>`;
-}
-function internAdd(){
-  const name=prompt('Имя стажёра:');if(!name||!name.trim())return;
-  const uid=prompt('UID аккаунта из Firebase:');if(!uid||!uid.trim())return;
-  cloudWrite(firebase.database().ref('roles/'+uid.trim()).set({name:name.trim(),role:'intern'}),'стажёр')
-    .then(()=>{showToast('Добавлен: '+name.trim());renderSettings();});
-}
-function internRemove(uid){
-  if(!confirm('Убрать стажёра? Его ответы останутся.'))return;
-  cloudWrite(firebase.database().ref('roles/'+uid).remove(),'стажёр').then(()=>renderSettings());
-}
-
 /* ---------- вкладка «Настройки» ---------- */
 function renderSettings(){
   const priv=document.body.classList.contains('privacy');
@@ -5589,8 +5199,6 @@ function renderSettings(){
         <button class="st-btn" onclick="document.getElementById('importFile').click()">${ico('upload')} Загрузить копию</button>
         <button class="st-btn" onclick="openReport()">${ico('doc')} Сформировать отчёт</button>
       </div>
-
-      ${cloud&&!isGuest?internSettingsHtml():''}
 
       <div class="st-card">
         <div class="st-h">Комплекс</div>
